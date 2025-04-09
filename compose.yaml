@@ -4,7 +4,7 @@ services:
       context: ./ikae
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3001:80"
     volumes:
       - ikae_node_modules:/app/node_modules
     environment:
