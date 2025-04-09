@@ -1,0 +1,14 @@
+services:
+  ikae:
+    build:
+      context: ./ikae
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ikae_node_modules:/app/node_modules
+    environment:
+      - NODE_ENV=production
+
+volumes:
+  ikae_node_modules:
