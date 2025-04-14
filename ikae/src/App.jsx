@@ -2,8 +2,15 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import Editor from "./pages/Editor";
-import Login from "./components/Auth/Login";
+import Login from "./pages/Login";
 import Signup from "./components/Auth/Signup";
+import DashboardPage from "./pages/Dashboard";
+import DesignStudioPage from "./pages/Studio";
+import UserProfileSettingsPage from "./pages/Profile";
+import HelpDocumentationPage from "./pages/Help";
+import ErrorPage from "./pages/Error";
+import RoomDesigner from "./pages/Room";
+import RegisterPage from "./pages/Register";
 
 function App() {
   return (
@@ -12,8 +19,16 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/editor" element={<Editor />} />
-        <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        // GM's Shiat
+        <Route path="*" element={<ErrorPage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/studio" element={<DesignStudioPage />} />
+        <Route path="/room" element={<RoomDesigner />} />
+        <Route path="/profile" element={<UserProfileSettingsPage />} />
+        <Route path="/help" element={<HelpDocumentationPage />} />
       </Routes>
     </BrowserRouter>
   );
