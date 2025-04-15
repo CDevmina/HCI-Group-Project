@@ -75,29 +75,37 @@ export default function ControlsPanel({
           </div>
           <div className="control-group">
             <label>X Position:</label>
-            <input 
-              type="number" 
-              value={selectedItem.position.x} 
-              onChange={(e) => handleFurnitureUpdate(e, 'position.x')} 
-              step="0.1"
+            <input
+                type="number"
+                value={selectedItem.position.x}
+                onChange={(e) => updateFurniture(selectedItem.id, {
+                    position: { ...selectedItem.position, x: Number(e.target.value) }
+                })}
+                step={0.1}
             />
           </div>
           <div className="control-group">
             <label>Z Position:</label>
-            <input 
-              type="number" 
-              value={selectedItem.position.z} 
-              onChange={(e) => handleFurnitureUpdate(e, 'position.z')} 
-              step="0.1"
+            <input
+                type="number"
+                value={selectedItem.position.z}
+                onChange={(e) => updateFurniture(selectedItem.id, {
+                    position: { ...selectedItem.position, z: Number(e.target.value) }
+                })}
+                step={0.1}
             />
           </div>
           <div className="control-group">
             <label>Rotation:</label>
-            <input 
-              type="number" 
-              value={selectedItem.rotation} 
-              onChange={(e) => handleFurnitureUpdate(e, 'rotation')} 
-              step="0.1"
+            <input
+                type="range"
+                min="0"
+                max="360"
+                value={selectedItem.rotation * (180/Math.PI)}
+                onChange={(e) => updateFurniture(selectedItem.id, {
+                rotation: Number(e.target.value) * (Math.PI/180)
+                })}
+                step={5}
             />
           </div>
           <button 

@@ -66,6 +66,7 @@ const RoomEditor = () => {
               furniture={furniture} 
               selectedItem={selectedItem}
               setSelectedItem={setSelectedItem}
+              updateFurniture={updateFurniture}
             />
           )}
           <OrbitControls enabled={is3DView} />
