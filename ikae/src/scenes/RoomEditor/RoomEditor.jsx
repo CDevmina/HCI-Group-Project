@@ -13,6 +13,7 @@ const RoomEditor = () => {
   const [roomSize, setRoomSize] = useState({ width: 10, depth: 8, height: 3 });
   const [furniture, setFurniture] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [showDimensions, setShowDimensions] = useState(true);
 
   const addFurniture = (type) => {
     const newItem = {
@@ -47,6 +48,8 @@ const RoomEditor = () => {
         updateFurniture={updateFurniture}
         addFurniture={addFurniture}
         deleteFurniture={deleteFurniture}
+        showDimensions={showDimensions}
+        setShowDimensions={setShowDimensions}
       />
       
       <ViewToggle is3DView={is3DView} setIs3DView={setIs3DView} />
@@ -67,6 +70,7 @@ const RoomEditor = () => {
               selectedItem={selectedItem}
               setSelectedItem={setSelectedItem}
               updateFurniture={updateFurniture}
+              showDimensions={showDimensions}
             />
           )}
           <OrbitControls enabled={is3DView} />

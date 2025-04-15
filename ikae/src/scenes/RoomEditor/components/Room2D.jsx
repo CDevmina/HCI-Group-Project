@@ -1,10 +1,10 @@
 // components/Room2D.jsx
 import { useRef, useEffect } from 'react';
 import { useThree } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, Text } from '@react-three/drei';
 import FurnitureItem from './FurnitureItem';
 
-export default function Room2D({ roomSize, furniture, selectedItem, setSelectedItem }) {
+export default function Room2D({ roomSize, furniture, selectedItem, setSelectedItem, showDimensions }) {
   const { width, depth } = roomSize;
   const groupRef = useRef();
   const controlsRef = useRef();
@@ -23,6 +23,38 @@ export default function Room2D({ roomSize, furniture, selectedItem, setSelectedI
     }
   }, [camera, roomSize]);
 
+  const DimensionLine = ({ start, end, value, isVertical }) => {
+    const position = [
+      (start[0] + end[0]) / 2,
+      0.1, // Slightly above the floor
+      (start[2] + end[2]) / 2
+    ];
+
+    return (
+      <group>
+        {/* Dimension line */}
+        <line>
+          <bufferGeometry attach="geometry">
+            <float32BufferAttribute attach="attributes-position" args={[new Float32Array([...start, ...end]), 3]} />
+          </bufferGeometry>
+          <lineBasicMaterial attach="material" color="black" />
+        </line>
+
+        {/* Dimension text */}
+        <Text
+          position={position}
+          rotation={[isVertical ? Math.PI / 2 :-Math.PI/2, isVertical ? Math.PI : 0, isVertical ? Math.PI / 2: 0]} // Adjusted rotation for 2D view
+          fontSize={0.3}
+          color="black"
+          anchorX="center"
+          anchorY="bottom"
+        >
+          {`${value}m`}
+        </Text>
+      </group>
+    );
+  };
+
   return (
     <group ref={groupRef}>
       {/* Room floor */}
@@ -30,16 +62,6 @@ export default function Room2D({ roomSize, furniture, selectedItem, setSelectedI
         <planeGeometry args={[width, depth]} />
         <meshStandardMaterial color="#f5f5f5" />
       </mesh>
-
-      {/* Room walls */}
-      {/* <mesh position={[0, 0, -depth/2]}>
-        <planeGeometry args={[width, 2]} />
-        <meshStandardMaterial color="#e0e0e0" />
-      </mesh>
-      <mesh position={[-width/2, 0, 0]} rotation={[0, Math.PI/2, 0]}>
-        <planeGeometry args={[depth, 2]} />
-        <meshStandardMaterial color="#e0e0e0" />
-      </mesh> */}
 
       {/* Furniture items */}
       {furniture.map(item => (
@@ -51,6 +73,27 @@ export default function Room2D({ roomSize, furniture, selectedItem, setSelectedI
           onClick={() => setSelectedItem(item.id)}
         />
       ))}
+
+      {/* Dimension indicators */}
+      {showDimensions && (
+        <>
+          {/* Width dimension */}
+          <DimensionLine 
+            start={[-width/2, 0, -depth/2 - 0.5]} 
+            end={[width/2, 0, -depth/2 - 0.5]} 
+            value={width} 
+            isVertical={false}
+          />
+
+          {/* Depth dimension */}
+          <DimensionLine 
+            start={[width/2 + 0.5, 0, -depth/2]} 
+            end={[width/2 + 0.5, 0, depth/2]} 
+            value={depth} 
+            isVertical={true}
+          />
+        </>
+      )}
 
       {/* OrbitControls for 2D navigation */}
       <OrbitControls
@@ -64,9 +107,7 @@ export default function Room2D({ roomSize, furniture, selectedItem, setSelectedI
         maxZoom={20}
         screenSpacePanning={true} // Makes panning feel more natural in 2D
         mouseButtons={{
-          LEFT: 1, // Pan
-          MIDDLE: 16, // Zoom
-          RIGHT: 2 // Alternate pan (optional)
+          MIDDLE: 2, // alternate pan
         }}
         touches={{
           ONE: 32, // Touch pan

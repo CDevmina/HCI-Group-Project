@@ -7,15 +7,26 @@ export default function ControlsPanel({
   selectedItem,
   updateFurniture,
   addFurniture,
-  deleteFurniture
+  deleteFurniture,
+  showDimensions,
+  setShowDimensions
 }) {
   const [color, setColor] = useState('#cccccc');
 
   const handleRoomSizeChange = (e, dimension) => {
-    setRoomSize({
-      ...roomSize,
-      [dimension]: parseFloat(e.target.value) || 1
-    });
+    const value = e.target.value;
+    // Only update if value is not empty string
+    if (value === '') {
+      setRoomSize({
+        ...roomSize,
+        [dimension]: value
+      });
+    } else {
+      setRoomSize({
+        ...roomSize,
+        [dimension]: parseFloat(value) || 0
+      });
+    }
   };
 
   const handleFurnitureUpdate = (e, property) => {
@@ -53,6 +64,18 @@ export default function ControlsPanel({
           onChange={(e) => handleRoomSizeChange(e, 'height')} 
           step="0.1"
         />
+      </div>
+
+      <div className="control-group">
+        <label className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            checked={showDimensions}
+            onChange={(e) => setShowDimensions(e.target.checked)}
+            className="form-checkbox h-4 w-4 text-blue-600"
+          />
+          <span>Show Dimensions</span>
+        </label>
       </div>
 
       <h2>Furniture</h2>
