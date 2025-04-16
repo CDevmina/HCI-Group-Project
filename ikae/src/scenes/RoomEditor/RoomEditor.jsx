@@ -7,6 +7,7 @@ import Room3D from './components/Room3D';
 import ControlsPanel from './components/ControlsPanel';
 import ViewToggle from './components/ViewToggle';
 import './styles.css';
+import { MOUSE } from 'three';
 
 const RoomEditor = () => {
   const [is3DView, setIs3DView] = useState(false);
@@ -73,7 +74,17 @@ const RoomEditor = () => {
               showDimensions={showDimensions}
             />
           )}
-          <OrbitControls enabled={is3DView} />
+          <OrbitControls 
+            enabled={is3DView}
+            enableRotate={true}
+            enablePan={true}
+            mouseButtons={{
+              LEFT: null, // Disable regular left click
+              MIDDLE: MOUSE.ROTATE,  // Middle mouse for orbit
+              RIGHT: MOUSE.PAN  // Right click for pan
+            }}
+            
+          />
           <ambientLight intensity={0.5} />
           <pointLight position={[10, 10, 10]} />
         </Canvas>
