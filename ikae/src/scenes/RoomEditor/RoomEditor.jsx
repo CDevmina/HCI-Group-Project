@@ -81,7 +81,7 @@ const RoomEditor = () => {
             mouseButtons={{
               LEFT: null, // Disable regular left click
               MIDDLE: MOUSE.ROTATE,  // Middle mouse for orbit
-              RIGHT: MOUSE.PAN  // Right click for pan
+              RIGHT: null  // Right click for pan
             }}
             
           />

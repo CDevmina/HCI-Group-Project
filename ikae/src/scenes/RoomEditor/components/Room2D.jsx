@@ -3,12 +3,15 @@ import { useRef, useEffect } from 'react';
 import { useThree } from '@react-three/fiber';
 import { OrbitControls, Text } from '@react-three/drei';
 import FurnitureItem from './FurnitureItem';
+import * as THREE from 'three';
+import { LineBasicMaterial, BufferGeometry, Float32BufferAttribute } from 'three';
 
 export default function Room2D({ roomSize, furniture, selectedItem, setSelectedItem, showDimensions }) {
   const { width, depth } = roomSize;
   const groupRef = useRef();
   const controlsRef = useRef();
   const { camera, gl } = useThree();
+  const borderThickness = 0.3; // Adjust border thickness here
   
   // Set up orthographic camera for 2D view
   useEffect(() => {
@@ -55,13 +58,36 @@ export default function Room2D({ roomSize, furniture, selectedItem, setSelectedI
     );
   };
 
-  return (
-    <group ref={groupRef}>
-      {/* Room floor */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+  // Combined floor and border component
+  const BorderedFloor = () => (
+    <group>
+      {/* Black border (slightly larger and behind) */}
+      <mesh 
+        rotation={[-Math.PI / 2, 0, 0]} 
+        position={[0, -0.01, 0]} // Positioned slightly below
+      >
+        <planeGeometry args={[
+          width + borderThickness * 2, 
+          depth + borderThickness * 2
+        ]} />
+        <meshBasicMaterial color="black" />
+      </mesh>
+
+      {/* Main floor (white center) */}
+      <mesh 
+        rotation={[-Math.PI / 2, 0, 0]} 
+        position={[0, 0, 0]}
+      >
         <planeGeometry args={[width, depth]} />
         <meshStandardMaterial color="#f5f5f5" />
       </mesh>
+    </group>
+  );
+
+  return (
+    <group ref={groupRef}>
+      {/* Integrated floor with border */}
+      <BorderedFloor />
 
       {/* Furniture items */}
       {furniture.map(item => (
