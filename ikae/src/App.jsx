@@ -17,19 +17,28 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<RoomEditor/>} />
+        {/* Main Routes */}
+        <Route path="/" element={<RoomEditor />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/shop" element={<Shop />} />
-        <Route path="/editor" element={<Editor />} />
-        <Route path="/signup" element={<Signup />} />
-        // GM's Shiat
-        <Route path="*" element={<ErrorPage />} />
+
+        {/* Authentication Routes */}
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
+
+        {/* Designer Tools Routes */}
+        <Route path="/editor" element={<Editor />} />
         <Route path="/studio" element={<DesignStudioPage />} />
         <Route path="/room" element={<RoomDesigner />} />
+
+        {/* User Routes */}
+        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile" element={<UserProfileSettingsPage />} />
         <Route path="/help" element={<HelpDocumentationPage />} />
+
+        {/* Error Handling */}
+        <Route path="*" element={<ErrorPage />} />
       </Routes>
     </BrowserRouter>
   );
