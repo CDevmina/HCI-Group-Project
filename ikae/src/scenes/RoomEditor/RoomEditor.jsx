@@ -72,6 +72,7 @@ const RoomEditor = () => {
               setSelectedItem={setSelectedItem}
               updateFurniture={updateFurniture}
               showDimensions={showDimensions}
+              setRoomSize={setRoomSize}
             />
           )}
           <OrbitControls 
