@@ -5,15 +5,13 @@ import { OrbitControls, Text } from '@react-three/drei';
 import FurnitureItem from './FurnitureItem';
 import * as THREE from 'three';
 
-export default function Room2D({ roomSize, furniture, selectedItem, setSelectedItem, showDimensions, setRoomSize }) {
-  const { width, depth, height } = roomSize;
+export default function Room2D({ roomSize, furniture, selectedItem, setSelectedItem, showDimensions, setRoomSize, vertexes, setVertexes }) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [draggedHandle, setDraggedHandle] = useState(null);
+  const dragStartRef = useRef({ vertexes: [], index: null });
   const groupRef = useRef();
   const controlsRef = useRef();
   const { camera, gl } = useThree();
-  const borderThickness = 0.3;
-  const [isDragging, setIsDragging] = useState(false);
-  const [draggedHandle, setDraggedHandle] = useState(null);
-  const dragStartRef = useRef({ x: 0, y: 0, width: 0, depth: 0, height: 0 });
 
   useEffect(() => {
     camera.position.set(0, 20, 0);
@@ -54,17 +52,14 @@ export default function Room2D({ roomSize, furniture, selectedItem, setSelectedI
     );
   };
 
-  const CornerHandle = ({ position, corner }) => {
+  const CornerHandle = ({ position, index }) => {
     const handlePointerDown = (e) => {
       e.stopPropagation();
       setIsDragging(true);
-      setDraggedHandle(corner);
+      setDraggedHandle(index);
       dragStartRef.current = {
-        x: e.point.x,
-        y: e.point.z,
-        width,
-        depth,
-        height
+        vertexes: vertexes.map(v => [...v]),
+        index,
       };
 
       const handleMove = (moveEvent) => {
@@ -78,22 +73,10 @@ export default function Room2D({ roomSize, furniture, selectedItem, setSelectedI
         const intersection = new THREE.Vector3();
         raycaster.ray.intersectPlane(floorPlane, intersection);
 
-        const dx = intersection.x - dragStartRef.current.x;
-        const dz = intersection.z - dragStartRef.current.y;
-
-        let newWidth = dragStartRef.current.width;
-        let newDepth = dragStartRef.current.depth;
-
-        if (corner.includes("right")) newWidth = Math.max(1, dragStartRef.current.width + dx * 2);
-        if (corner.includes("left")) newWidth = Math.max(1, dragStartRef.current.width - dx * 2);
-        if (corner.includes("bottom")) newDepth = Math.max(1, dragStartRef.current.depth + dz * 2);
-        if (corner.includes("top")) newDepth = Math.max(1, dragStartRef.current.depth - dz * 2);
-
-        setRoomSize({
-          width: Number(newWidth.toFixed(2)),
-          depth: Number(newDepth.toFixed(2)),
-          height
-        });
+        const newVertexes = dragStartRef.current.vertexes.map((v, i) =>
+          i === index ? [intersection.x, 0, intersection.z] : v
+        );
+        setVertexes(newVertexes);
       };
 
       const handleUp = () => {
@@ -110,27 +93,29 @@ export default function Room2D({ roomSize, furniture, selectedItem, setSelectedI
     return (
       <mesh position={position} onPointerDown={handlePointerDown}>
         <boxGeometry args={[0.5, 0.5, 0.5]} />
-        <meshBasicMaterial color={draggedHandle === corner ? '#4a9eff' : '#aa2222'} opacity={0.8} transparent />
+        <meshBasicMaterial color={draggedHandle === index ? '#4a9eff' : '#aa2222'} opacity={0.8} transparent />
       </mesh>
     );
   };
 
   const BorderedFloor = () => (
     <group>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
-        <planeGeometry args={[width + borderThickness * 2, depth + borderThickness * 2]} />
-        <meshBasicMaterial color="black" />
+      <lineLoop>
+        <bufferGeometry attach="geometry">
+          <float32BufferAttribute attach="attributes-position" args={[new Float32Array(vertexes.flat()), 3]} />
+        </bufferGeometry>
+        <lineBasicMaterial attach="material" color="black" linewidth={2} />
+      </lineLoop>
+      <mesh>
+        <bufferGeometry attach="geometry">
+          <float32BufferAttribute attach="attributes-position" args={[new Float32Array(vertexes.flat()), 3]} />
+          <bufferAttribute attach="index" count={6} array={new Uint16Array([0, 1, 2, 0, 2, 3])} itemSize={1} />
+        </bufferGeometry>
+        <meshStandardMaterial color="#f5f5f5" side={THREE.DoubleSide} />
       </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial color="#f5f5f5" />
-      </mesh>
-
-      {/* Corner handles */}
-      <CornerHandle position={[width / 2 + 0.25, 0.25, depth / 2 + 0.25]} corner="bottom-right" />
-      <CornerHandle position={[-width / 2 - 0.25, 0.25, depth / 2 + 0.25]} corner="bottom-left" />
-      <CornerHandle position={[-width / 2 - 0.25, 0.25, -depth / 2 - 0.25]} corner="top-left" />
-      <CornerHandle position={[width / 2 + 0.25, 0.25, -depth / 2 - 0.25]} corner="top-right" />
+      {vertexes.map((v, i) => (
+        <CornerHandle key={i} position={v} index={i} />
+      ))}
     </group>
   );
 
@@ -150,8 +135,8 @@ export default function Room2D({ roomSize, furniture, selectedItem, setSelectedI
 
       {showDimensions && (
         <>
-          <DimensionLine start={[-width/2, 0, -depth/2 - 0.5]} end={[width/2, 0, -depth/2 - 0.5]} value={width} isVertical={false} />
-          <DimensionLine start={[width/2 + 0.5, 0, -depth/2]} end={[width/2 + 0.5, 0, depth/2]} value={depth} isVertical={true} />
+          <DimensionLine start={vertexes[1]} end={vertexes[0]} value={Math.abs(vertexes[0][0] - vertexes[1][0]).toFixed(2)} isVertical={false} />
+          <DimensionLine start={vertexes[0]} end={vertexes[3]} value={Math.abs(vertexes[0][2] - vertexes[3][2]).toFixed(2)} isVertical={true} />
         </>
       )}
 

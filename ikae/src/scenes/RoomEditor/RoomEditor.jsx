@@ -1,5 +1,5 @@
 // App.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import Room2D from './components/Room2D';
@@ -15,6 +15,20 @@ const RoomEditor = () => {
   const [furniture, setFurniture] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showDimensions, setShowDimensions] = useState(true);
+
+  const getInitialVertexes = (roomSize) => [
+    [roomSize.width / 2, 0, roomSize.depth / 2],      // bottom-right
+    [-roomSize.width / 2, 0, roomSize.depth / 2],     // bottom-left
+    [-roomSize.width / 2, 0, -roomSize.depth / 2],    // top-left
+    [roomSize.width / 2, 0, -roomSize.depth / 2],     // top-right
+  ];
+
+  const [vertexes, setVertexes] = useState(getInitialVertexes(roomSize));
+
+  // Keep vertexes in sync if roomSize changes (but only if shape is still a rectangle)
+  useEffect(() => {
+    setVertexes(getInitialVertexes(roomSize));
+  }, [roomSize.width, roomSize.depth]);
 
   const addFurniture = (type) => {
     const newItem = {
@@ -63,6 +77,7 @@ const RoomEditor = () => {
               furniture={furniture} 
               selectedItem={selectedItem}
               setSelectedItem={setSelectedItem}
+              vertexes={vertexes}
             />
           ) : (
             <Room2D 
@@ -73,6 +88,8 @@ const RoomEditor = () => {
               updateFurniture={updateFurniture}
               showDimensions={showDimensions}
               setRoomSize={setRoomSize}
+              vertexes={vertexes}
+              setVertexes={setVertexes}
             />
           )}
           <OrbitControls 
@@ -84,7 +101,6 @@ const RoomEditor = () => {
               MIDDLE: MOUSE.ROTATE,  // Middle mouse for orbit
               RIGHT: null  // Right click for pan
             }}
-            
           />
           <ambientLight intensity={0.5} />
           <pointLight position={[10, 10, 10]} />

@@ -1,36 +1,50 @@
 // components/Room3D.jsx
 import { useRef } from 'react';
+import * as THREE from 'three';
 import FurnitureItem from './FurnitureItem';
 
-export default function Room3D({ roomSize, furniture, selectedItem, setSelectedItem }) {
-  const { width, depth, height } = roomSize;
+export default function Room3D({ roomSize, furniture, selectedItem, setSelectedItem, vertexes }) {
   const groupRef = useRef();
+  const height = roomSize.height;
+
+  // Helper: create wall geometry between two vertexes
+  const Wall = ({ v1, v2 }) => {
+    // v1, v2: [x, y, z] (y is always 0)
+    // Four corners: bottom v1, bottom v2, top v2, top v1
+    const wallVerts = [
+      ...v1,
+      ...v2,
+      v2[0], height, v2[2],
+      v1[0], height, v1[2],
+    ];
+    // Two triangles: 0-1-2, 0-2-3
+    const wallIndices = [0, 1, 2, 0, 2, 3];
+    return (
+      <mesh>
+        <bufferGeometry>
+          <float32BufferAttribute attach="attributes-position" args={[new Float32Array(wallVerts), 3]} />
+          <bufferAttribute attach="index" count={6} array={new Uint16Array(wallIndices)} itemSize={1} />
+        </bufferGeometry>
+        <meshStandardMaterial color="#e0e0e0" side={THREE.DoubleSide} />
+      </mesh>
+    );
+  };
 
   return (
     <group ref={groupRef}>
-      {/* Room floor */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-        <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial color="#f5f5f5" />
+      {/* Floor polygon (no rotation) */}
+      <mesh position={[0, 0, 0]}>
+        <bufferGeometry attach="geometry">
+          <float32BufferAttribute attach="attributes-position" args={[new Float32Array(vertexes.flat()), 3]} />
+          <bufferAttribute attach="index" count={6} array={new Uint16Array([0, 1, 2, 0, 2, 3])} itemSize={1} />
+        </bufferGeometry>
+        <meshStandardMaterial color="#f5f5f5" side={THREE.DoubleSide} />
       </mesh>
 
-      {/* Room walls */}
-      <mesh position={[0, height/2, -depth/2]}>
-        <boxGeometry args={[width, height, 0.1]} />
-        <meshStandardMaterial color="#e0e0e0" />
-      </mesh>
-      <mesh position={[-width/2, height/2, 0]} rotation={[0, Math.PI/2, 0]}>
-        <boxGeometry args={[depth, height, 0.1]} />
-        <meshStandardMaterial color="#e0e0e0" />
-      </mesh>
-      <mesh position={[width/2, height/2, 0]} rotation={[0, Math.PI/2, 0]}>
-        <boxGeometry args={[depth, height, 0.1]} />
-        <meshStandardMaterial color="#e0e0e0" />
-      </mesh>
-      <mesh position={[0, height/2, depth/2]}>
-        <boxGeometry args={[width, height, 0.1]} />
-        <meshStandardMaterial color="#e0e0e0" />
-      </mesh>
+      {/* Extruded walls along each edge */}
+      {vertexes.map((v, i) => (
+        <Wall key={i} v1={v} v2={vertexes[(i + 1) % vertexes.length]} />
+      ))}
 
       {/* Furniture items */}
       {furniture.map(item => (
