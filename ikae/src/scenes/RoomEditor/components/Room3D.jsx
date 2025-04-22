@@ -46,6 +46,15 @@ export default function Room3D({ roomSize, furniture, selectedItem, setSelectedI
         <Wall key={i} v1={v} v2={vertexes[(i + 1) % vertexes.length]} />
       ))}
 
+      {/* Roof mesh on top of the walls */}
+      <mesh position={[0, roomSize.height, 0]}>
+        <bufferGeometry attach="geometry">
+          <float32BufferAttribute attach="attributes-position" args={[new Float32Array(vertexes.map(([x, y, z]) => [x, 0, z]).flat()), 3]} />
+          <bufferAttribute attach="index" count={6} array={new Uint16Array([0, 1, 2, 0, 2, 3])} itemSize={1} />
+        </bufferGeometry>
+        <meshStandardMaterial color="#cccccc" side={THREE.DoubleSide} />
+      </mesh>
+
       {/* Furniture items */}
       {furniture.map(item => (
         <FurnitureItem 
