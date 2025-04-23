@@ -96,6 +96,8 @@ const RoomEditor = () => {
             enabled={is3DView}
             enableRotate={true}
             enablePan={true}
+            minPolarAngle={0} // 0 radians = 0 degrees (horizontal)
+            maxPolarAngle={Math.PI / 2} // 90 degrees in radians
             mouseButtons={{
               LEFT: null, // Disable regular left click
               MIDDLE: MOUSE.ROTATE,  // Middle mouse for orbit
