@@ -1,7 +1,8 @@
 // components/Room3D.jsx
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import FurnitureItem from './FurnitureItem';
+import { floorColor, wallColor, floorRoughness, floorMetalness, wallRoughness, wallMetalness, lights } from './RoomTheme';
 
 export default function Room3D({ roomSize, furniture, selectedItem, setSelectedItem, vertexes }) {
   const groupRef = useRef();
@@ -54,7 +55,7 @@ export default function Room3D({ roomSize, furniture, selectedItem, setSelectedI
           rotation={[0, -angle, 0]}
         >
           <boxGeometry args={[length, roomSize.height, WALL_THICKNESS]} />
-          <meshStandardMaterial color="#e0e0e0" />
+          <meshStandardMaterial color={wallColor} roughness={wallRoughness} metalness={wallMetalness} />
         </mesh>
       );
     });
@@ -62,26 +63,25 @@ export default function Room3D({ roomSize, furniture, selectedItem, setSelectedI
 
   return (
     <group ref={groupRef}>
-      {/* Floor polygon (no rotation) */}
-      <mesh position={[0, 0, 0]}>
+      {lights(height)}
+
+      {/* Floor polygon */}
+      <mesh position={[0, 0, 0]} receiveShadow>
         <bufferGeometry attach="geometry">
           <float32BufferAttribute attach="attributes-position" args={[new Float32Array(vertexes.flat()), 3]} />
           <bufferAttribute attach="index" count={6} array={new Uint16Array([0, 1, 2, 0, 2, 3])} itemSize={1} />
         </bufferGeometry>
-        <meshStandardMaterial color="#f5f5f5" side={THREE.DoubleSide} />
+        <meshStandardMaterial
+          color={floorColor}
+          roughness={floorRoughness}
+          metalness={floorMetalness}
+          transparent={false}
+          side={THREE.DoubleSide}
+        />
       </mesh>
 
-      {/* Walls with thickness centered on polygon edge */}
+      {/* Walls */}
       <WallMeshes vertexes={vertexes} />
-
-      {/* Roof mesh on top of the walls */}
-      <mesh position={[0, roomSize.height, 0]}>
-        <bufferGeometry attach="geometry">
-          <float32BufferAttribute attach="attributes-position" args={[new Float32Array(vertexes.map(([x, y, z]) => [x, 0, z]).flat()), 3]} />
-          <bufferAttribute attach="index" count={6} array={new Uint16Array([0, 1, 2, 0, 2, 3])} itemSize={1} />
-        </bufferGeometry>
-        <meshStandardMaterial color="#cccccc"/>
-      </mesh>
 
       {/* Furniture items */}
       {furniture.map(item => (

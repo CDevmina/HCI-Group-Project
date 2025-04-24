@@ -4,6 +4,7 @@ import { useThree } from '@react-three/fiber';
 import { OrbitControls, Text } from '@react-three/drei';
 import FurnitureItem from './FurnitureItem';
 import * as THREE from 'three';
+import { floorColor, borderColor, floorRoughness, floorMetalness, lights } from './RoomTheme';
 
 export default function Room2D({ roomSize, furniture, selectedItem, setSelectedItem, showDimensions, setRoomSize, vertexes, setVertexes }) {
   const [isDragging, setIsDragging] = useState(false);
@@ -100,18 +101,25 @@ export default function Room2D({ roomSize, furniture, selectedItem, setSelectedI
 
   const BorderedFloor = () => (
     <group>
+      {/* Black border outline */}
       <lineLoop>
         <bufferGeometry attach="geometry">
           <float32BufferAttribute attach="attributes-position" args={[new Float32Array(vertexes.flat()), 3]} />
         </bufferGeometry>
-        <lineBasicMaterial attach="material" color="black" linewidth={2} />
+        <lineBasicMaterial attach="material" color={borderColor} linewidth={2} />
       </lineLoop>
+      {/* Main floor polygon */}
       <mesh>
         <bufferGeometry attach="geometry">
           <float32BufferAttribute attach="attributes-position" args={[new Float32Array(vertexes.flat()), 3]} />
           <bufferAttribute attach="index" count={6} array={new Uint16Array([0, 1, 2, 0, 2, 3])} itemSize={1} />
         </bufferGeometry>
-        <meshStandardMaterial color="#f5f5f5" side={THREE.DoubleSide} />
+        <meshStandardMaterial
+          color={floorColor}
+          roughness={floorRoughness}
+          metalness={floorMetalness}
+          side={THREE.DoubleSide}
+        />
       </mesh>
       {vertexes.map((v, i) => (
         <CornerHandle key={i} position={v} index={i} />
@@ -121,6 +129,7 @@ export default function Room2D({ roomSize, furniture, selectedItem, setSelectedI
 
   return (
     <group ref={groupRef}>
+      {lights(5)}
       <BorderedFloor />
 
       {furniture.map(item => (

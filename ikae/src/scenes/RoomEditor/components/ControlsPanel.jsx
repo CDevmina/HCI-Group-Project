@@ -38,43 +38,16 @@ export default function ControlsPanel({
   return (
     <div className="controls-panel">
       <h2>Room Controls</h2>
-      <div className="control-group">
-        <label>Width:</label>
-        <input 
-          type="number" 
-          value={roomSize.width} 
-          onChange={(e) => handleRoomSizeChange(e, 'width')} 
-          step="0.1"
-        />
-      </div>
-      <div className="control-group">
-        <label>Depth:</label>
-        <input 
-          type="number" 
-          value={roomSize.depth} 
-          onChange={(e) => handleRoomSizeChange(e, 'depth')} 
-          step="0.1"
-        />
-      </div>
-      <div className="control-group">
-        <label>Height:</label>
-        <input 
-          type="number" 
-          value={roomSize.height} 
-          onChange={(e) => handleRoomSizeChange(e, 'height')} 
-          step="0.1"
-        />
-      </div>
 
       <div className="control-group">
-        <label className="flex items-center space-x-2">
+        <label className="flex items-center gap-2">
+          <span className="select-none">Show Dimensions</span>
           <input
             type="checkbox"
             checked={showDimensions}
             onChange={(e) => setShowDimensions(e.target.checked)}
             className="form-checkbox h-4 w-4 text-blue-600"
           />
-          <span>Show Dimensions</span>
         </label>
       </div>
 
