@@ -6,7 +6,7 @@ import { floorColor, wallColor, floorRoughness, floorMetalness, wallRoughness, w
 
 export default function Room3D({ roomSize, furniture, selectedItem, setSelectedItem, vertexes }) {
   const groupRef = useRef();
-  const height = roomSize.height;
+  const height = -1;
 
   // Helper: offset a point by a normal and distance
   function offsetPoint([x, y, z], normal, distance) {
@@ -87,7 +87,11 @@ export default function Room3D({ roomSize, furniture, selectedItem, setSelectedI
       {furniture.map(item => (
         <FurnitureItem 
           key={item.id}
-          item={item}
+          item={{
+            ...item,
+            // For GLB models, ensure y=0 so it sits on the floor
+            position: item.glb ? { ...item.position, y: 0 } : item.position
+          }}
           is2D={false}
           isSelected={selectedItem === item.id}
           onClick={() => setSelectedItem(item.id)}

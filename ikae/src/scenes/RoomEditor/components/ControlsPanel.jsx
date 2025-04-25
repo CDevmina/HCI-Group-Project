@@ -1,5 +1,6 @@
 // components/ControlsPanel.jsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import fetchModels from '../utils/fetchModels';
 
 export default function ControlsPanel({
   roomSize,
@@ -12,6 +13,11 @@ export default function ControlsPanel({
   setShowDimensions
 }) {
   const [color, setColor] = useState('#cccccc');
+  const [models, setModels] = useState([]);
+
+  useEffect(() => {
+    fetchModels().then(setModels);
+  }, []);
 
   const handleRoomSizeChange = (e, dimension) => {
     const value = e.target.value;
@@ -53,9 +59,15 @@ export default function ControlsPanel({
 
       <h2>Furniture</h2>
       <div className="button-group">
-        <button onClick={() => addFurniture('chair')}>Add Chair</button>
-        <button onClick={() => addFurniture('diningTable')}>Add Dining Table</button>
-        <button onClick={() => addFurniture('sideTable')}>Add Side Table</button>
+        {/* Dynamically render furniture from models */}
+        {models.map((model) => (
+          <div key={model.name} style={{ display: 'inline-block', margin: 8}}>
+            <div>{model.name}</div>
+            <img src={model.image} alt={model.name} style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 8 }} />
+            
+            <button onClick={() => addFurniture(model.name)}>Add</button>
+          </div>
+        ))}
       </div>
 
       {selectedItem && (

@@ -8,6 +8,7 @@ import ControlsPanel from './components/ControlsPanel';
 import ViewToggle from './components/ViewToggle';
 import './styles.css';
 import { MOUSE } from 'three';
+import fetchModels from './utils/fetchModels';
 
 const RoomEditor = () => {
   const [is3DView, setIs3DView] = useState(false);
@@ -15,6 +16,11 @@ const RoomEditor = () => {
   const [furniture, setFurniture] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showDimensions, setShowDimensions] = useState(true);
+  const [models, setModels] = useState([]);
+
+  useEffect(() => {
+    fetchModels().then(setModels);
+  }, []);
 
   const getInitialVertexes = (roomSize) => [
     [roomSize.width / 2, 0, roomSize.depth / 2],      // bottom-right
@@ -30,14 +36,18 @@ const RoomEditor = () => {
     setVertexes(getInitialVertexes(roomSize));
   }, [roomSize.width, roomSize.depth]);
 
-  const addFurniture = (type) => {
+  const addFurniture = async (type) => {
+    // Try to find a model with this type
+    const model = models.find(m => m.name === type);
     const newItem = {
       id: Date.now(),
       type,
       position: { x: 0, y: 0, z: 0 },
       dimensions: getDefaultDimensions(type),
       color: '#cccccc',
-      rotation: 0
+      rotation: 0,
+      // If model exists, attach its glb path
+      ...(model ? { glb: model.glb, image: model.image } : {})
     };
     setFurniture([...furniture, newItem]);
     setSelectedItem(newItem.id);

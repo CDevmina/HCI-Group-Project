@@ -1,14 +1,33 @@
 // components/FurnitureItem.jsx
 import { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useLoader } from '@react-three/fiber';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export default function FurnitureItem({ item, is2D, isSelected, onClick }) {
   const meshRef = useRef();
   const { type, position, dimensions, color, rotation } = item;
-  
+
+  // If item has a GLB model, load and render it
+  if (item.glb) {
+    const gltf = useLoader(GLTFLoader, item.glb);
+    return (
+      <group
+        position={[item.position.x, item.position.y, item.position.z]}
+        rotation={[0, item.rotation, 0]}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick();
+        }}
+        scale={[1, 1, 1]} // Adjust scale as needed for GLB
+      >
+        <primitive object={gltf.scene} />
+      </group>
+    );
+  }
+
   // Highlight selected item
   const outlineWidth = isSelected ? 0.05 : 0;
-  
+
   useFrame(() => {
     if (meshRef.current) {
       // Keep items on the floor in 3D view
