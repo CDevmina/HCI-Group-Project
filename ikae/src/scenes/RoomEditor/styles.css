@@ -1,0 +1,102 @@
+/* styles.css */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+  
+  .app-container {
+    display: flex;
+    height: 100vh;
+  }
+  
+  .controls-panel {
+    width: 300px;
+    padding: 20px;
+    background: #f8f8f8;
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+  }
+  
+  .canvas-container {
+    flex: 1;
+    position: relative;
+  }
+  
+  .control-group {
+    margin-bottom: 15px;
+  }
+  
+  .control-group label {
+    /* display: block; */
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  .control-group input {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+  }
+  
+  .button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .button-group button {
+    padding: 8px 12px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .button-group button:hover {
+    background: #45a049;
+  }
+  
+  .selected-item-controls {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+  }
+  
+  .delete-button {
+    margin-top: 15px;
+    padding: 8px 12px;
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .delete-button:hover {
+    background: #d32f2f;
+  }
+  
+  .view-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+    display: flex;
+    gap: 10px;
+  }
+  
+  .view-toggle button {
+    padding: 8px 16px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .view-toggle button.active {
+    background: #2196F3;
+    color: white;
+    border-color: #2196F3;
+  }

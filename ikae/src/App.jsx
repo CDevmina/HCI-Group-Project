@@ -11,12 +11,13 @@ import HelpDocumentationPage from "./pages/Help";
 import ErrorPage from "./pages/Error";
 import RoomDesigner from "./pages/Room";
 import RegisterPage from "./pages/Register";
+import RoomEditor from "./scenes/RoomEditor/RoomEditor";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<RoomEditor/>} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/editor" element={<Editor />} />
         <Route path="/signup" element={<Signup />} />
