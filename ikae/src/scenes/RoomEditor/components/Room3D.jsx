@@ -1,12 +1,23 @@
 // components/Room3D.jsx
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import FurnitureItem from './FurnitureItem';
-import { floorColor, wallColor, floorRoughness, floorMetalness, wallRoughness, wallMetalness, lights } from './RoomTheme';
+import { floorColor, wallColor, floorRoughness, floorMetalness, wallRoughness, wallMetalness, lights, useFloorMaterialProps, useWallMaterialProps } from './RoomTheme';
 
-export default function Room3D({ roomSize, furniture, selectedItem, setSelectedItem, vertexes }) {
+export default function Room3D({ roomSize, furniture, selectedItem, setSelectedItem, vertexes, skirtingHeight = 0.2 }) {
   const groupRef = useRef();
   const height = -1;
+  const tiling = 0.5; // Change this value to control tiling
+  const floorMaterialProps = useFloorMaterialProps(tiling);
+  const wallMaterialProps = useWallMaterialProps(2); // Adjust tiling as needed
+
+  const floorGeometryRef = useRef();
+
+  useEffect(() => {
+    if (floorGeometryRef.current) {
+      floorGeometryRef.current.computeVertexNormals();
+    }
+  }, [vertexes]);
 
   // Helper: offset a point by a normal and distance
   function offsetPoint([x, y, z], normal, distance) {
@@ -26,6 +37,12 @@ export default function Room3D({ roomSize, furniture, selectedItem, setSelectedI
       normals.push({ x: -dz / len, z: dx / len });
     }
     return normals;
+  }
+
+  // Helper to generate world-based UVs for any polygon
+  function getWorldUVs(vertexes, tiling = 2) {
+    // Use X and Z as UVs, scaled by tiling
+    return vertexes.flatMap(([x, y, z]) => [x * tiling, z * tiling]);
   }
 
   // Wall thickness (centered)
@@ -48,14 +65,55 @@ export default function Room3D({ roomSize, furniture, selectedItem, setSelectedI
       const cz = (v1[2] + v2[2]) / 2;
       const length = Math.sqrt((v2[0] - v1[0]) ** 2 + (v2[2] - v1[2]) ** 2);
       const angle = Math.atan2(v2[2] - v1[2], v2[0] - v1[0]);
+      const wallVertexes = [v1a, v2a, v2b, v1b];
       return (
         <mesh
           key={i}
           position={[(v1a[0] + v2a[0] + v1b[0] + v2b[0]) / 4, roomSize.height / 2, (v1a[2] + v2a[2] + v1b[2] + v2b[2]) / 4]}
           rotation={[0, -angle, 0]}
         >
+          <bufferGeometry>
+            <float32BufferAttribute
+              attach="attributes-uv"
+              args={[
+                new Float32Array(wallVertexes.flatMap(([x, y, z]) => [x * tiling, y * tiling])),
+                2,
+              ]}
+            />
+          </bufferGeometry>
           <boxGeometry args={[length, roomSize.height, WALL_THICKNESS]} />
-          <meshStandardMaterial color={wallColor} roughness={wallRoughness} metalness={wallMetalness} />
+          <meshStandardMaterial {...wallMaterialProps} />
+        </mesh>
+      );
+    });
+  };
+
+  // Skirting meshes along the bottom of each wall
+  const SkirtingMeshes = ({ vertexes, skirtingHeight = 0.1 }) => {
+    const normals = getEdgeNormals(vertexes);
+    return vertexes.map((v, i) => {
+      const v1 = v;
+      const v2 = vertexes[(i + 1) % vertexes.length];
+      const n = normals[i];
+      // Offset both sides for skirting
+      const v1a = offsetPoint(v1, n, WALL_THICKNESS / 2);
+      const v2a = offsetPoint(v2, n, WALL_THICKNESS / 2);
+      const cx = (v1[0] + v2[0]) / 2;
+      const cz = (v1[2] + v2[2]) / 2;
+      const length = Math.sqrt((v2[0] - v1[0]) ** 2 + (v2[2] - v1[2]) ** 2);
+      const angle = Math.atan2(v2[2] - v1[2], v2[0] - v1[0]);
+      return (
+        <mesh
+          key={i}
+          position={[
+            (v1a[0] + v2a[0]) / 2,
+            skirtingHeight / 2, // Place at bottom, just above floor
+            (v1a[2] + v2a[2]) / 2
+          ]}
+          rotation={[0, -angle, 0]}
+        >
+          <boxGeometry args={[length, skirtingHeight, WALL_THICKNESS]} />
+          <meshStandardMaterial color="#ffe4c4" metalness={0.1} roughness={0.6} />
         </mesh>
       );
     });
@@ -67,21 +125,32 @@ export default function Room3D({ roomSize, furniture, selectedItem, setSelectedI
 
       {/* Floor polygon */}
       <mesh position={[0, 0, 0]} receiveShadow>
-        <bufferGeometry attach="geometry">
+        <bufferGeometry ref={floorGeometryRef} attach="geometry">
           <float32BufferAttribute attach="attributes-position" args={[new Float32Array(vertexes.flat()), 3]} />
+          <float32BufferAttribute
+            attach="attributes-uv"
+            args={[
+              new Float32Array(getWorldUVs(vertexes, tiling)),
+              2,
+            ]}
+          />
+          <float32BufferAttribute
+            attach="attributes-uv2"
+            args={[
+              new Float32Array(getWorldUVs(vertexes, tiling)),
+              2,
+            ]}
+          />
           <bufferAttribute attach="index" count={6} array={new Uint16Array([0, 1, 2, 0, 2, 3])} itemSize={1} />
         </bufferGeometry>
-        <meshStandardMaterial
-          color={floorColor}
-          roughness={floorRoughness}
-          metalness={floorMetalness}
-          transparent={false}
-          side={THREE.DoubleSide}
-        />
+        <meshStandardMaterial {...floorMaterialProps} />
       </mesh>
 
       {/* Walls */}
       <WallMeshes vertexes={vertexes} />
+
+      {/* Skirting */}
+      <SkirtingMeshes vertexes={vertexes} skirtingHeight={skirtingHeight} />
 
       {/* Furniture items */}
       {furniture.map(item => (
