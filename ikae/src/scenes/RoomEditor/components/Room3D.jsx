@@ -68,7 +68,6 @@ export default function Room3D({
     }
   };
 
-  // --- Legacy Code (Unchanged except for shadow properties in WallMeshes) ---
   function offsetPoint([x, y, z], normal, distance) { /* ... */ return [x + normal.x * distance, y, z + normal.z * distance]; }
   function getEdgeNormals(vertexes) { /* ... */ const normals = []; for (let i = 0; i < vertexes.length; i++) { const v1 = vertexes[i]; const v2 = vertexes[(i + 1) % vertexes.length]; const dx = v2[0] - v1[0]; const dz = v2[2] - v1[2]; const len = Math.sqrt(dx * dx + dz * dz); normals.push({ x: -dz / len, z: dx / len }); } return normals; }
   const WALL_THICKNESS = 0.1;
@@ -89,7 +88,6 @@ export default function Room3D({
       );
     });
   };
-  // --- End Legacy Code ---
 
 
   return (
