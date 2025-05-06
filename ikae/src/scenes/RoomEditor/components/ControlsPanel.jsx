@@ -1,58 +1,61 @@
+// src/scenes/RoomEditor/components/ControlsPanel.jsx
 import { useEffect, useState } from 'react';
 import fetchModels from '../utils/fetchModels';
-import { TransformControls } from '@react-three/drei'; // Not needed here, but ensures context
+// TransformControls import removed as it's not directly used here
 
 export default function ControlsPanel({
   roomSize,
   setRoomSize,
   selectedItem,
-  updateFurniture, // Use the central update function
+  updateFurniture,
   addFurniture,
   deleteFurniture,
   showDimensions,
   setShowDimensions,
-  onPanelInteraction, // Receive the function to disable gizmo
-  gizmoMode,         // Receive current mode
-  setGizmoMode       // Receive mode setter
+  onPanelInteraction, // Function to disable gizmo
+  gizmoMode,
+  setGizmoMode,
+  // --- Receive setIsGizmoActive ---
+  setIsGizmoActive
 }) {
-  const [color, setColor] = useState('#cccccc'); // Local color state - may be redundant if selectedItem.color is used
+  const [color, setColor] = useState('#cccccc');
   const [models, setModels] = useState([]);
 
   useEffect(() => {
     fetchModels().then(setModels);
   }, []);
 
-  // --- START: Wrap panel updates with onPanelInteraction ---
+  // --- Wrap panel updates with onPanelInteraction ---
   const handlePanelUpdate = (id, updates) => {
-    onPanelInteraction(); // Notify that panel is being used
+    onPanelInteraction();
     updateFurniture(id, updates);
   };
 
   const handlePanelPositionChange = (axis, value) => {
     if (!selectedItem) return;
-    onPanelInteraction(); // Disable gizmo on panel input
+    onPanelInteraction();
     const newPosition = { ...selectedItem.position };
-    newPosition[axis] = Number(value); // Convert to number
+    newPosition[axis] = Number(value);
     updateFurniture(selectedItem.id, { position: newPosition });
   };
 
    const handlePanelRotationChange = (value) => {
       if (!selectedItem) return;
-      onPanelInteraction(); // Disable gizmo on panel input
-      // Convert degrees from slider to radians for internal use
+      onPanelInteraction();
       updateFurniture(selectedItem.id, { rotation: Number(value) * (Math.PI / 180) });
    };
 
   const handlePanelColorChange = (e) => {
       if (!selectedItem) return;
       onPanelInteraction();
-      handlePanelUpdate(selectedItem.id, { color: e.target.value });
-      setColor(e.target.value); // Update local state if needed, though selectedItem.color should be source of truth
+      // updateFurniture(selectedItem.id, { color: e.target.value }); // Let updateFurniture handle it if needed centrally
+      setColor(e.target.value); // Update local preview if necessary
+      // Trigger central update specifically for color if ControlsPanel manages it
+      updateFurniture(selectedItem.id, { color: e.target.value });
   };
-  // --- END: Wrap panel updates ---
+  // --- END Wrap panel updates ---
 
 
-  // Room size change (doesn't affect gizmo)
   const handleRoomSizeChange = (e, dimension) => {
     const value = e.target.value;
     if (value === '') {
@@ -62,20 +65,37 @@ export default function ControlsPanel({
     }
   };
 
-  // Fetch local color when selection changes
   useEffect(() => {
     if (selectedItem?.color) {
       setColor(selectedItem.color);
     } else {
-      setColor('#cccccc'); // Default if no item or item has no color
+      setColor('#cccccc');
     }
   }, [selectedItem]);
+
+  // --- Add Handler to re-enable gizmo ---
+  const handleRotationSliderRelease = () => {
+      if (selectedItem) {
+          setIsGizmoActive(true);
+      }
+  };
+  // --- End Handler ---
 
 
   return (
     <div className="controls-panel">
       <h2>Room Controls</h2>
-      {/* ... room controls like Show Dimensions ... */}
+       <div className="control-group">
+         <label className="flex items-center gap-2">
+           <span className="select-none">Show Dimensions</span>
+           <input
+             type="checkbox"
+             checked={showDimensions}
+             onChange={(e) => setShowDimensions(e.target.checked)}
+             className="form-checkbox h-4 w-4 text-blue-600" // Basic styling example
+           />
+         </label>
+       </div>
 
       <h2>Furniture</h2>
       <div className="button-group">
@@ -92,7 +112,6 @@ export default function ControlsPanel({
         <div className="selected-item-controls">
           <h3>Selected Item: {selectedItem.type}</h3>
 
-          {/* --- START: Gizmo Mode Buttons --- */}
            <div className="control-group" style={{ marginBottom: '15px' }}>
              <label style={{fontWeight: 'bold', marginBottom: '5px', display: 'block'}}>Gizmo Mode:</label>
              <div style={{display: 'flex', gap: '5px'}}>
@@ -101,35 +120,40 @@ export default function ControlsPanel({
                  <button onClick={() => setGizmoMode('scale')} style={gizmoMode === 'scale' ? activeButtonStyle : buttonStyle}>Scale</button>
              </div>
            </div>
-          {/* --- END: Gizmo Mode Buttons --- */}
 
           <div className="control-group">
             <label>Color:</label>
             <input
               type="color"
-              value={selectedItem.color || '#cccccc'} // Use selectedItem color directly
-              onChange={handlePanelColorChange} // Use specific handler
-              onFocus={onPanelInteraction} // Also disable gizmo on focus
+              value={selectedItem.color || '#cccccc'}
+              onChange={handlePanelColorChange}
+              onFocus={onPanelInteraction}
             />
           </div>
           <div className="control-group">
             <label>X Position:</label>
             <input
                 type="number"
-                value={selectedItem.position.x.toFixed(2)} // Format for display
-                onChange={(e) => handlePanelPositionChange('x', e.target.value)}
+                value={selectedItem.position.x.toFixed(2)}
+                onChange={(e) => {
+                  onPanelInteraction();
+                  handlePanelPositionChange('x', e.target.value)
+                }}
                 step={0.1}
-                onFocus={onPanelInteraction} // Disable gizmo on focus
+                onFocus={onPanelInteraction}
             />
           </div>
           <div className="control-group">
             <label>Z Position:</label>
             <input
                 type="number"
-                value={selectedItem.position.z.toFixed(2)} // Format for display
-                onChange={(e) => handlePanelPositionChange('z', e.target.value)}
+                value={selectedItem.position.z.toFixed(2)}
+                 onChange={(e) => {
+                  onPanelInteraction();
+                  handlePanelPositionChange('z', e.target.value)
+                 }}
                 step={0.1}
-                onFocus={onPanelInteraction} // Disable gizmo on focus
+                onFocus={onPanelInteraction}
             />
           </div>
           <div className="control-group">
@@ -138,11 +162,14 @@ export default function ControlsPanel({
                 type="range"
                 min="0"
                 max="360"
-                // Convert radians back to degrees for slider
                 value={selectedItem.rotation * (180/Math.PI)}
                 onChange={(e) => handlePanelRotationChange(e.target.value)}
-                step={1} // Finer control maybe?
-                onMouseDown={onPanelInteraction} // Disable gizmo when starting slider drag
+                step={1}
+                onMouseDown={onPanelInteraction}
+                // --- Add MouseUp/TouchEnd ---
+                onMouseUp={handleRotationSliderRelease}
+                onTouchEnd={handleRotationSliderRelease}
+                // --- End MouseUp/TouchEnd ---
             />
           </div>
           <button
@@ -157,7 +184,7 @@ export default function ControlsPanel({
   );
 }
 
-// --- START: Button Styles for Gizmo Mode ---
+// Button Styles
 const buttonStyle = {
     padding: '6px 10px',
     fontSize: '0.85em',
@@ -169,8 +196,7 @@ const buttonStyle = {
 
 const activeButtonStyle = {
     ...buttonStyle,
-    backgroundColor: '#e0e0ff', // Highlight active button
+    backgroundColor: '#e0e0ff',
     borderColor: '#a0a0ff',
     fontWeight: 'bold'
 };
-// --- END: Button Styles for Gizmo Mode ---

@@ -1,3 +1,4 @@
+// src/scenes/RoomEditor/RoomEditor.jsx
 import { useState, useEffect, useCallback } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
@@ -79,21 +80,17 @@ const RoomEditor = () => {
     setSelectedItem(prev => {
       const isDeselectingOrSelectingSame = prev === itemId;
       const newSelection = isDeselectingOrSelectingSame ? null : itemId;
-      // Only activate gizmo if selecting a new item in 3D view
       setIsGizmoActive(newSelection !== null && is3DView);
       return newSelection;
     });
-  }, [is3DView]); // Depend on is3DView
+  }, [is3DView]);
 
-  // --- START: Deselection Handler ---
   const handleDeselect = useCallback(() => {
-      if(selectedItem !== null) { // Only deselect if something is selected
-          // console.log("Pointer missed, deselecting");
+      if(selectedItem !== null) {
           setSelectedItem(null);
           setIsGizmoActive(false);
       }
-  }, [selectedItem]); // Depend on selectedItem
-  // --- END: Deselection Handler ---
+  }, [selectedItem]);
 
 
   return (
@@ -110,6 +107,8 @@ const RoomEditor = () => {
         onPanelInteraction={disableGizmoInteraction}
         gizmoMode={gizmoMode}
         setGizmoMode={setGizmoMode}
+        // --- Add setIsGizmoActive prop ---
+        setIsGizmoActive={setIsGizmoActive}
       />
 
       <ViewToggle is3DView={is3DView} setIs3DView={setIs3DView} />
@@ -118,9 +117,7 @@ const RoomEditor = () => {
         <Canvas
             shadows
             camera={{ position: [15, 15, 15], fov: 50 }}
-            // --- START: Add onPointerMissed ---
             onPointerMissed={handleDeselect}
-            // --- END: Add onPointerMissed ---
         >
             <ambientLight intensity={0.6} />
             <directionalLight
