@@ -75,6 +75,10 @@ const RoomEditor = () => {
         deleteFurniture={deleteFurniture}
         showDimensions={showDimensions}
         setShowDimensions={setShowDimensions}
+        vertexes={vertexes}
+        setVertexes={setVertexes}
+        furniture={furniture}
+        setFurniture={setFurniture}
       />
       
       <ViewToggle is3DView={is3DView} setIs3DView={setIs3DView} />

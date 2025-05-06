@@ -10,18 +10,25 @@ export default function ControlsPanel({
   addFurniture,
   deleteFurniture,
   showDimensions,
-  setShowDimensions
+  setShowDimensions,
+  vertexes,
+  setVertexes,
+  furniture,
+  setFurniture
 }) {
   const [color, setColor] = useState('#cccccc');
   const [models, setModels] = useState([]);
+  const [designName, setDesignName] = useState('');
+  const [savedDesigns, setSavedDesigns] = useState([]);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     fetchModels().then(setModels);
+    setSavedDesigns(getSavedDesignNames());
   }, []);
 
   const handleRoomSizeChange = (e, dimension) => {
     const value = e.target.value;
-    // Only update if value is not empty string
     if (value === '') {
       setRoomSize({
         ...roomSize,
@@ -41,8 +48,90 @@ export default function ControlsPanel({
     updateFurniture(selectedItem.id, { [property]: value });
   };
 
+  // --- Save/Load helpers ---
+  function saveDesign(name, vertexes, furniture) {
+    const data = {
+      vertexes,
+      furniture: furniture.map(item => ({
+        ...item,
+        position: item.position,
+        rotation: item.rotation,
+        type: item.type,
+        color: item.color,
+        dimensions: item.dimensions,
+        glb: item.glb,
+        image: item.image,
+        id: item.id,
+      })),
+    };
+    localStorage.setItem(`roomDesign:${name}`, JSON.stringify(data));
+  }
+
+  function loadDesign(name) {
+    const data = localStorage.getItem(`roomDesign:${name}`);
+    if (!data) return null;
+    return JSON.parse(data);
+  }
+
+  function getSavedDesignNames() {
+    return Object.keys(localStorage)
+      .filter(key => key.startsWith('roomDesign:'))
+      .map(key => key.replace('roomDesign:', ''));
+  }
+
+  function handleSave() {
+    if (!designName) return;
+    saveDesign(designName, vertexes, furniture);
+    setSavedDesigns(getSavedDesignNames());
+  }
+
+  function handleLoad(name) {
+    const data = loadDesign(name);
+    if (!data) {
+      setLoadError('Design not found or corrupted.');
+      return;
+    }
+    setVertexes(data.vertexes);
+    if (typeof setFurniture === 'function') setFurniture(data.furniture);
+    setLoadError('');
+  }
+
   return (
     <div className="controls-panel">
+      {/* --- Save/Load UI --- */}
+      <div style={{ marginBottom: 16, background: '#f9f9f9', padding: 8, borderRadius: 8 }}>
+        <div style={{ marginBottom: 8 }}>
+          <input
+            type="text"
+            placeholder="Design name"
+            value={designName}
+            onChange={e => setDesignName(e.target.value)}
+            style={{ width: '70%', marginRight: 8 }}
+          />
+          <div className="button-group">
+            <button onClick={handleSave} style={{ padding: '2px 8px' }}>Save</button>
+          </div>
+          
+        </div>
+        <div>
+          <strong>Saved Designs:</strong>
+          <ul style={{ maxHeight: 100, overflowY: 'auto', margin: 0, padding: 0 }}>
+            {savedDesigns.map(name => (
+              <li key={name} style={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
+                <button
+                  style={{ marginRight: 8, padding: '2px 8px' }}
+                  onClick={() => handleLoad(name)}
+                >
+                  Load
+                </button>
+                <span>{name}</span>
+              </li>
+            ))}
+          </ul>
+          {loadError && <div style={{ color: 'red', fontSize: 12 }}>{loadError}</div>}
+        </div>
+      </div>
+
       <h2>Room Controls</h2>
 
       <div className="control-group">
@@ -59,7 +148,6 @@ export default function ControlsPanel({
 
       <h2>Furniture</h2>
       <div className="button-group">
-        {/* Dynamically render furniture from models */}
         {models.map((model) => (
           <div key={model.name} style={{ display: 'inline-block', margin: 8}}>
             <div>{model.name}</div>
