@@ -1,7 +1,5 @@
-// src/scenes/RoomEditor/components/ControlsPanel.jsx
 import { useEffect, useState } from 'react';
 import fetchModels from '../utils/fetchModels';
-// TransformControls import removed as it's not directly used here
 
 export default function ControlsPanel({
   roomSize,
