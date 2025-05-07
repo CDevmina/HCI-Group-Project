@@ -19,7 +19,7 @@ export default function Room3D({
   gizmoMode          // Receive current gizmo mode
 }) {
   const groupRef = useRef();
-  const height = -1;
+  const height = -1; // This 'height' is passed to the 'lights' function from RoomTheme
   const { scene, controls } = useThree(); // Get scene and orbit controls
 
   const [selectedObject, setSelectedObject] = useState(null);
@@ -29,9 +29,16 @@ export default function Room3D({
   useEffect(() => {
     let foundObject = null;
     if (selectedItem !== null) {
+      const currentItem = furniture.find(f => f.id === selectedItem); // Get current item details
       scene.traverse((object) => {
+        // Attempt to match by userData.itemId first
         if (object.userData.itemId === selectedItem) {
           foundObject = object;
+        } 
+        // Fallback: if no userData match and currentItem exists, try finding by generated name
+        // This is less reliable if names are not perfectly unique or if userData.itemId is always set
+        else if (!foundObject && currentItem && object.name === `Furniture-${currentItem.type}-${selectedItem}`) {
+            // foundObject = object; // Be cautious with this fallback
         }
       });
       setSelectedObject(foundObject);
@@ -79,6 +86,10 @@ export default function Room3D({
   return (
     <>
       <group ref={groupRef}>
+        {/* This 'lights' call is from RoomTheme.jsx. 
+            The main scene shadows are primarily handled by the light in RoomEditor.jsx.
+            Ensure floorColor is a light color and intensities here are balanced.
+        */}
         {lights(height)}
 
         {/* Floor polygon */}
@@ -87,6 +98,7 @@ export default function Room3D({
             <float32BufferAttribute attach="attributes-position" args={[new Float32Array(vertexes.flat()), 3]} />
             <bufferAttribute attach="index" count={6} array={new Uint16Array([0, 1, 2, 0, 2, 3])} itemSize={1} />
           </bufferGeometry>
+          {/* Ensure floorColor is correctly applied and is a light color */}
           <meshStandardMaterial color={floorColor} roughness={floorRoughness} metalness={floorMetalness} transparent={false} side={THREE.DoubleSide} />
         </mesh>
 
@@ -97,11 +109,11 @@ export default function Room3D({
         {furniture.map(item => (
           <FurnitureItem
             key={item.id}
-            id={item.id} // Pass id for userData assignment
+            id={item.id} 
             item={item}
             is2D={false}
             isSelected={selectedItem === item.id}
-            onClick={() => setSelectedItem(item.id)} // Use central handler
+            onClick={() => setSelectedItem(item.id)} 
           />
         ))}
 
@@ -111,10 +123,8 @@ export default function Room3D({
             ref={transformControlsRef}
             object={selectedObject}
             mode={gizmoMode}
-            // --- START: Force Local Space ---
-            space="local" // Force gizmo to always use object's local space
-            // --- END: Force Local Space ---
-            depthTest={false} // Keep this for visibility
+            space="local" 
+            depthTest={false} 
             enabled={isGizmoActive}
             showX={isGizmoActive}
             showY={isGizmoActive}

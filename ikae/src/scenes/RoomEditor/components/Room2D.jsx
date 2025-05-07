@@ -79,10 +79,7 @@ export default function Room2D({
       y: 0, // Keep y at 0 for 2D plane
       z: selectedObject.position.z
     };
-    // For local space, rotation is often read from quaternion for accuracy,
-    // but if you're only rotating around Y, selectedObject.rotation.y is fine.
-    // If TransformControls in local space modifies the quaternion, you might need:
-    // const newRotation = new THREE.Euler().setFromQuaternion(selectedObject.quaternion, 'YXZ').y;
+    
     // For simplicity, sticking to .rotation.y as it often works if direct Y rotation is primary.
     const newRotation = selectedObject.rotation.y; 
 
