@@ -1,3 +1,4 @@
+// ikae/src/scenes/RoomEditor/components/Room2D.jsx
 import { useRef, useEffect, useState } from 'react';
 import { useThree } from '@react-three/fiber';
 import { OrbitControls, Text, TransformControls } from '@react-three/drei';
@@ -100,14 +101,27 @@ export default function Room2D({
 
   // --- disable orbit while gizmo dragging ---
   useEffect(() => {
-    if (!transformControlsRef.current || !orbitControlsRef.current) return;
-    const cb = ({ value }) => { // value is true if dragging, false otherwise
-      orbitControlsRef.current.enabled = !value;
-    };
-    transformControlsRef.current.addEventListener('dragging-changed', cb);
-    return () =>
-      transformControlsRef.current.removeEventListener('dragging-changed', cb);
-  }, [selectedObject]); // Re-run if selectedObject changes
+    const tcInstance = transformControlsRef.current; // Capture the instance when the effect runs
+    const ocInstance = orbitControlsRef.current;   // Capture the instance
+
+    if (tcInstance && ocInstance) { // Only proceed if both refs are valid
+      const draggingChangedCallback = (event) => {
+        // event.value is true if dragging, false otherwise
+        ocInstance.enabled = !event.value;
+      };
+
+      tcInstance.addEventListener('dragging-changed', draggingChangedCallback);
+
+      // Cleanup function:
+      return () => {
+        // Use the captured tcInstance to remove the listener.
+        tcInstance.removeEventListener('dragging-changed', draggingChangedCallback);
+      };
+    }
+    // If tcInstance or ocInstance is null (e.g., TransformControls unmounted), 
+    // this effect does nothing for the current render, and no cleanup is registered for this specific run.
+    // The cleanup from a *previous* run (where tcInstance was valid) will still execute correctly.
+  }, [selectedObject]); // Re-run this effect if selectedObject changes.
 
   // --- Corner-resize handles & dimension lines ---
   const DimensionLine = ({ start, end, value, isVertical }) => (
@@ -264,28 +278,28 @@ export default function Room2D({
           ref={transformControlsRef}
           object={selectedObject}
           mode={gizmoMode}
-          showX={gizmoMode === 'translate' || gizmoMode === 'scale'} // ⬅︎ only show X axis on Translate/Scale
-          showY={gizmoMode === 'rotate'}                            // ⬅︎ only show Y-axis ring on Rotate
-          showZ={gizmoMode === 'translate' || gizmoMode === 'scale'} // ⬅︎ only show Z axis on Translate/Scale
+          showX={gizmoMode === 'translate' || gizmoMode === 'scale'}
+          showY={gizmoMode === 'rotate'}
+          showZ={gizmoMode === 'translate' || gizmoMode === 'scale'}
           size={0.75}
-          onMouseUp={handleTransformEnd} // Update state when transform is done
-          depthTest={false} // Ensures gizmo is visible through other objects
+          onMouseUp={handleTransformEnd} 
+          depthTest={false} 
         />
       )}
 
       {/* Dimension Lines */}
-      {showDimensions && vertexes.length === 4 && ( // Assuming rectangular room for dimensions
+      {showDimensions && vertexes.length === 4 && ( 
         <>
           <DimensionLine
             start={vertexes[1]}
             end={vertexes[0]}
-            value={Math.abs(vertexes[0][0] - vertexes[1][0]).toFixed(2)} // Width
+            value={Math.abs(vertexes[0][0] - vertexes[1][0]).toFixed(2)}
             isVertical={false}
           />
           <DimensionLine
             start={vertexes[0]}
             end={vertexes[3]}
-            value={Math.abs(vertexes[0][2] - vertexes[3][2]).toFixed(2)} // Depth/Height in 2D top view
+            value={Math.abs(vertexes[0][2] - vertexes[3][2]).toFixed(2)}
             isVertical={true}
           />
         </>
@@ -294,13 +308,13 @@ export default function Room2D({
       {/* Orbit Controls for camera manipulation */}
       <OrbitControls
         ref={orbitControlsRef}
-        enabled={!isGizmoActive && !isDraggingVertex} // Disable controls when gizmo or vertex dragging is active
-        enableRotate={false} // No rotation in 2D view
+        enabled={!isGizmoActive && !isDraggingVertex} 
+        enableRotate={false} 
         enableZoom
         enablePan
         zoomSpeed={0.5}
         panSpeed={0.5}
-        screenSpacePanning // Pan parallel to screen
+        screenSpacePanning 
       />
     </group>
   );

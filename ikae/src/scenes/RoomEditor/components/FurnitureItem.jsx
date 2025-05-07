@@ -3,76 +3,85 @@ import { useLoader } from '@react-three/fiber';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as THREE from 'three';
 
-export default function FurnitureItem({ item, uuid, is2D, isSelected, onClick }) { // uuid prop is kept for now but unused in favour of userData
+export default function FurnitureItem({ item, isSelected, onClick }) {
   const groupRef = useRef();
-  const { type, position = { x: 0, y: 0, z: 0 }, dimensions, color = '#cccccc', rotation = 0, id } = item; // Ensure defaults
+  const {
+    type,
+    position = { x: 0, y: 0, z: 0 },
+    dimensions, // Used for non-GLB, contains original width, height, depth
+    color = '#cccccc',
+    rotation = 0, // In radians if directly applied to THREE.Object3D.rotation.y
+    id,
+    scale = { x: 1, y: 1, z: 1 } // Default scale from item prop
+  } = item;
 
-  // --- START: Assign itemId to userData ---
   useEffect(() => {
     if (groupRef.current) {
-      groupRef.current.userData.itemId = id; // Assign the item's original ID
-      groupRef.current.name = `Furniture-${type}-${id}`; // Optional: for debugging
-       // console.log(`Assigned userData.itemId: ${id} to mesh`, groupRef.current);
+      groupRef.current.userData.itemId = id;
+      groupRef.current.name = `Furniture-${type}-${id}`;
     }
   }, [id, type]);
-  // --- END: Assign itemId to userData ---
 
-  // Use basic emissive color for selection feedback
+  // This useEffect will ensure the Three.js object reflects the React state
+  useEffect(() => {
+    if (groupRef.current) {
+      // Apply position
+      // For non-GLB, adjust Y position so the pivot is at the bottom, considering its scaled height.
+      // For GLB, assume its origin is at its base, so y is 0 on the floor.
+      const yPos = item.glb ? 0 : (dimensions.height / 2) * scale.y;
+      groupRef.current.position.set(position.x, yPos, position.z);
+      
+      // Apply rotation (assuming Y-axis rotation)
+      groupRef.current.rotation.y = rotation;
+      
+      // Apply scale
+      groupRef.current.scale.set(scale.x, scale.y, scale.z);
+    }
+  }, [position, rotation, scale, item.glb, dimensions]); // Rerun if these properties change
+
   const emissiveColor = isSelected ? new THREE.Color('yellow') : new THREE.Color('black');
   const emissiveIntensity = isSelected ? 0.5 : 0;
 
-
-  // Handle GLB loading
   if (item.glb) {
     const gltf = useLoader(GLTFLoader, item.glb);
 
-    // Apply selection highlight to all meshes in the GLB
     useEffect(() => {
-        if (gltf.scene) {
-            gltf.scene.traverse((child) => {
-                if (child.isMesh && child.material) {
-                    // Ensure material is compatible with emissive
-                    if (!child.material.isMeshStandardMaterial && !child.material.isMeshPhysicalMaterial) {
-                         // Optional: Convert simple materials if needed, or skip emissive
-                         // For simplicity, we might skip emissive for non-standard materials
-                         // child.material = new THREE.MeshStandardMaterial().copy(child.material);
-                    } else {
-                        child.material.emissive = emissiveColor;
-                        child.material.emissiveIntensity = emissiveIntensity;
-                        child.material.needsUpdate = true; // Important!
-                    }
-
-                }
-            });
-        }
+      if (gltf.scene) {
+        gltf.scene.traverse((child) => {
+          if (child.isMesh && child.material) {
+            // Ensure material is compatible with emissive properties
+            if (child.material.isMeshStandardMaterial || child.material.isMeshPhysicalMaterial) {
+              child.material.emissive = emissiveColor;
+              child.material.emissiveIntensity = emissiveIntensity;
+              child.material.needsUpdate = true; 
+            }
+          }
+        });
+      }
     }, [gltf.scene, isSelected, emissiveColor, emissiveIntensity]);
-
 
     return (
       <group
         ref={groupRef}
-        // Position directly based on item data - Y=0 for GLBs on floor
-        position={[position.x, 0, position.z]}
-        rotation={[0, rotation, 0]}
+        // Position, rotation, and scale are now primarily handled by the useEffect based on props
         onClick={(e) => {
           e.stopPropagation();
           onClick();
         }}
-        castShadow // Enable shadows for GLB models
+        castShadow
         receiveShadow
       >
-        <primitive object={gltf.scene} scale={[1, 1, 1]} />
+        {/* The primitive scale should be 1,1,1 as the group handles the overall item scale */}
+        <primitive object={gltf.scene} scale={[1, 1, 1]} /> 
       </group>
     );
   }
 
-  // --- Simplified Non-GLB Rendering ---
-  // Render a simple box, place its bottom at y=0
+  // Non-GLB simple box
   return (
     <group
       ref={groupRef}
-      position={[position.x, dimensions.height / 2, position.z]} // Pivot at bottom center
-      rotation={[0, rotation, 0]}
+      // Position, rotation, and scale are now primarily handled by the useEffect based on props
       onClick={(e) => {
         e.stopPropagation();
         onClick();
@@ -81,8 +90,8 @@ export default function FurnitureItem({ item, uuid, is2D, isSelected, onClick })
       receiveShadow
     >
       <mesh>
+        {/* Geometry dimensions are from original item dimensions, scaling is applied to the group */}
         <boxGeometry args={[dimensions.width, dimensions.height, dimensions.depth]} />
-        {/* Apply emissive color for selection */}
         <meshStandardMaterial
             color={color}
             emissive={emissiveColor}
