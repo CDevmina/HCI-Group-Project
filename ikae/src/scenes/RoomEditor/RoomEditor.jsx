@@ -1,4 +1,3 @@
-// src/scenes/RoomEditor/RoomEditor.jsx
 import { useState, useEffect, useCallback, useRef } from 'react'; // Added useRef
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';

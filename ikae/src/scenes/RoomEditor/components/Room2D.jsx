@@ -1,4 +1,3 @@
-// ikae/src/scenes/RoomEditor/components/Room2D.jsx
 import { useRef, useEffect, useState } from 'react';
 import { useThree } from '@react-three/fiber';
 import { OrbitControls, Text, TransformControls } from '@react-three/drei';
