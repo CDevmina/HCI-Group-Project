@@ -13,16 +13,16 @@ import {
 } from './RoomTheme';
 
 export default function Room2D({
-  roomSize,             // Object defining room dimensions (currently unused in 2D directly for floor/wall generation but might be for context)
-  furniture,            // Array of furniture items to render
-  selectedItem,         // ID of the currently selected furniture item
-  setSelectedItem,      // Function to update the selected item
-  showDimensions,       // Boolean to control visibility of dimension lines
-  vertexes,             // Array of [x, y, z] points defining the floor polygon corners
-  setVertexes,          // Function to update the vertexes (e.g., when resizing)
-  isGizmoActive,        // Boolean indicating if the transform gizmo is active
-  gizmoMode,            // Current mode of the gizmo ('translate', 'rotate', 'scale')
-  updateFurniture,      // Function to update furniture properties (position, rotation, scale)
+  roomSize,
+  furniture,
+  selectedItem,
+  setSelectedItem,
+  showDimensions,
+  vertexes,
+  setVertexes,
+  isGizmoActive,
+  gizmoMode,
+  updateFurniture,
 }) {
   const [isDraggingVertex, setIsDraggingVertex] = useState(false);
   const [draggedHandle, setDraggedHandle] = useState(null);
@@ -44,13 +44,13 @@ export default function Room2D({
       orbitControlsRef.current.target.set(0, 0, 0);
       orbitControlsRef.current.enableRotate = false; // Disable rotation for 2D
       orbitControlsRef.current.mouseButtons = {
-        LEFT: null, // Disable default left-click drag for orbit
-        MIDDLE: THREE.MOUSE.DOLLY, // Middle mouse for zoom
-        RIGHT: THREE.MOUSE.PAN    // Right mouse for pan
+        LEFT: null,
+        MIDDLE: THREE.MOUSE.DOLLY,
+        RIGHT: THREE.MOUSE.PAN
       };
       orbitControlsRef.current.touches = {
-        ONE: THREE.TOUCH.PAN,      // One-finger touch for pan
-        TWO: THREE.TOUCH.DOLLY_PAN // Two-finger touch for zoom/pan
+        ONE: THREE.TOUCH.PAN,
+        TWO: THREE.TOUCH.DOLLY_PAN
       };
       orbitControlsRef.current.update();
     }
@@ -61,7 +61,6 @@ export default function Room2D({
     let foundObject = null;
     if (selectedItem !== null && furniture.length > 0) {
       scene.traverse((object) => {
-        // Assuming FurnitureItem sets userData.itemId
         if (object.userData?.itemId === selectedItem) {
           foundObject = object;
         }
@@ -81,13 +80,18 @@ export default function Room2D({
       y: 0, // Keep y at 0 for 2D plane
       z: selectedObject.position.z
     };
-    const newRotation = selectedObject.rotation.y; // Rotation around Y-axis
+    // For local space, rotation is often read from quaternion for accuracy,
+    // but if you're only rotating around Y, selectedObject.rotation.y is fine.
+    // If TransformControls in local space modifies the quaternion, you might need:
+    // const newRotation = new THREE.Euler().setFromQuaternion(selectedObject.quaternion, 'YXZ').y;
+    // For simplicity, sticking to .rotation.y as it often works if direct Y rotation is primary.
+    const newRotation = selectedObject.rotation.y; 
+
     const newUpdates = {
       position: newPosition,
       rotation: newRotation
     };
 
-    // Scale case
     if (gizmoMode === 'scale') {
       newUpdates.scale = {
         x: selectedObject.scale.x,
@@ -101,27 +105,19 @@ export default function Room2D({
 
   // --- disable orbit while gizmo dragging ---
   useEffect(() => {
-    const tcInstance = transformControlsRef.current; // Capture the instance when the effect runs
-    const ocInstance = orbitControlsRef.current;   // Capture the instance
+    const tcInstance = transformControlsRef.current;
+    const ocInstance = orbitControlsRef.current;
 
-    if (tcInstance && ocInstance) { // Only proceed if both refs are valid
+    if (tcInstance && ocInstance) {
       const draggingChangedCallback = (event) => {
-        // event.value is true if dragging, false otherwise
         ocInstance.enabled = !event.value;
       };
-
       tcInstance.addEventListener('dragging-changed', draggingChangedCallback);
-
-      // Cleanup function:
       return () => {
-        // Use the captured tcInstance to remove the listener.
         tcInstance.removeEventListener('dragging-changed', draggingChangedCallback);
       };
     }
-    // If tcInstance or ocInstance is null (e.g., TransformControls unmounted), 
-    // this effect does nothing for the current render, and no cleanup is registered for this specific run.
-    // The cleanup from a *previous* run (where tcInstance was valid) will still execute correctly.
-  }, [selectedObject]); // Re-run this effect if selectedObject changes.
+  }, [selectedObject]);
 
   // --- Corner-resize handles & dimension lines ---
   const DimensionLine = ({ start, end, value, isVertical }) => (
@@ -138,11 +134,11 @@ export default function Room2D({
       <Text
         position={[
           (start[0] + end[0]) / 2,
-          0.1, // Slightly above the floor
+          0.1,
           (start[2] + end[2]) / 2
         ]}
         rotation={[
-          isVertical ? Math.PI / 2 : -Math.PI / 2, // Orient text based on line direction
+          isVertical ? Math.PI / 2 : -Math.PI / 2,
           isVertical ? Math.PI : 0,
           isVertical ? Math.PI / 2 : 0
         ]}
@@ -158,31 +154,25 @@ export default function Room2D({
 
   const CornerHandle = ({ position, index }) => {
     const onDown = (e) => {
-      e.stopPropagation(); // Prevent other click events
+      e.stopPropagation();
       setIsDraggingVertex(true);
       setDraggedHandle(index);
-      // Store initial vertexes state at drag start to avoid mutation issues
       dragStartRef.current = {
-        vertexes: vertexes.map(v => [...v]), // Deep copy
+        vertexes: vertexes.map(v => [...v]),
         index
       };
 
       const move = (mv) => {
         const rect = gl.domElement.getBoundingClientRect();
-        // Convert mouse position to normalized device coordinates
         const x = ((mv.clientX - rect.left) / rect.width) * 2 - 1;
         const y = -((mv.clientY - rect.top) / rect.height) * 2 + 1;
-
-        // Raycast to find intersection with the XZ plane (y=0)
         const ray = new THREE.Raycaster().setFromCamera({ x, y }, camera);
-        const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0); // XZ plane
+        const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
         const inter = new THREE.Vector3();
         ray.ray.intersectPlane(plane, inter);
-
-        // Update only the dragged vertex based on its initial state
         const updated = dragStartRef.current.vertexes.map((v, i) =>
           i === dragStartRef.current.index
-            ? [inter.x, 0, inter.z] // Keep y at 0
+            ? [inter.x, 0, inter.z]
             : v
         );
         setVertexes(updated);
@@ -203,7 +193,7 @@ export default function Room2D({
       <mesh position={position} onPointerDown={onDown}>
         <boxGeometry args={[0.5, 0.5, 0.5]} />
         <meshBasicMaterial
-          color={draggedHandle === index ? '#4a9eff' : '#aa2222'} // Highlight color when dragged
+          color={draggedHandle === index ? '#4a9eff' : '#aa2222'}
           opacity={0.8}
           transparent
         />
@@ -213,7 +203,6 @@ export default function Room2D({
 
   const BorderedFloor = () => (
     <group>
-      {/* Floor Border */}
       <lineLoop>
         <bufferGeometry attach="geometry">
           <float32BufferAttribute
@@ -223,14 +212,12 @@ export default function Room2D({
         </bufferGeometry>
         <lineBasicMaterial attach="material" color={borderColor} linewidth={2} />
       </lineLoop>
-      {/* Floor Mesh */}
       <mesh>
         <bufferGeometry attach="geometry">
           <float32BufferAttribute
             attach="attributes-position"
             args={[new Float32Array(vertexes.flat()), 3]}
           />
-          {/* Define indices for a quad (assuming 4 vertices) */}
           <bufferAttribute
             attach="index"
             count={6}
@@ -245,7 +232,6 @@ export default function Room2D({
           side={THREE.DoubleSide}
         />
       </mesh>
-      {/* Corner Handles for resizing */}
       {vertexes.map((v, i) => (
         <CornerHandle key={i} position={v} index={i} />
       ))}
@@ -254,41 +240,35 @@ export default function Room2D({
 
   return (
     <group ref={groupRef}>
-      {/* Lights */}
-      {lights(20)} {/* Assuming lights function provides appropriate lighting */}
-
-      {/* Floor */}
+      {lights(20)}
       <BorderedFloor />
-
-      {/* Furniture items */}
       {furniture.map(item => (
         <FurnitureItem
           key={item.id}
-          id={item.id} // Pass id for selection tracking via userData
+          id={item.id}
           item={item}
-          is2D // Prop to tell FurnitureItem to render its 2D representation
+          is2D
           isSelected={selectedItem === item.id}
           onClick={() => setSelectedItem(item.id)}
         />
       ))}
 
-      {/* Transform Gizmo for selected item */}
       {selectedObject && isGizmoActive && (
         <TransformControls
           ref={transformControlsRef}
           object={selectedObject}
           mode={gizmoMode}
+          space="local" // Align gizmo to the object's local rotation
           showX={gizmoMode === 'translate' || gizmoMode === 'scale'}
           showY={gizmoMode === 'rotate'}
           showZ={gizmoMode === 'translate' || gizmoMode === 'scale'}
           size={0.75}
-          onMouseUp={handleTransformEnd} 
-          depthTest={false} 
+          onMouseUp={handleTransformEnd}
+          depthTest={false}
         />
       )}
 
-      {/* Dimension Lines */}
-      {showDimensions && vertexes.length === 4 && ( 
+      {showDimensions && vertexes.length === 4 && (
         <>
           <DimensionLine
             start={vertexes[1]}
@@ -305,16 +285,15 @@ export default function Room2D({
         </>
       )}
 
-      {/* Orbit Controls for camera manipulation */}
       <OrbitControls
         ref={orbitControlsRef}
-        enabled={!isGizmoActive && !isDraggingVertex} 
-        enableRotate={false} 
+        enabled={!isGizmoActive && !isDraggingVertex}
+        enableRotate={false}
         enableZoom
         enablePan
         zoomSpeed={0.5}
         panSpeed={0.5}
-        screenSpacePanning 
+        screenSpacePanning
       />
     </group>
   );
