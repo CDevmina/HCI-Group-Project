@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react'; // Import useMemo
 import { useLoader } from '@react-three/fiber';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as THREE from 'three';
@@ -26,12 +26,13 @@ export default function FurnitureItem({ item, isSelected, onClick }) {
   useEffect(() => {
     if (groupRef.current) {
       // Apply position
+      // GLB models often have their origin at the bottom, non-GLB boxes at the center
       const yPos = item.glb ? 0 : (dimensions.height / 2) * scale.y;
       groupRef.current.position.set(position.x, yPos, position.z);
-      
+
       // Apply rotation (assuming Y-axis rotation)
       groupRef.current.rotation.y = rotation;
-      
+
       // Apply scale
       groupRef.current.scale.set(scale.x, scale.y, scale.z);
     }
@@ -43,22 +44,43 @@ export default function FurnitureItem({ item, isSelected, onClick }) {
   if (item.glb) {
     const gltf = useLoader(GLTFLoader, item.glb);
 
-    useEffect(() => {
-      if (gltf.scene) {
-        gltf.scene.traverse((child) => {
-          if (child.isMesh && child.material) {
-            // Ensure material is compatible
-            if (child.material.isMeshStandardMaterial || child.material.isMeshPhysicalMaterial) {
-              child.material.color.set(color); // Apply the selected color to the mesh
-              child.material.emissive = emissiveColor;
-              child.material.emissiveIntensity = emissiveIntensity;
-              child.material.needsUpdate = true; 
-            }
-          }
-        });
-      }
-    }, [gltf.scene, isSelected, emissiveColor, emissiveIntensity, color]); // Added color to dependency array
+    // --- Correction: Clone the scene ---
+    // Use useMemo to clone the scene only when the gltf object changes
+    const clonedScene = useMemo(() => {
+        if (gltf.scene) {
+           const cloned = gltf.scene.clone(); // Clone the scene object
+           // Re-apply material changes to the clone if needed immediately
+           cloned.traverse((child) => {
+               if (child.isMesh && child.material) {
+                   if (child.material.isMeshStandardMaterial || child.material.isMeshPhysicalMaterial) {
+                       child.material = child.material.clone(); // Clone material too
+                       child.material.color.set(color);
+                       child.material.emissive = emissiveColor;
+                       child.material.emissiveIntensity = emissiveIntensity;
+                       child.material.needsUpdate = true;
+                   }
+               }
+           });
+           return cloned;
+        }
+        return null;
+    }, [gltf.scene, color, isSelected, emissiveColor, emissiveIntensity]); // Depend on things affecting appearance
 
+    // Effect to update emissive properties on selection change for the *cloned* material
+    useEffect(() => {
+        if (clonedScene) {
+             clonedScene.traverse((child) => {
+               if (child.isMesh && child.material && (child.material.isMeshStandardMaterial || child.material.isMeshPhysicalMaterial)) {
+                    child.material.emissive = emissiveColor;
+                    child.material.emissiveIntensity = emissiveIntensity;
+                    child.material.needsUpdate = true;
+               }
+             });
+        }
+    }, [clonedScene, isSelected, emissiveColor, emissiveIntensity]); // Only need selection-related dependencies here
+    // --- End of Correction ---
+
+    // Render the cloned scene if it exists
     return (
       <group
         ref={groupRef}
@@ -69,12 +91,12 @@ export default function FurnitureItem({ item, isSelected, onClick }) {
         castShadow
         receiveShadow
       >
-        <primitive object={gltf.scene} scale={[1, 1, 1]} /> 
+        {clonedScene && <primitive object={clonedScene} scale={[1, 1, 1]} />}
       </group>
     );
   }
 
-  // Non-GLB simple box
+  // Non-GLB simple box (remains the same)
   return (
     <group
       ref={groupRef}
