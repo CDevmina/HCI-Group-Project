@@ -308,15 +308,17 @@ const RoomEditor = () => {
                 vertexes={vertexes}
               />
               {/* OrbitControls with original mouse button configuration */}
-              <OrbitControls
-                ref={orbitControlsRef3D}
-                makeDefault // Ensures it targets the PerspectiveCamera
-                enableRotate
-                enablePan
-                minPolarAngle={0}
-                maxPolarAngle={Math.PI / 2.1} // Original value
-                mouseButtons={{ LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.PAN }} // Preserved
-                touches={{ ONE: TOUCH.ROTATE, TWO: TOUCH.DOLLY_PAN }} // Preserved
+              <OrbitControls 
+                enabled={is3DView}
+                enableRotate={true}
+                enablePan={true}
+                minPolarAngle={0} // 0 radians = 0 degrees (horizontal)
+                maxPolarAngle={Math.PI / 2} // 90 degrees in radians
+                mouseButtons={{
+                  LEFT: null, // Disable regular left click
+                  MIDDLE: MOUSE.ROTATE,  // Middle mouse for orbit
+                  RIGHT: null  // Right click for pan
+                }}
               />
               {/* Conditionally enable WASD controls only for 3D view */}
               <WASDNavigationController cameraRef={cameraRef3D} orbitControlsRef={orbitControlsRef3D} enabled={is3DView} />
