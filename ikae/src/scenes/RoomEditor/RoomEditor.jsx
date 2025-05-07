@@ -1,13 +1,132 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera, useHelper } from '@react-three/drei'; // Import useHelper
+import { Canvas, useFrame, useThree } from '@react-three/fiber'; // Import useFrame and useThree
+import { OrbitControls, PerspectiveCamera, useHelper } from '@react-three/drei';
 import Room2D from './components/Room2D';
-import Room3D from './components/Room3D'; // This uses the 'lights' from RoomTheme
+import Room3D from './components/Room3D';
 import ControlsPanel from './components/ControlsPanel';
 import ViewToggle from './components/ViewToggle';
 import './styles.css';
-import { MOUSE, TOUCH, Vector3, CameraHelper } from 'three'; // Import CameraHelper
+import { MOUSE, TOUCH, Vector3, CameraHelper, Euler } from 'three'; // Import Euler for potential use
 import fetchModels from './utils/fetchModels';
+
+// --- WASD Movement Hook ---
+const useWASDControls = (cameraRef, orbitControlsRef, moveSpeed = 5, enabled = true) => {
+  const [movement, setMovement] = useState({
+    forward: false,
+    backward: false,
+    left: false,
+    right: false,
+    up: false, // For Q/E style movement
+    down: false,
+  });
+
+  useEffect(() => {
+    if (!enabled) return; // Only attach listeners if enabled (i.e., in 3D view)
+
+    const handleKeyDown = (event) => {
+      // Prevent WASD from triggering if an input field is focused
+      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+        return;
+      }
+      switch (event.key.toLowerCase()) {
+        case 'w': setMovement((m) => ({ ...m, forward: true })); break;
+        case 's': setMovement((m) => ({ ...m, backward: true })); break;
+        case 'a': setMovement((m) => ({ ...m, left: true })); break;
+        case 'd': setMovement((m) => ({ ...m, right: true })); break;
+        case 'e': setMovement((m) => ({ ...m, up: true })); break; // Fly up
+        case 'q': setMovement((m) => ({ ...m, down: true })); break; // Fly down
+      }
+    };
+
+    const handleKeyUp = (event) => {
+      switch (event.key.toLowerCase()) {
+        case 'w': setMovement((m) => ({ ...m, forward: false })); break;
+        case 's': setMovement((m) => ({ ...m, backward: false })); break;
+        case 'a': setMovement((m) => ({ ...m, left: false })); break;
+        case 'd': setMovement((m) => ({ ...m, right: false })); break;
+        case 'e': setMovement((m) => ({ ...m, up: false })); break;
+        case 'q': setMovement((m) => ({ ...m, down: false })); break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [enabled]); // Re-run effect if 'enabled' changes
+
+  useFrame((state, delta) => {
+    if (!enabled || !cameraRef.current || !orbitControlsRef.current) return;
+
+    const cam = cameraRef.current;
+    const controls = orbitControlsRef.current;
+    const speed = moveSpeed * delta;
+
+    const moveDirection = new Vector3();
+    const rightDirection = new Vector3();
+    
+    // Get camera's local forward direction (direction it's looking)
+    cam.getWorldDirection(moveDirection);
+    // For FPS-like movement on XZ plane, uncomment below
+    // moveDirection.y = 0; 
+    // moveDirection.normalize();
+
+    // Get camera's local right direction
+    // Deriving right vector from camera's matrix is generally robust
+    rightDirection.setFromMatrixColumn(cam.matrix, 0); // First column of rotation matrix
+    rightDirection.normalize();
+
+
+    let didMove = false;
+
+    if (movement.forward) {
+      cam.position.addScaledVector(moveDirection, speed);
+      controls.target.addScaledVector(moveDirection, speed); // Move target with camera
+      didMove = true;
+    }
+    if (movement.backward) {
+      cam.position.addScaledVector(moveDirection, -speed);
+      controls.target.addScaledVector(moveDirection, -speed);
+      didMove = true;
+    }
+    if (movement.left) {
+      cam.position.addScaledVector(rightDirection, -speed);
+      controls.target.addScaledVector(rightDirection, -speed);
+      didMove = true;
+    }
+    if (movement.right) {
+      cam.position.addScaledVector(rightDirection, speed);
+      controls.target.addScaledVector(rightDirection, speed);
+      didMove = true;
+    }
+    // Vertical movement (flying) - directly modifies Y position
+    if (movement.up) {
+        cam.position.y += speed;
+        controls.target.y += speed;
+        didMove = true;
+    }
+    if (movement.down) {
+        cam.position.y -= speed;
+        controls.target.y -= speed;
+        didMove = true;
+    }
+
+    if (didMove) {
+      controls.update();
+    }
+  });
+};
+
+// Helper component to conditionally apply WASD controls
+const WASDNavigationController = ({ cameraRef, orbitControlsRef, enabled }) => {
+  useWASDControls(cameraRef, orbitControlsRef, 5, enabled); // Pass enabled prop
+  return null;
+};
+// --- END WASD Movement Hook ---
+
 
 const RoomEditor = () => {
   const [is3DView, setIs3DView] = useState(true);
@@ -23,8 +142,7 @@ const RoomEditor = () => {
   const cameraRef3D = useRef();                                                                      
   const [savedCam, setSavedCam] = useState(null); 
 
-  const mainDirectionalLightRef = useRef(); // Ref for the main directional light
-  // To debug shadows: Uncomment the line below to see the shadow camera's view
+  const mainDirectionalLightRef = useRef();
   // useHelper(mainDirectionalLightRef, CameraHelper, 1, 'red'); 
 
   useEffect(() => {
@@ -105,12 +223,21 @@ const RoomEditor = () => {
     if (is3DView && savedCam && cameraRef3D.current && orbitControlsRef3D.current) {
       const cam = cameraRef3D.current;
       cam.position.fromArray(savedCam.pos);
-      cam.rotation.fromArray(savedCam.rot);
+      
+      // Preserve original rotation logic
+      const euler = new Euler(0,0,0, 'YXZ'); // Create an Euler object
+      euler.fromArray(savedCam.rot);         // Set its values from the saved rotation array
+      cam.rotation.copy(euler);              // Apply it to the camera
+
       const controls = orbitControlsRef3D.current;
-      controls.target.set(0, 0, 0);
+      // If WASD moves target, this might be overwritten or complemented by WASD hook
+      // For now, just reset target to origin when switching back to 3D
+      // or if it wasn't actively panned by WASD.
+      controls.target.set(0, 0, 0); 
       controls.update();
     }
   }, [is3DView, savedCam]);
+
 
   return (
     <div className="app-container">
@@ -131,36 +258,30 @@ const RoomEditor = () => {
         <Canvas
           shadows
           key={is3DView ? '3d-canvas-key' : '2d-canvas-key'}
-          camera={{ position: [0, 10, 15], fov: 50, near: 0.1, far: 1000 }}
+          // The camera prop on Canvas is still used for initial setup for 2D/3D if PerspectiveCamera isn't default
+          // However, for 3D view, PerspectiveCamera with `makeDefault` will take precedence.
+          camera={is3DView ? { fov: 50, near: 0.1, far: 1000 } : { position: [0, 10, 15], fov: 50, near: 0.1, far: 1000 }}
           onPointerMissed={handleDeselect}
         >
-          {/* Main Ambient Light - for overall scene lighting */}
-          <ambientLight intensity={0.7} /> {/* Increased slightly */}
-          
-          {/* Main Directional Light - THIS IS THE PRIMARY SHADOW CASTER */}
+          <ambientLight intensity={0.7} /> 
           <directionalLight
-            ref={mainDirectionalLightRef} // Ref for shadow camera helper
+            ref={mainDirectionalLightRef} 
             castShadow
-            position={[15, 25, 15]} // Increased Y for better shadow angles
-            intensity={1.2}          // Main light intensity
-            color={"#fff0dd"}        // Warmer light color
+            position={[15, 25, 15]} 
+            intensity={1.2}          
+            color={"#fff0dd"}        
             shadow-mapSize-width={2048}
             shadow-mapSize-height={2048}
-            // TIGHTEN THESE VALUES based on roomSize and CameraHelper visualization
-            shadow-camera-left={-roomSize.width / 2 - 3}   // Example: -10/2 - 3 = -8
-            shadow-camera-right={roomSize.width / 2 + 3}  // Example:  10/2 + 3 =  8
-            shadow-camera-top={roomSize.depth / 2 + 3}    // Example:   8/2 + 3 =  7
-            shadow-camera-bottom={-roomSize.depth / 2 - 3} // Example:  -8/2 - 3 = -7
+            shadow-camera-left={-roomSize.width / 2 - 3}  
+            shadow-camera-right={roomSize.width / 2 + 3}  
+            shadow-camera-top={roomSize.depth / 2 + 3}    
+            shadow-camera-bottom={-roomSize.depth / 2 - 3} 
             shadow-camera-near={1}
-            shadow-camera-far={40}     // Reduce far plane significantly
-            shadow-bias={-0.003}       // Adjust bias carefully
-            // shadow-normalBias={0.02} // Experiment if needed
+            shadow-camera-far={40}     
+            shadow-bias={-0.003}       
           />
-          {/* A subtle fill light from another direction */}
           <directionalLight position={[-10, 10, -10]} intensity={0.3} color={"#ddeeff"} />
 
-
-          {/* Ground plane for receiving shadows from RoomEditor's light */}
           <mesh rotation={[-Math.PI/2,0,0]} position={[0,-0.01,0]} receiveShadow>
             <planeGeometry args={[100,100]} />
             <shadowMaterial transparent opacity={0.25} />
@@ -168,12 +289,13 @@ const RoomEditor = () => {
 
           {is3DView ? (
             <>
+              {/* Use PerspectiveCamera and make it default for the 3D scene */}
               <PerspectiveCamera
-                makeDefault
+                makeDefault 
                 ref={cameraRef3D}
                 fov={50} near={0.1} far={1000}
-                position={savedCam ? savedCam.pos : [0,10,15]}
-                rotation={savedCam ? savedCam.rot : [0,0,0]}
+                position={savedCam ? savedCam.pos : [0,10,15]} // Using original Y=10 for camera
+                rotation={savedCam ? savedCam.rot : [0,0,0]}   // Using original rotation
               />
               <Room3D
                 roomSize={roomSize} 
@@ -185,18 +307,22 @@ const RoomEditor = () => {
                 gizmoMode={gizmoMode}
                 vertexes={vertexes}
               />
+              {/* OrbitControls with original mouse button configuration */}
               <OrbitControls
                 ref={orbitControlsRef3D}
-                makeDefault
+                makeDefault // Ensures it targets the PerspectiveCamera
                 enableRotate
                 enablePan
                 minPolarAngle={0}
-                maxPolarAngle={Math.PI / 2.1}
-                mouseButtons={{ LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.PAN }}
-                touches={{ ONE: TOUCH.ROTATE, TWO: TOUCH.DOLLY_PAN }}
+                maxPolarAngle={Math.PI / 2.1} // Original value
+                mouseButtons={{ LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.PAN }} // Preserved
+                touches={{ ONE: TOUCH.ROTATE, TWO: TOUCH.DOLLY_PAN }} // Preserved
               />
+              {/* Conditionally enable WASD controls only for 3D view */}
+              <WASDNavigationController cameraRef={cameraRef3D} orbitControlsRef={orbitControlsRef3D} enabled={is3DView} />
             </>
           ) : (
+            // 2D Room setup remains the same
             <Room2D
               roomSize={roomSize} 
               furniture={furniture}
