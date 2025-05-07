@@ -26,8 +26,6 @@ export default function FurnitureItem({ item, isSelected, onClick }) {
   useEffect(() => {
     if (groupRef.current) {
       // Apply position
-      // For non-GLB, adjust Y position so the pivot is at the bottom, considering its scaled height.
-      // For GLB, assume its origin is at its base, so y is 0 on the floor.
       const yPos = item.glb ? 0 : (dimensions.height / 2) * scale.y;
       groupRef.current.position.set(position.x, yPos, position.z);
       
@@ -49,8 +47,9 @@ export default function FurnitureItem({ item, isSelected, onClick }) {
       if (gltf.scene) {
         gltf.scene.traverse((child) => {
           if (child.isMesh && child.material) {
-            // Ensure material is compatible with emissive properties
+            // Ensure material is compatible
             if (child.material.isMeshStandardMaterial || child.material.isMeshPhysicalMaterial) {
+              child.material.color.set(color); // Apply the selected color to the mesh
               child.material.emissive = emissiveColor;
               child.material.emissiveIntensity = emissiveIntensity;
               child.material.needsUpdate = true; 
@@ -58,12 +57,11 @@ export default function FurnitureItem({ item, isSelected, onClick }) {
           }
         });
       }
-    }, [gltf.scene, isSelected, emissiveColor, emissiveIntensity]);
+    }, [gltf.scene, isSelected, emissiveColor, emissiveIntensity, color]); // Added color to dependency array
 
     return (
       <group
         ref={groupRef}
-        // Position, rotation, and scale are now primarily handled by the useEffect based on props
         onClick={(e) => {
           e.stopPropagation();
           onClick();
@@ -71,7 +69,6 @@ export default function FurnitureItem({ item, isSelected, onClick }) {
         castShadow
         receiveShadow
       >
-        {/* The primitive scale should be 1,1,1 as the group handles the overall item scale */}
         <primitive object={gltf.scene} scale={[1, 1, 1]} /> 
       </group>
     );
@@ -81,7 +78,6 @@ export default function FurnitureItem({ item, isSelected, onClick }) {
   return (
     <group
       ref={groupRef}
-      // Position, rotation, and scale are now primarily handled by the useEffect based on props
       onClick={(e) => {
         e.stopPropagation();
         onClick();
@@ -90,10 +86,9 @@ export default function FurnitureItem({ item, isSelected, onClick }) {
       receiveShadow
     >
       <mesh>
-        {/* Geometry dimensions are from original item dimensions, scaling is applied to the group */}
         <boxGeometry args={[dimensions.width, dimensions.height, dimensions.depth]} />
         <meshStandardMaterial
-            color={color}
+            color={color} // Color is directly applied here for non-GLB
             emissive={emissiveColor}
             emissiveIntensity={emissiveIntensity}
         />
