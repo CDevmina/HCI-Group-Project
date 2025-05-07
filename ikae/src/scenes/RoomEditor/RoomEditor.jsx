@@ -7,7 +7,7 @@ import Room3D from './components/Room3D';
 import ControlsPanel from './components/ControlsPanel';
 import ViewToggle from './components/ViewToggle';
 import './styles.css';
-import { MOUSE } from 'three';
+import { MOUSE } from 'three'; // Ensure MOUSE is imported from three
 import fetchModels from './utils/fetchModels';
 
 const RoomEditor = () => {
@@ -50,7 +50,7 @@ const RoomEditor = () => {
     };
     setFurniture([...furniture, newItem]);
     setSelectedItem(newItem.id);
-    setIsGizmoActive(true);
+    setIsGizmoActive(true); // Gizmo becomes active when a new item is added and selected
   };
 
   const updateFurniture = useCallback((id, updates) => {
@@ -70,20 +70,21 @@ const RoomEditor = () => {
   };
 
   const disableGizmoInteraction = useCallback(() => {
+    // This function might be called by ControlsPanel to temporarily hide gizmo
+    // if direct input field interaction occurs.
     if (isGizmoActive) {
       setIsGizmoActive(false);
     }
   }, [isGizmoActive]);
 
-  // Modified selection handler
   const handleSelectItem = useCallback((itemId) => {
     setSelectedItem(prev => {
       const isDeselectingOrSelectingSame = prev === itemId;
       const newSelection = isDeselectingOrSelectingSame ? null : itemId;
-      setIsGizmoActive(newSelection !== null && is3DView);
+      setIsGizmoActive(newSelection !== null);
       return newSelection;
     });
-  }, [is3DView]);
+  }, []);
 
   const handleDeselect = useCallback(() => {
       if(selectedItem !== null) {
@@ -92,6 +93,16 @@ const RoomEditor = () => {
       }
   }, [selectedItem]);
 
+  const handleViewToggle = (newIs3DView) => {
+    setIs3DView(newIs3DView);
+    // If an item is selected, ensure gizmo is active for the current view.
+    // The actual gizmo rendering (2D or 3D) is handled by Room2D/Room3D.
+    if (selectedItem) {
+      setIsGizmoActive(true);
+    } else {
+      setIsGizmoActive(false);
+    }
+  };
 
   return (
     <div className="app-container">
@@ -104,14 +115,14 @@ const RoomEditor = () => {
         deleteFurniture={deleteFurniture}
         showDimensions={showDimensions}
         setShowDimensions={setShowDimensions}
-        onPanelInteraction={disableGizmoInteraction}
+        onPanelInteraction={disableGizmoInteraction} // To temporarily disable gizmo from panel
         gizmoMode={gizmoMode}
         setGizmoMode={setGizmoMode}
-        // --- Add setIsGizmoActive prop ---
-        setIsGizmoActive={setIsGizmoActive}
+        isGizmoActive={isGizmoActive}
+        setIsGizmoActive={setIsGizmoActive} // Allow panel to re-enable gizmo if needed
       />
 
-      <ViewToggle is3DView={is3DView} setIs3DView={setIs3DView} />
+      <ViewToggle is3DView={is3DView} setIs3DView={handleViewToggle} />
 
       <div className="canvas-container">
         <Canvas
@@ -142,10 +153,10 @@ const RoomEditor = () => {
                     roomSize={roomSize}
                     furniture={furniture}
                     selectedItem={selectedItem}
-                    setSelectedItem={handleSelectItem} // Pass central handler
+                    setSelectedItem={handleSelectItem}
                     updateFurniture={updateFurniture}
-                    isGizmoActive={isGizmoActive}
-                    gizmoMode={gizmoMode}
+                    isGizmoActive={isGizmoActive} // Pass this for TransformControls in Room3D
+                    gizmoMode={gizmoMode}       // Pass this for TransformControls in Room3D
                     vertexes={vertexes}
                 />
             ) : (
@@ -153,23 +164,28 @@ const RoomEditor = () => {
                     roomSize={roomSize}
                     furniture={furniture}
                     selectedItem={selectedItem}
-                    setSelectedItem={handleSelectItem} // Pass central handler
+                    setSelectedItem={handleSelectItem}
                     updateFurniture={updateFurniture}
                     showDimensions={showDimensions}
                     setRoomSize={setRoomSize}
                     vertexes={vertexes}
                     setVertexes={setVertexes}
+                    isGizmoActive={isGizmoActive} // Pass this for TransformControls in Room2D
+                    gizmoMode={gizmoMode}       // Pass this for TransformControls in Room2D
                 />
             )}
+            {/* Main OrbitControls for the 3D view. 
+                Room3D's TransformControls will temporarily disable this one during drags.
+                Room2D has its own non-default OrbitControls. */}
             <OrbitControls
                 makeDefault
-                enabled={is3DView}
+                enabled={is3DView} // Controls enabled primarily by 3D view state
                 enableRotate={true}
                 enablePan={true}
                 minPolarAngle={0}
                 maxPolarAngle={Math.PI / 2}
-                mouseButtons={{ LEFT: null, MIDDLE: MOUSE.ROTATE, RIGHT: MOUSE.PAN }}
-                touches={{ ONE: MOUSE.PAN, TWO: MOUSE.ROTATE }}
+                mouseButtons={{ LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.PAN }} // Original mapping
+                touches={{ ONE: MOUSE.ROTATE, TWO: MOUSE.DOLLY_PAN }} // Original mapping
             />
         </Canvas>
       </div>
