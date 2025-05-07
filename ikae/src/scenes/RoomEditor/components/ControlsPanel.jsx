@@ -10,10 +10,9 @@ export default function ControlsPanel({
   deleteFurniture,
   showDimensions,
   setShowDimensions,
-  onPanelInteraction, // Function to disable gizmo
+  onPanelInteraction, 
   gizmoMode,
   setGizmoMode,
-  // --- Receive setIsGizmoActive ---
   setIsGizmoActive
 }) {
   const [color, setColor] = useState('#cccccc');
@@ -25,13 +24,13 @@ export default function ControlsPanel({
 
   // --- Wrap panel updates with onPanelInteraction ---
   const handlePanelUpdate = (id, updates) => {
-    onPanelInteraction();
+    onPanelInteraction(); // Existing: Disable gizmo during panel interaction
     updateFurniture(id, updates);
   };
 
   const handlePanelPositionChange = (axis, value) => {
     if (!selectedItem) return;
-    onPanelInteraction();
+    onPanelInteraction(); // Existing: Disable gizmo during panel interaction
     const newPosition = { ...selectedItem.position };
     newPosition[axis] = Number(value);
     updateFurniture(selectedItem.id, { position: newPosition });
@@ -39,13 +38,13 @@ export default function ControlsPanel({
 
    const handlePanelRotationChange = (value) => {
       if (!selectedItem) return;
-      onPanelInteraction();
+      onPanelInteraction(); // Existing: Disable gizmo during panel interaction
       updateFurniture(selectedItem.id, { rotation: Number(value) * (Math.PI / 180) });
    };
 
   const handlePanelColorChange = (e) => {
       if (!selectedItem) return;
-      onPanelInteraction();
+      onPanelInteraction(); // Existing: Disable gizmo during panel interaction
       // updateFurniture(selectedItem.id, { color: e.target.value }); // Let updateFurniture handle it if needed centrally
       setColor(e.target.value); // Update local preview if necessary
       // Trigger central update specifically for color if ControlsPanel manages it
@@ -74,7 +73,7 @@ export default function ControlsPanel({
   // --- Add Handler to re-enable gizmo ---
   const handleRotationSliderRelease = () => {
       if (selectedItem) {
-          setIsGizmoActive(true);
+          setIsGizmoActive(true); // Re-enable gizmo after panel interaction
       }
   };
   // --- End Handler ---
@@ -113,9 +112,11 @@ export default function ControlsPanel({
            <div className="control-group" style={{ marginBottom: '15px' }}>
              <label style={{fontWeight: 'bold', marginBottom: '5px', display: 'block'}}>Gizmo Mode:</label>
              <div style={{display: 'flex', gap: '5px'}}>
-                 <button onClick={() => setGizmoMode('translate')} style={gizmoMode === 'translate' ? activeButtonStyle : buttonStyle}>Translate</button>
-                 <button onClick={() => setGizmoMode('rotate')} style={gizmoMode === 'rotate' ? activeButtonStyle : buttonStyle}>Rotate</button>
-                 <button onClick={() => setGizmoMode('scale')} style={gizmoMode === 'scale' ? activeButtonStyle : buttonStyle}>Scale</button>
+                 {/* Updated: Ensured onPanelInteraction is called when changing gizmo mode */}
+                 {/* This helps deactivate the gizmo before changing its mode if it was active. */}
+                 <button onClick={() => { onPanelInteraction(); setGizmoMode('translate'); setIsGizmoActive(true); }} style={gizmoMode === 'translate' ? activeButtonStyle : buttonStyle}>Translate</button>
+                 <button onClick={() => { onPanelInteraction(); setGizmoMode('rotate'); setIsGizmoActive(true); }} style={gizmoMode === 'rotate' ? activeButtonStyle : buttonStyle}>Rotate</button>
+                 <button onClick={() => { onPanelInteraction(); setGizmoMode('scale'); setIsGizmoActive(true); }} style={gizmoMode === 'scale' ? activeButtonStyle : buttonStyle}>Scale</button>
              </div>
            </div>
 
@@ -124,8 +125,8 @@ export default function ControlsPanel({
             <input
               type="color"
               value={selectedItem.color || '#cccccc'}
-              onChange={handlePanelColorChange}
-              onFocus={onPanelInteraction}
+              onChange={handlePanelColorChange} // This already calls onPanelInteraction
+              onFocus={onPanelInteraction} // Disable gizmo when input is focused
             />
           </div>
           <div className="control-group">
@@ -134,11 +135,11 @@ export default function ControlsPanel({
                 type="number"
                 value={selectedItem.position.x.toFixed(2)}
                 onChange={(e) => {
-                  onPanelInteraction();
+                  // onPanelInteraction is called within handlePanelPositionChange
                   handlePanelPositionChange('x', e.target.value)
                 }}
                 step={0.1}
-                onFocus={onPanelInteraction}
+                onFocus={onPanelInteraction} // Disable gizmo when input is focused
             />
           </div>
           <div className="control-group">
@@ -147,11 +148,11 @@ export default function ControlsPanel({
                 type="number"
                 value={selectedItem.position.z.toFixed(2)}
                  onChange={(e) => {
-                  onPanelInteraction();
+                  // onPanelInteraction is called within handlePanelPositionChange
                   handlePanelPositionChange('z', e.target.value)
                  }}
                 step={0.1}
-                onFocus={onPanelInteraction}
+                onFocus={onPanelInteraction} // Disable gizmo when input is focused
             />
           </div>
           <div className="control-group">
@@ -160,11 +161,11 @@ export default function ControlsPanel({
                 type="range"
                 min="0"
                 max="360"
-                value={selectedItem.rotation * (180/Math.PI)}
-                onChange={(e) => handlePanelRotationChange(e.target.value)}
+                value={Math.round(selectedItem.rotation * (180/Math.PI))} // Use Math.round for smoother display value
+                onChange={(e) => handlePanelRotationChange(e.target.value)} // This calls onPanelInteraction
                 step={1}
-                onMouseDown={onPanelInteraction}
-                // --- Add MouseUp/TouchEnd ---
+                onMouseDown={onPanelInteraction} // Existing: Disable gizmo on interaction start
+                // --- Add MouseUp/TouchEnd to re-enable gizmo ---
                 onMouseUp={handleRotationSliderRelease}
                 onTouchEnd={handleRotationSliderRelease}
                 // --- End MouseUp/TouchEnd ---
