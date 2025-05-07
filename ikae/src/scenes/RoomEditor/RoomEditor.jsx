@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber'; // Import useFrame and useThree
+import { Canvas, useFrame, useThree } from '@react-three/fiber'; 
 import { OrbitControls, PerspectiveCamera, useHelper } from '@react-three/drei';
 import Room2D from './components/Room2D';
 import Room3D from './components/Room3D';
 import ControlsPanel from './components/ControlsPanel';
 import ViewToggle from './components/ViewToggle';
 import './styles.css';
-import { MOUSE, TOUCH, Vector3, CameraHelper, Euler } from 'three'; // Import Euler for potential use
+import { MOUSE, TOUCH, Vector3, CameraHelper, Euler } from 'three'; 
 import fetchModels from './utils/fetchModels';
 
 // --- WASD Movement Hook ---
@@ -70,9 +70,6 @@ const useWASDControls = (cameraRef, orbitControlsRef, moveSpeed = 5, enabled = t
     
     // Get camera's local forward direction (direction it's looking)
     cam.getWorldDirection(moveDirection);
-    // For FPS-like movement on XZ plane, uncomment below
-    // moveDirection.y = 0; 
-    // moveDirection.normalize();
 
     // Get camera's local right direction
     // Deriving right vector from camera's matrix is generally robust
@@ -143,7 +140,6 @@ const RoomEditor = () => {
   const [savedCam, setSavedCam] = useState(null); 
 
   const mainDirectionalLightRef = useRef();
-  // useHelper(mainDirectionalLightRef, CameraHelper, 1, 'red'); 
 
   useEffect(() => {
     fetchModels().then(setModels);
@@ -322,7 +318,6 @@ const RoomEditor = () => {
               <WASDNavigationController cameraRef={cameraRef3D} orbitControlsRef={orbitControlsRef3D} enabled={is3DView} />
             </>
           ) : (
-            // 2D Room setup remains the same
             <Room2D
               roomSize={roomSize} 
               furniture={furniture}
