@@ -32,7 +32,7 @@ function App() {
         <Route path="/room" element={<RoomDesigner />} />
         <Route path="/profile" element={<UserProfileSettingsPage />} />
         <Route path="/help" element={<HelpDocumentationPage />} />
-        <Route path="/home" element={<HomePage />} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/details" element={<ProductDetailsPage />} />
       </Routes>
