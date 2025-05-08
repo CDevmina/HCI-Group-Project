@@ -1,1042 +1,356 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Canvas } from "@react-three/fiber";
-import {
-  OrbitControls,
-  PresentationControls,
-  Environment,
-  Html,
-  useProgress,
-} from "@react-three/drei";
+import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/UI/Navbar";
 import Footer from "../components/UI/Footer";
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  HeartIcon,
-  ShareIcon,
-  CubeIcon,
-  CheckIcon,
-  StarIcon,
-  PlusIcon,
-  MinusIcon,
-  CheckCircleIcon,
-  InformationCircleIcon,
-  ArrowLeftIcon,
-} from "@heroicons/react/24/outline";
 
-// Product data model - would normally come from an API
-const productData = {
-  id: "modern-chair-01",
-  name: "Modern Ergonomic Office Chair",
-  category: "chairs",
-  price: 299.95, // Price in USD (will be converted to LKR)
-  rating: 4.8,
-  reviewCount: 127,
-  inStock: true,
-  description:
-    "Experience unparalleled comfort with our Modern Ergonomic Office Chair. Designed with your well-being in mind, this chair features adjustable lumbar support, breathable mesh backrest, and customizable height and tilt settings. Perfect for long work sessions, its premium materials ensure durability while the sleek design complements any modern office environment.",
-  features: [
-    "Adjustable lumbar support for optimal back positioning",
-    "Breathable mesh backrest promotes airflow during extended use",
-    "360° swivel with smooth-rolling casters for effortless movement",
-    "Premium high-density foam cushioning for lasting comfort",
-    "Adjustable armrests with soft padding to reduce arm fatigue",
-    "Weight capacity of 125 kg for reliable support",
-  ],
-  specs: {
-    dimensions: {
-      overall: { width: 68, depth: 70, height: "115-125" },
-      seat: { width: 52, depth: 50, height: "45-55" },
-    },
-    materials: {
-      frame: "High-grade aluminum alloy",
-      upholstery: "Breathable mesh fabric",
-      base: "Reinforced nylon with fiberglass",
-    },
-    adjustability: {
-      height: "Pneumatic adjustment from 45cm to 55cm",
-      tilt: "Synchronized tilt with tension control",
-      armrests: "3D adjustable (height, width, depth)",
-    },
-    warranty: "5-year manufacturer warranty",
+// Mock data with prices in LKR - conversion rate approx. 320 LKR per USD
+const FURNITURE_DATA = [
+  {
+    id: 1,
+    name: "Ergonomic Office Chair",
+    category: "chairs",
+    price: 95680,
+    colors: ["#2E3A59", "#F9F9F9", "#96684A"],
+    image:
+      "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?ixlib=rb-4.0.3",
+    description:
+      "An ergonomic office chair designed for comfort during long work sessions. Features adjustable height, armrests, and lumbar support.",
+    dimensions: { width: 60, depth: 65, height: 115 },
+    rating: 4.7,
+    tags: ["office", "ergonomic", "modern"],
   },
-  colors: [
-    { name: "Midnight Black", hex: "#252525", id: "black" },
-    { name: "Steel Gray", hex: "#71797E", id: "gray" },
-    { name: "Navy Blue", hex: "#2B3A67", id: "blue" },
-    { name: "Forest Green", hex: "#2C5530", id: "green" },
-    { name: "Burgundy", hex: "#800020", id: "burgundy" },
-  ],
-  images: [
-    {
-      id: 1,
-      src: "https://images.unsplash.com/photo-1596162954151-cdcb4c0f70a8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-      alt: "Premium ergonomic office chair with mesh back and adjustable features - front view",
-    },
-    {
-      id: 2,
-      src: "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-      alt: "Premium ergonomic office chair with lumbar support - side view",
-    },
-    {
-      id: 3,
-      src: "https://cdn.prod.website-files.com/6683ea3c88308d9e9146b3d3/66b4a478929be7446558d98e_arran_gal1.webp",
-      alt: "Ergonomic chair showing breathable mesh backrest - back view",
-    },
-    {
-      id: 4,
-      src: "https://daniafurniture.com/cdn/shop/products/4997-barrier-desk-chair-med.jpg?v=1715195137",
-      alt: "Modern office chair in a contemporary workspace setting",
-    },
-  ],
-  relatedProducts: [
-    {
-      id: "exec-chair-02",
-      name: "Executive High-Back Chair",
-      price: 389.95,
-      image:
-        "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-      rating: 4.6,
-    },
-    {
-      id: "task-chair-03",
-      name: "Multi-Function Task Chair",
-      price: 249.95,
-      image:
-        "https://boss-chair.com/wp-content/uploads/2017/06/B3036-BK-RV.jpg",
-      rating: 4.5,
-    },
-    {
-      id: "stool-04",
-      name: "Adjustable Ergonomic Stool",
-      price: 179.95,
-      image:
-        "https://images.unsplash.com/photo-1617582907226-c49e2d8200d9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-      rating: 4.3,
-    },
-  ],
-  reviews: [
-    {
-      id: 1,
-      user: "Mohammed A.",
-      rating: 5,
-      title: "Best office chair I've ever owned",
-      comment:
-        "After trying several chairs over the years, this one offers the perfect balance of support and comfort. My back pain has significantly reduced since I started using it.",
-      date: "March 15, 2025",
-      verified: true,
-    },
-    {
-      id: 2,
-      user: "Ahmed F.",
-      rating: 4,
-      title: "Great chair, minor assembly issues",
-      comment:
-        "The chair is excellent and very comfortable for long work sessions. Only giving 4 stars because the assembly instructions could be clearer. Once assembled though, it's perfect.",
-      date: "February 28, 2025",
-      verified: true,
-    },
-    {
-      id: 3,
-      user: "Fatima K.",
-      rating: 5,
-      title: "Worth every rupee",
-      comment:
-        "I was hesitant about spending this much on an office chair, but after using it for a month, I can confidently say it's worth the investment. The adjustability is fantastic and the mesh back keeps me cool during long work sessions.",
-      date: "February 12, 2025",
-      verified: true,
-    },
-  ],
+  {
+    id: 2,
+    name: "Scandinavian Dining Table",
+    category: "tables",
+    price: 175680,
+    colors: ["#96684A", "#4C4C4C", "#D7CFC1"],
+    image:
+      "https://images.unsplash.com/photo-1577140917170-285929fb55b7?ixlib=rb-4.0.3",
+    description:
+      "A minimalist Scandinavian-style dining table made from sustainable oak wood. Perfect for family gatherings.",
+    dimensions: { width: 160, depth: 90, height: 75 },
+    rating: 4.9,
+    tags: ["dining", "scandinavian", "wood"],
+  },
+  {
+    id: 3,
+    name: "Modern Sectional Sofa",
+    category: "sofas",
+    price: 415680,
+    colors: ["#383838", "#D7CFC1", "#496083"],
+    image:
+      "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?ixlib=rb-4.0.3",
+    description:
+      "A spacious and stylish sectional sofa with chaise lounge. Made with high-quality fabric and memory foam cushions.",
+    dimensions: { width: 280, depth: 170, height: 85 },
+    rating: 4.6,
+    tags: ["living room", "modern", "comfortable"],
+  },
+  {
+    id: 4,
+    name: "Coffee Table with Storage",
+    category: "tables",
+    price: 105280,
+    colors: ["#96684A", "#383838"],
+    image:
+      "https://images.unsplash.com/photo-1499933374294-4584851497cc?ixlib=rb-4.0.3",
+    description:
+      "A practical coffee table with hidden storage compartments. Modern design with a mix of wood and metal elements.",
+    dimensions: { width: 120, depth: 60, height: 40 },
+    rating: 4.5,
+    tags: ["living room", "storage", "modern"],
+  },
+  {
+    id: 5,
+    name: "Accent Armchair",
+    category: "chairs",
+    price: 143680,
+    colors: ["#4F6D8C", "#D7CFC1", "#96684A", "#383838"],
+    image:
+      "https://images.unsplash.com/photo-1586158291800-2665f07bba79?ixlib=rb-4.0.3",
+    description:
+      "A comfortable accent armchair perfect for reading corners. Features curved lines and premium upholstery.",
+    dimensions: { width: 75, depth: 80, height: 90 },
+    rating: 4.8,
+    tags: ["living room", "accent", "reading"],
+  },
+  {
+    id: 6,
+    name: "Queen Size Bed Frame",
+    category: "beds",
+    price: 255680,
+    colors: ["#96684A", "#383838"],
+    image:
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?ixlib=rb-4.0.3",
+    description:
+      "A sturdy queen-size bed frame with a padded headboard. Includes under-bed storage drawers.",
+    dimensions: { width: 165, depth: 210, height: 110 },
+    rating: 4.7,
+    tags: ["bedroom", "queen", "storage"],
+  },
+];
+
+// Format price with Sri Lankan Rupee currency (using en-US locale to avoid Sinhala letters)
+const formatPrice = (price) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "LKR",
+    minimumFractionDigits: 0,
+  }).format(price);
 };
 
-// 3D Chair model component
-const Chair = ({ color }) => {
-  return (
-    <group dispose={null}>
-      <mesh position={[0, 0.5, 0]} castShadow>
-        <boxGeometry args={[0.6, 0.1, 0.6]} />
-        <meshStandardMaterial color={color} />
-      </mesh>
-      <mesh position={[0, 1.25, -0.25]} castShadow>
-        <boxGeometry args={[0.6, 1.5, 0.1]} />
-        <meshStandardMaterial color={color} />
-      </mesh>
-      <mesh position={[0, 0.25, 0]} castShadow>
-        <cylinderGeometry args={[0.05, 0.05, 0.5, 16]} />
-        <meshStandardMaterial color="#555555" metalness={0.8} roughness={0.2} />
-      </mesh>
-    </group>
-  );
-};
+/**
+ * Loading overlay component for async operations
+ */
+const LoadingOverlay = () => (
+  <div
+    className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-75 z-50"
+    role="alert"
+    aria-live="assertive"
+  >
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+    <span className="sr-only">Loading...</span>
+  </div>
+);
 
-// 3D model loading indicator
-const ModelLoader = () => {
-  const { progress } = useProgress();
+/**
+ * Star rating component
+ */
+const StarRating = ({ rating, size = "md" }) => {
+  const starSize = size === "sm" ? "w-4 h-4" : "w-5 h-5";
   return (
-    <Html center>
-      <div className="flex flex-col items-center justify-center">
-        <div className="w-12 h-12 rounded-full border-t-2 border-b-2 border-blue-500 animate-spin"></div>
-        <p className="mt-4 text-sm font-medium text-gray-700">
-          {progress.toFixed(0)}% loaded
-        </p>
+    <div className="flex items-center">
+      <div className="flex" aria-label={`Rating: ${rating} out of 5`}>
+        {[...Array(5)].map((_, i) => (
+          <svg
+            key={i}
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill={i < Math.floor(rating) ? "currentColor" : "none"}
+            stroke="currentColor"
+            className={`${starSize} ${
+              i < Math.floor(rating) ? "text-yellow-400" : "text-gray-300"
+            }`}
+            aria-hidden="true"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z"
+              clipRule="evenodd"
+            />
+          </svg>
+        ))}
       </div>
-    </Html>
-  );
-};
-
-// Star rating component
-const RatingStars = ({ rating }) => {
-  return (
-    <div className="flex">
-      {Array.from({ length: 5 }).map((_, index) => (
-        <StarIcon
-          key={index}
-          className={`w-5 h-5 ${
-            index < Math.floor(rating)
-              ? "text-yellow-400 fill-current"
-              : index < rating
-              ? "text-yellow-400 fill-current opacity-50"
-              : "text-gray-300"
-          }`}
-          aria-hidden="true"
-        />
-      ))}
+      <span
+        className={`${
+          size === "sm" ? "text-xs" : "text-sm"
+        } text-gray-500 ml-2`}
+      >
+        {rating} out of 5
+      </span>
     </div>
   );
 };
 
-// Currency formatter
-const formatPrice = (price) => {
-  // Convert price to Sri Lankan Rupees (approximately 1 USD = 320 LKR)
-  const lkrPrice = price * 320;
-  return new Intl.NumberFormat("si-LK", {
-    style: "currency",
-    currency: "LKR",
-    minimumFractionDigits: 2,
-  }).format(lkrPrice);
-};
+/**
+ * Color selector component
+ */
+const ColorSelector = ({ colors, selectedColor, onSelectColor }) => (
+  <div className="flex space-x-2" role="radiogroup" aria-label="Select color">
+    {colors.map((color, index) => (
+      <button
+        key={index}
+        className={`w-8 h-8 rounded-full border-2 ${
+          color === selectedColor ? "border-blue-500" : "border-transparent"
+        }`}
+        style={{ backgroundColor: color }}
+        onClick={() => onSelectColor(color)}
+        aria-label={`Select ${color} color`}
+        aria-pressed={color === selectedColor}
+        role="radio"
+      />
+    ))}
+  </div>
+);
 
-// Main product details component
-const ProductDetailsPage = () => {
+/**
+ * Product dimensions component
+ */
+const ProductDimensions = ({ dimensions }) => (
+  <div className="mb-6">
+    <h3 className="text-sm font-medium text-gray-900 mb-2">Dimensions</h3>
+    <div className="grid grid-cols-3 gap-4">
+      <div className="bg-gray-50 p-3 rounded-lg text-center">
+        <span className="block text-xs text-gray-500">Width</span>
+        <span className="block font-medium">{dimensions.width} cm</span>
+      </div>
+      <div className="bg-gray-50 p-3 rounded-lg text-center">
+        <span className="block text-xs text-gray-500">Depth</span>
+        <span className="block font-medium">{dimensions.depth} cm</span>
+      </div>
+      <div className="bg-gray-50 p-3 rounded-lg text-center">
+        <span className="block text-xs text-gray-500">Height</span>
+        <span className="block font-medium">{dimensions.height} cm</span>
+      </div>
+    </div>
+  </div>
+);
+
+/**
+ * Product tags component
+ */
+const ProductTags = ({ tags }) => (
+  <div className="flex flex-wrap gap-2">
+    {tags.map((tag, index) => (
+      <span
+        key={index}
+        className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm"
+      >
+        {tag}
+      </span>
+    ))}
+  </div>
+);
+
+/**
+ * Main ProductDetailPage component
+ */
+const ProductDetailPage = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
+  const [product, setProduct] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // In a real app, we would use useParams to get productId and fetch product data
-  const product = productData;
+  useEffect(() => {
+    // Simulate loading product data
+    setLoading(true);
 
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [selectedColor, setSelectedColor] = useState(product.colors[0]);
-  const [quantity, setQuantity] = useState(1);
-  const [show3D, setShow3D] = useState(false);
-  const [isAddedToRoom, setIsAddedToRoom] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [activeTab, setActiveTab] = useState(0);
-  const [expandedSpecs, setExpandedSpecs] = useState(false);
+    setTimeout(() => {
+      // Find product by ID
+      const foundProduct = FURNITURE_DATA.find(
+        (item) => item.id === parseInt(id)
+      );
 
-  // Handle back navigation
+      if (foundProduct) {
+        setProduct(foundProduct);
+        setSelectedColor(foundProduct.colors[0]); // Set the first color as default
+      } else {
+        // If product not found, redirect back to products page
+        navigate("/products");
+      }
+
+      setLoading(false);
+    }, 500);
+  }, [id, navigate]);
+
+  // Handle back to products list
   const handleBackToProducts = () => {
     navigate("/products");
   };
 
-  // Image carousel controls
-  const changeImage = (index) => setCurrentImageIndex(index);
-  const nextImage = () =>
-    setCurrentImageIndex((prev) =>
-      prev === product.images.length - 1 ? 0 : prev + 1
-    );
-  const prevImage = () =>
-    setCurrentImageIndex((prev) =>
-      prev === 0 ? product.images.length - 1 : prev - 1
-    );
-
-  // Quantity controls
-  const incrementQuantity = () => setQuantity((prev) => Math.min(prev + 1, 10));
-  const decrementQuantity = () => setQuantity((prev) => Math.max(prev - 1, 1));
-
-  // Add to room functionality
-  const handleAddToRoom = () => {
-    setIsAddedToRoom(true);
-    setTimeout(() => setIsAddedToRoom(false), 2000);
+  // Handle Add to Cart action
+  const handleAddToCart = () => {
+    // In a real app, this would add the product to the cart with the selected color
+    alert(`Added ${product.name} in color ${selectedColor} to your cart!`);
   };
 
-  // Toggle 3D view
-  const toggle3DView = () => setShow3D(!show3D);
+  if (loading) {
+    return <LoadingOverlay />;
+  }
 
-  // Scroll to reviews section
-  const scrollToReviews = () => {
-    document.getElementById("reviews-section").scrollIntoView({
-      behavior: "smooth",
-    });
-  };
-
-  // Reset 3D view when color changes
-  useEffect(() => {
-    if (show3D) {
-      const timer = setTimeout(() => {
-        setShow3D(true);
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [selectedColor, show3D]);
+  if (!product) {
+    return null; // Will redirect in useEffect
+  }
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="min-h-screen bg-gray-50">
+      {/* Navbar */}
       <Navbar />
 
-      <main className="pt-16">
-        {/* Breadcrumb Navigation */}
-        <nav className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center space-x-2 text-sm text-gray-500">
-            <button
-              onClick={handleBackToProducts}
-              className="flex items-center text-blue-600 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
-            >
-              <ArrowLeftIcon className="w-4 h-4 mr-1" />
-              Back to Products
-            </button>
-            <span>/</span>
-            <a href="/products" className="hover:text-gray-900">
-              Furniture
-            </a>
-            <span>/</span>
-            <a href="/products?category=chairs" className="hover:text-gray-900">
-              Chairs
-            </a>
-            <span>/</span>
-            <span className="text-gray-900 font-medium">{product.name}</span>
-          </div>
-        </nav>
+      {/* Add spacing after navbar */}
+      <div className="pt-17"></div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-          <div className="lg:grid lg:grid-cols-2 lg:gap-x-8 lg:items-start">
-            {/* Product Image Gallery - Responsive */}
-            <div className="flex flex-col items-center lg:items-start">
-              <div className="relative w-full">
-                <div className="rounded-lg overflow-hidden bg-gray-100 w-full max-w-[600px] h-[400px] mx-auto">
-                  {!show3D ? (
-                    <img
-                      src={product.images[currentImageIndex].src}
-                      alt={product.images[currentImageIndex].alt}
-                      className="w-full h-full object-contain"
-                      style={{ transition: "opacity 0.3s" }}
-                    />
-                  ) : (
-                    <div className="w-full h-full">
-                      <Canvas
-                        shadows
-                        camera={{ position: [0, 2, 5], fov: 50 }}
-                        className="w-full h-full"
-                      >
-                        <ambientLight intensity={0.5} />
-                        <spotLight
-                          position={[10, 10, 10]}
-                          angle={0.15}
-                          penumbra={1}
-                          intensity={1}
-                          castShadow
-                        />
-                        <PresentationControls
-                          global
-                          zoom={1}
-                          rotation={[0, 0, 0]}
-                          polar={[-Math.PI / 4, Math.PI / 4]}
-                          azimuth={[-Math.PI / 4, Math.PI / 4]}
-                        >
-                          <Chair color={selectedColor.hex} />
-                        </PresentationControls>
-                        <Environment preset="city" />
-                        <mesh
-                          rotation={[-Math.PI / 2, 0, 0]}
-                          position={[0, -0.5, 0]}
-                          receiveShadow
-                        >
-                          <planeGeometry args={[10, 10]} />
-                          <shadowMaterial transparent opacity={0.2} />
-                        </mesh>
-                        <OrbitControls
-                          enablePan={true}
-                          enableZoom={true}
-                          minPolarAngle={0}
-                          maxPolarAngle={Math.PI / 2}
-                        />
-                        <ModelLoader />
-                      </Canvas>
-                    </div>
-                  )}
-                </div>
-
-                {/* Image Navigation Arrows */}
-                {!show3D && (
-                  <>
-                    <button
-                      type="button"
-                      className="absolute top-1/2 left-4 -mt-4 rounded-full bg-white p-2 text-gray-900 shadow-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      onClick={prevImage}
-                      aria-label="Previous image"
-                    >
-                      <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
-                    </button>
-                    <button
-                      type="button"
-                      className="absolute top-1/2 right-4 -mt-4 rounded-full bg-white p-2 text-gray-900 shadow-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      onClick={nextImage}
-                      aria-label="Next image"
-                    >
-                      <ChevronRightIcon
-                        className="h-5 w-5"
-                        aria-hidden="true"
-                      />
-                    </button>
-                  </>
-                )}
-
-                {/* 3D View Toggle */}
-                <button
-                  type="button"
-                  className="absolute bottom-4 right-4 flex items-center justify-center rounded-lg bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
-                  onClick={toggle3DView}
-                  aria-pressed={show3D}
-                >
-                  {show3D ? (
-                    <>
-                      <img
-                        src={product.images[0].src}
-                        alt="2D View"
-                        className="w-5 h-5 mr-2 rounded"
-                      />
-                      <span>View Photos</span>
-                    </>
-                  ) : (
-                    <>
-                      <CubeIcon className="h-5 w-5 mr-2" aria-hidden="true" />
-                      <span>View 3D Model</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
-              {/* Thumbnail Images - Responsive */}
-              {!show3D && (
-                <div className="mt-4 grid grid-cols-4 gap-2 max-w-[600px] w-full mx-auto">
-                  {product.images.map((image, index) => (
-                    <button
-                      key={image.id}
-                      type="button"
-                      className={`relative flex items-center justify-center rounded-md overflow-hidden ${
-                        currentImageIndex === index
-                          ? "ring-2 ring-blue-500"
-                          : "ring-1 ring-transparent hover:ring-gray-300"
-                      } focus:outline-none`}
-                      onClick={() => changeImage(index)}
-                      aria-label={`View ${image.alt}`}
-                    >
-                      <img
-                        src={image.src}
-                        alt={`Thumbnail for ${image.alt}`}
-                        className="h-16 w-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Product Details Section */}
-            <div className="mt-10 px-0 sm:mt-16 lg:mt-0">
-              {/* Product Info */}
-              <div className="flex flex-col">
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900">
-                  {product.name}
-                </h1>
-
-                <div className="mt-3 flex items-center">
-                  <div className="flex items-center">
-                    <RatingStars rating={product.rating} />
-                  </div>
-                  <button
-                    className="ml-2 text-sm text-blue-600 hover:text-blue-800 font-medium focus:outline-none focus:underline"
-                    onClick={scrollToReviews}
-                  >
-                    {product.reviewCount} reviews
-                  </button>
-                </div>
-
-                <div className="mt-4 flex justify-between items-center">
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900">
-                    {formatPrice(product.price)}
-                  </p>
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      product.inStock
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {product.inStock ? "In Stock" : "Out of Stock"}
-                  </span>
-                </div>
-
-                <div className="mt-6">
-                  <h3 className="text-sm font-medium text-gray-900">
-                    Description
-                  </h3>
-                  <div className="mt-2 text-base text-gray-700">
-                    <p>{product.description}</p>
-                  </div>
-                </div>
-
-                {/* Color Selection */}
-                <div className="mt-6">
-                  <h3 className="text-sm font-medium text-gray-900">Color</h3>
-                  <div className="mt-3">
-                    <div className="flex flex-wrap items-center space-x-3">
-                      {product.colors.map((color) => (
-                        <button
-                          key={color.id}
-                          type="button"
-                          className={`relative h-12 w-12 rounded-full flex items-center justify-center mb-2 ${
-                            selectedColor.id === color.id
-                              ? "ring-2 ring-offset-2 ring-blue-500"
-                              : ""
-                          }`}
-                          style={{ backgroundColor: color.hex }}
-                          onClick={() => setSelectedColor(color)}
-                          aria-label={`Select ${color.name} color`}
-                        >
-                          {selectedColor.id === color.id && (
-                            <CheckIcon
-                              className={`h-4 w-4 ${
-                                parseInt(color.hex.replace("#", ""), 16) >
-                                0xffffff / 2
-                                  ? "text-gray-900"
-                                  : "text-white"
-                              }`}
-                              aria-hidden="true"
-                            />
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                    <p className="mt-2 text-sm text-gray-500">
-                      Selected:{" "}
-                      <span className="font-medium">{selectedColor.name}</span>
-                    </p>
-                  </div>
-                </div>
-
-                {/* Quantity Selection */}
-                <div className="mt-6">
-                  <h3 className="text-sm font-medium text-gray-900">
-                    Quantity
-                  </h3>
-                  <div className="mt-2 flex items-center">
-                    <button
-                      type="button"
-                      onClick={decrementQuantity}
-                      disabled={quantity <= 1}
-                      className={`rounded-l-md p-2 border border-r-0 border-gray-300 ${
-                        quantity <= 1
-                          ? "opacity-50 cursor-not-allowed"
-                          : "hover:bg-gray-50"
-                      } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
-                    >
-                      <MinusIcon
-                        className="h-5 w-5 text-gray-400"
-                        aria-hidden="true"
-                      />
-                    </button>
-                    <input
-                      type="text"
-                      value={quantity}
-                      readOnly
-                      className="h-10 w-14 border-gray-300 text-center focus:outline-none"
-                      aria-label="Quantity"
-                    />
-                    <button
-                      type="button"
-                      onClick={incrementQuantity}
-                      disabled={quantity >= 10}
-                      className={`rounded-r-md p-2 border border-l-0 border-gray-300 ${
-                        quantity >= 10
-                          ? "opacity-50 cursor-not-allowed"
-                          : "hover:bg-gray-50"
-                      } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
-                    >
-                      <PlusIcon
-                        className="h-5 w-5 text-gray-400"
-                        aria-hidden="true"
-                      />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                  <button
-                    type="button"
-                    onClick={handleAddToRoom}
-                    disabled={isAddedToRoom}
-                    className={`${
-                      isAddedToRoom
-                        ? "bg-green-600 hover:bg-green-700"
-                        : "bg-blue-600 hover:bg-blue-700"
-                    } flex-1 flex items-center justify-center px-4 sm:px-8 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200`}
-                  >
-                    {isAddedToRoom ? (
-                      <>
-                        <CheckCircleIcon
-                          className="mr-2 h-5 w-5"
-                          aria-hidden="true"
-                        />
-                        Added to Room
-                      </>
-                    ) : (
-                      <>
-                        <PlusIcon className="mr-2 h-5 w-5" aria-hidden="true" />
-                        Add to Room Design
-                      </>
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsFavorite(!isFavorite)}
-                    className="flex items-center justify-center px-3 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    aria-label={
-                      isFavorite ? "Remove from favorites" : "Add to favorites"
-                    }
-                  >
-                    <HeartIcon
-                      className={`h-6 w-6 ${
-                        isFavorite
-                          ? "text-red-500 fill-current"
-                          : "text-gray-500"
-                      }`}
-                      aria-hidden="true"
-                    />
-                  </button>
-                  <button
-                    type="button"
-                    className="flex items-center justify-center px-3 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    aria-label="Share product"
-                  >
-                    <ShareIcon
-                      className="h-6 w-6 text-gray-500"
-                      aria-hidden="true"
-                    />
-                  </button>
-                </div>
-
-                {/* Features and Dimensions Tabs */}
-                <div className="mt-10">
-                  <div>
-                    <div className="flex flex-wrap space-x-2 sm:space-x-4 border-b border-gray-200">
-                      {["Features", "Dimensions & Specs", "Warranty"].map(
-                        (tab, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => setActiveTab(idx)}
-                            className={`py-2 px-2 sm:px-4 text-sm font-medium border-b-2 focus:outline-none ${
-                              activeTab === idx
-                                ? "border-blue-500 text-blue-600"
-                                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                            }`}
-                            aria-selected={activeTab === idx}
-                            role="tab"
-                          >
-                            {tab}
-                          </button>
-                        )
-                      )}
-                    </div>
-                    <div className="mt-4">
-                      {/* Features Tab Panel */}
-                      {activeTab === 0 && (
-                        <div className="py-2">
-                          <ul className="space-y-2">
-                            {product.features.map((feature, index) => (
-                              <li key={index} className="flex items-start">
-                                <CheckIcon
-                                  className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"
-                                  aria-hidden="true"
-                                />
-                                <span className="ml-2 text-gray-700">
-                                  {feature}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      {/* Dimensions Tab Panel */}
-                      {activeTab === 1 && (
-                        <div className="py-2">
-                          <div className="space-y-4">
-                            <div>
-                              <h4 className="text-sm font-medium text-gray-900">
-                                Dimensions (cm)
-                              </h4>
-                              <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                  <span className="block text-xs text-gray-500">
-                                    Overall Width
-                                  </span>
-                                  <span className="block font-medium">
-                                    {product.specs.dimensions.overall.width} cm
-                                  </span>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                  <span className="block text-xs text-gray-500">
-                                    Overall Depth
-                                  </span>
-                                  <span className="block font-medium">
-                                    {product.specs.dimensions.overall.depth} cm
-                                  </span>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                  <span className="block text-xs text-gray-500">
-                                    Overall Height
-                                  </span>
-                                  <span className="block font-medium">
-                                    {product.specs.dimensions.overall.height} cm
-                                  </span>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                  <span className="block text-xs text-gray-500">
-                                    Seat Width
-                                  </span>
-                                  <span className="block font-medium">
-                                    {product.specs.dimensions.seat.width} cm
-                                  </span>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                  <span className="block text-xs text-gray-500">
-                                    Seat Depth
-                                  </span>
-                                  <span className="block font-medium">
-                                    {product.specs.dimensions.seat.depth} cm
-                                  </span>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                  <span className="block text-xs text-gray-500">
-                                    Seat Height
-                                  </span>
-                                  <span className="block font-medium">
-                                    {product.specs.dimensions.seat.height} cm
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <button
-                              type="button"
-                              onClick={() => setExpandedSpecs(!expandedSpecs)}
-                              className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 focus:outline-none focus:underline"
-                            >
-                              {expandedSpecs
-                                ? "Show less specs"
-                                : "Show more specs"}
-                              <ChevronRightIcon
-                                className={`ml-1 h-4 w-4 transition-transform duration-200 ${
-                                  expandedSpecs ? "rotate-90" : ""
-                                }`}
-                                aria-hidden="true"
-                              />
-                            </button>
-
-                            {expandedSpecs && (
-                              <div className="mt-4 space-y-4 text-sm">
-                                <div>
-                                  <h4 className="font-medium text-gray-900">
-                                    Materials
-                                  </h4>
-                                  <ul className="mt-2 space-y-2">
-                                    <li className="flex justify-between">
-                                      <span className="text-gray-500">
-                                        Frame
-                                      </span>
-                                      <span>
-                                        {product.specs.materials.frame}
-                                      </span>
-                                    </li>
-                                    <li className="flex justify-between">
-                                      <span className="text-gray-500">
-                                        Upholstery
-                                      </span>
-                                      <span>
-                                        {product.specs.materials.upholstery}
-                                      </span>
-                                    </li>
-                                    <li className="flex justify-between">
-                                      <span className="text-gray-500">
-                                        Base
-                                      </span>
-                                      <span>
-                                        {product.specs.materials.base}
-                                      </span>
-                                    </li>
-                                  </ul>
-                                </div>
-
-                                <div>
-                                  <h4 className="font-medium text-gray-900">
-                                    Adjustability
-                                  </h4>
-                                  <ul className="mt-2 space-y-2">
-                                    <li className="flex justify-between">
-                                      <span className="text-gray-500">
-                                        Height
-                                      </span>
-                                      <span>
-                                        {product.specs.adjustability.height}
-                                      </span>
-                                    </li>
-                                    <li className="flex justify-between">
-                                      <span className="text-gray-500">
-                                        Tilt
-                                      </span>
-                                      <span>
-                                        {product.specs.adjustability.tilt}
-                                      </span>
-                                    </li>
-                                    <li className="flex justify-between">
-                                      <span className="text-gray-500">
-                                        Armrests
-                                      </span>
-                                      <span>
-                                        {product.specs.adjustability.armrests}
-                                      </span>
-                                    </li>
-                                  </ul>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Warranty Tab Panel */}
-                      {activeTab === 2 && (
-                        <div className="py-2">
-                          <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
-                            <div className="flex items-start">
-                              <InformationCircleIcon
-                                className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0"
-                                aria-hidden="true"
-                              />
-                              <div className="ml-3">
-                                <h4 className="text-sm font-medium text-blue-800">
-                                  Warranty Information
-                                </h4>
-                                <p className="mt-1 text-sm text-blue-700">
-                                  This product comes with a{" "}
-                                  {product.specs.warranty} covering
-                                  manufacturing defects and hardware failure
-                                  under normal usage conditions.
-                                </p>
-                                <a
-                                  href="#"
-                                  className="mt-2 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 focus:outline-none focus:underline"
-                                >
-                                  View full warranty details
-                                  <ChevronRightIcon
-                                    className="ml-1 h-4 w-4"
-                                    aria-hidden="true"
-                                  />
-                                </a>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Customer Reviews Section */}
-          <section
-            id="reviews-section"
-            className="mt-16 pt-8 border-t border-gray-200"
+      {/* Back button */}
+      <div className="container mx-auto px-4 py-2">
+        <button
+          onClick={handleBackToProducts}
+          className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg px-3 py-1.5"
+          aria-label="Back to products"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="w-5 h-5 mr-1"
+            aria-hidden="true"
           >
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4 sm:mb-0">
-                Customer Reviews
+            <path
+              fillRule="evenodd"
+              d="M7.72 12.53a.75.75 0 010-1.06l7.5-7.5a.75.75 0 111.06 1.06L9.31 12l6.97 6.97a.75.75 0 11-1.06 1.06l-7.5-7.5z"
+              clipRule="evenodd"
+            />
+          </svg>
+          Back to Products
+        </button>
+      </div>
+
+      <div className="container mx-auto px-4 py-6">
+        {/* Product Detail View */}
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="flex flex-col md:flex-row">
+            <div className="md:w-1/2 p-6 flex items-center justify-center bg-gray-50">
+              <img
+                src={product.image}
+                alt={product.name}
+                className="max-h-[400px] object-contain"
+              />
+            </div>
+
+            <div className="md:w-1/2 p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                {product.name}
               </h2>
+              <StarRating rating={product.rating} />
+              <p className="text-3xl font-bold text-gray-900 my-6">
+                {formatPrice(product.price)}
+              </p>
+              <p className="text-gray-600 mb-6">{product.description}</p>
+
+              <ProductDimensions dimensions={product.dimensions} />
+
+              <div className="mb-6">
+                <h3 className="text-sm font-medium text-gray-900 mb-2">
+                  Available Colors
+                </h3>
+                <ColorSelector
+                  colors={product.colors}
+                  selectedColor={selectedColor}
+                  onSelectColor={setSelectedColor}
+                />
+              </div>
+
               <button
-                type="button"
-                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 w-auto"
+                onClick={handleAddToCart}
+                className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-full transition duration-200"
               >
-                Write a review
+                Add to Cart
               </button>
-            </div>
 
-            <div className="mt-8 lg:grid lg:grid-cols-12 lg:gap-x-8">
-              <div className="lg:col-span-4">
-                <div className="flex items-center">
-                  <h3 className="text-3xl font-bold text-gray-900">
-                    {product.rating}
-                  </h3>
-                  <div className="ml-2">
-                    <div className="flex items-center">
-                      <RatingStars rating={product.rating} />
-                    </div>
-                    <p className="mt-1 text-sm text-gray-500">
-                      Based on {product.reviewCount} reviews
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-6">
-                  <h3 className="text-sm font-medium text-gray-900">
-                    Rating Distribution
-                  </h3>
-                  <div className="mt-2 space-y-3">
-                    {[5, 4, 3, 2, 1].map((rating) => {
-                      // Mock data for rating distribution
-                      const percentage =
-                        rating === 5
-                          ? 68
-                          : rating === 4
-                          ? 24
-                          : rating === 3
-                          ? 6
-                          : rating === 2
-                          ? 1
-                          : 1;
-
-                      return (
-                        <div key={rating} className="flex items-center text-sm">
-                          <div className="flex-1 flex items-center">
-                            <span className="w-3">{rating}</span>
-                            <StarIcon
-                              className="h-4 w-4 ml-1 text-yellow-400 fill-current"
-                              aria-hidden="true"
-                            />
-                            <div className="ml-3 flex-1">
-                              <div className="h-2 rounded-full bg-gray-200">
-                                <div
-                                  className="h-2 rounded-full bg-yellow-400"
-                                  style={{ width: `${percentage}%` }}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                          <span className="ml-3 w-9 text-right text-gray-500">
-                            {percentage}%
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-10 lg:mt-0 lg:col-span-8">
-                <div className="flow-root">
-                  <div className="-my-6 divide-y divide-gray-200">
-                    {product.reviews.map((review) => (
-                      <div key={review.id} className="py-6">
-                        <div className="flex items-center">
-                          <div>
-                            <h4 className="text-sm font-bold text-gray-900">
-                              {review.user}
-                            </h4>
-                            <div className="mt-1 flex items-center">
-                              <RatingStars rating={review.rating} />
-                            </div>
-                            <p className="mt-1 text-xs text-gray-500">
-                              {review.date}
-                            </p>
-                          </div>
-                          {review.verified && (
-                            <div className="ml-4 flex-shrink-0">
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                <CheckIcon
-                                  className="h-3 w-3 mr-1"
-                                  aria-hidden="true"
-                                />
-                                Verified Purchase
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        <h5 className="mt-2 text-sm font-medium text-gray-900">
-                          {review.title}
-                        </h5>
-                        <p className="mt-2 text-sm text-gray-600">
-                          {review.comment}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-8 flex justify-center">
-                  <button
-                    type="button"
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    Load more reviews
-                  </button>
-                </div>
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <h3 className="text-sm font-medium text-gray-900 mb-2">Tags</h3>
+                <ProductTags tags={product.tags} />
               </div>
             </div>
-          </section>
-
-          {/* Related Products Section */}
-          <section
-            aria-labelledby="related-products-heading"
-            className="mt-16 pt-8 border-t border-gray-200"
-          >
-            <h2
-              id="related-products-heading"
-              className="text-2xl font-bold text-gray-900"
-            >
-              Customers also viewed
-            </h2>
-
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-8 sm:gap-x-6 xl:gap-x-8">
-              {product.relatedProducts.map((relatedProduct) => (
-                <div key={relatedProduct.id} className="group relative">
-                  <div className="relative w-full h-56 rounded-lg overflow-hidden bg-gray-100 group-hover:opacity-75">
-                    <img
-                      src={relatedProduct.image}
-                      alt={relatedProduct.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="mt-4 flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-900">
-                        <a href={`/products/${relatedProduct.id}`}>
-                          <span
-                            aria-hidden="true"
-                            className="absolute inset-0"
-                          />
-                          {relatedProduct.name}
-                        </a>
-                      </h3>
-                      <div className="mt-1 flex items-center">
-                        <RatingStars rating={relatedProduct.rating} />
-                      </div>
-                    </div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {formatPrice(relatedProduct.price)}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+          </div>
         </div>
-      </main>
+      </div>
 
+      {/* Footer */}
       <Footer />
     </div>
   );
 };
 
-export default ProductDetailsPage;
+export default ProductDetailPage;

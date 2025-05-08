@@ -14,7 +14,9 @@ import RegisterPage from "./pages/Register";
 import RoomEditor from "./scenes/RoomEditor/RoomEditor";
 import HomePage from "./pages/Home";
 import ProductsPage from "./pages/Products";
-import ProductDetailsPage from "./pages/Details";
+import ProductDetailPage from "./pages/Details"; // Renamed to match our implementation
+import CheckoutPage from "./pages/Checkout";
+import OrderSuccessPage from "./pages/Confirmation";
 
 function App() {
   return (
@@ -34,7 +36,9 @@ function App() {
         <Route path="/help" element={<HelpDocumentationPage />} />
         <Route path="/" element={<HomePage />} />
         <Route path="/products" element={<ProductsPage />} />
-        <Route path="/details" element={<ProductDetailsPage />} />
+        <Route path="/products/:id" element={<ProductDetailPage />} />{" "}
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/confirm" element={<OrderSuccessPage />} />
       </Routes>
     </BrowserRouter>
   );
