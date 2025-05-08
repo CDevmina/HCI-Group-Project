@@ -30,6 +30,7 @@ export default function Room2D({
   
   const groupRef = useRef();
   const orbitControlsRef = useRef(); // Use this ref for OrbitControls
+  const controlsRef = useRef();
   const transformControlsRef = useRef();
   const { camera, gl, scene } = useThree();
   const [selectedObject, setSelectedObject] = useState(null);
@@ -41,19 +42,9 @@ export default function Room2D({
     camera.up.set(0, 0, -1); 
     camera.updateProjectionMatrix();
 
-    if (orbitControlsRef.current) {
-      orbitControlsRef.current.target.set(0, 0, 0);
-      orbitControlsRef.current.enableRotate = false; 
-      orbitControlsRef.current.mouseButtons = {
-        LEFT: null, // No rotation with left click
-        MIDDLE: THREE.MOUSE.DOLLY,
-        RIGHT: THREE.MOUSE.PAN
-      };
-      orbitControlsRef.current.touches = {
-        ONE: THREE.TOUCH.PAN, // For touch devices
-        TWO: THREE.TOUCH.DOLLY_PAN
-      };
-      orbitControlsRef.current.update();
+    if (controlsRef.current) {
+      controlsRef.current.target.set(0, 0, 0);
+      controlsRef.current.update();
     }
   }, [camera]);
 
@@ -292,15 +283,15 @@ export default function Room2D({
       )}
 
       <OrbitControls
-        ref={orbitControlsRef}
-        // OrbitControls are enabled if no gizmo is active AND no vertex is being dragged
-        enabled={!isGizmoActive && !isDraggingVertex} 
+        ref={controlsRef}
         enableRotate={false}
-        enableZoom
-        enablePan
+        enableZoom={true}
+        enablePan={true}
         zoomSpeed={0.5}
         panSpeed={0.5}
-        screenSpacePanning
+        screenSpacePanning={true}
+        mouseButtons={{ MIDDLE: 2 }}
+        touches={{ ONE: 32, TWO: 512 }}
       />
     </group>
   );
