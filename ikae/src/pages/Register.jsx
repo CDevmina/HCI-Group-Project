@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { useAuth } from "../components/Auth/AuthContext"; // Import useAuth
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const { register } = useAuth(); // Get register function from AuthContext
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -79,15 +81,20 @@ const RegisterPage = () => {
       setRegistrationError("");
 
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+        // Use the register function from AuthContext
+        await register({
+          fullName: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+        });
 
-        // Redirect to dashboard after successful registration
-        navigate("/dashboard");
+        // Redirect to login page after successful registration
+        // You might want to show a success message first
+        navigate("/login?registered=true"); // Optionally pass a query param
       } catch (error) {
         console.error("Registration error:", error);
         setRegistrationError(
-          "An error occurred during registration. Please try again."
+          error.message || "An error occurred during registration. Please try again."
         );
       } finally {
         setIsSubmitting(false);

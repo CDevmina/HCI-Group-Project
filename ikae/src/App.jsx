@@ -3,7 +3,6 @@ import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import Editor from "./pages/Editor";
 import Login from "./pages/Login";
-import Signup from "./components/Auth/Signup";
 import DashboardPage from "./pages/Dashboard";
 import DesignStudioPage from "./pages/Studio";
 import UserProfileSettingsPage from "./pages/Profile";
@@ -23,7 +22,6 @@ function App() {
         <Route path="/room-editor" element={<RoomEditor />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/editor" element={<Editor />} />
-        <Route path="/signup" element={<Signup />} />
         <Route path="*" element={<ErrorPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<RegisterPage />} />
