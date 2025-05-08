@@ -20,7 +20,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/editor" element={<RoomEditor />} />
+        <Route path="/room-editor" element={<RoomEditor />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/editor" element={<Editor />} />
         <Route path="/signup" element={<Signup />} />
