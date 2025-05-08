@@ -1,4 +1,3 @@
-// components/Room3D.jsx
 import { useRef, useMemo, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import FurnitureItem from './FurnitureItem';
@@ -62,9 +61,10 @@ export default function Room3D({
     if (selectedObject && updateFurniture && selectedItem !== null) {
         const newPosition = { x: selectedObject.position.x, y: selectedObject.position.y, z: selectedObject.position.z };
         const newRotation = selectedObject.rotation.y;
+        const newScale = { x: selectedObject.scale.x, y: selectedObject.scale.y, z: selectedObject.scale.z }; //Update scale
         const furnitureItemData = furniture.find(f => f.id === selectedItem);
         if (furnitureItemData?.glb) { newPosition.y = 0; }
-        updateFurniture(selectedItem, { position: newPosition, rotation: newRotation });
+        updateFurniture(selectedItem, { position: newPosition, rotation: newRotation. y, scale: newScale });
     }
   };
 
