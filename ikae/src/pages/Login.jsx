@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { useAuth } from "../components/Auth/useAuth";
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { login } = useAuth(); // Get login function from context
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -62,14 +64,20 @@ const LoginPage = () => {
       setLoginError("");
 
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Simulate API call - replaced with context login
+        // await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        // Redirect to dashboard after successful login
-        navigate("/dashboard");
+        const loggedIn = login(formData.email, formData.password);
+
+        if (loggedIn) {
+          // Redirect to dashboard after successful login
+          navigate("/dashboard");
+        } else {
+          setLoginError("Invalid email or password. Please try again.");
+        }
       } catch (error) {
         console.error("Login error:", error);
-        setLoginError("Invalid email or password. Please try again.");
+        setLoginError("An unexpected error occurred. Please try again.");
       } finally {
         setIsSubmitting(false);
       }
@@ -78,13 +86,20 @@ const LoginPage = () => {
 
   const handleSocialLogin = (provider) => {
     // This would be replaced with actual OAuth implementation
+    // For now, this remains a placeholder or could be integrated with your local auth if desired
     console.log(`Logging in with ${provider}`);
-    // Simulate loading state
     setIsSubmitting(true);
-
     // Simulate API delay then redirect
+    // Potentially, you could create a dummy user here and log them in via context
     setTimeout(() => {
+      // Example: const socialUser = { email: `${provider.toLowerCase()}@example.com`, name: `${provider} User` };
+      // if (login(socialUser.email, "social_password_placeholder")) { // You'd need a way to handle this
+      //  navigate("/dashboard");
+      // } else {
+      //  setLoginError(`Failed to login with ${provider}`);
+      // }
       setIsSubmitting(false);
+      // For now, let's keep the direct navigation for social login as it was
       navigate("/dashboard");
     }, 1500);
   };

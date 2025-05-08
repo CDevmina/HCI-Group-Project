@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { useAuth } from "../components/Auth/useAuth";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const { register } = useAuth(); // Get register function from context
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -79,15 +81,27 @@ const RegisterPage = () => {
       setRegistrationError("");
 
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+        // Simulate API call - replaced with context register
+        // await new Promise((resolve) => setTimeout(resolve, 1500));
+        const registrationResult = register(
+          formData.fullName,
+          formData.email,
+          formData.password
+        );
 
-        // Redirect to dashboard after successful registration
-        navigate("/dashboard");
+        if (registrationResult.success) {
+          // Redirect to dashboard after successful registration
+          navigate("/dashboard");
+        } else {
+          setRegistrationError(
+            registrationResult.message ||
+              "An error occurred during registration. Please try again."
+          );
+        }
       } catch (error) {
         console.error("Registration error:", error);
         setRegistrationError(
-          "An error occurred during registration. Please try again."
+          "An unexpected error occurred during registration. Please try again."
         );
       } finally {
         setIsSubmitting(false);
@@ -100,10 +114,10 @@ const RegisterPage = () => {
     console.log(`Registering with ${provider}`);
     // Simulate loading state
     setIsSubmitting(true);
-
-    // Simulate API delay then redirect
+    // Potentially, you could create a dummy user here and register them via context
     setTimeout(() => {
       setIsSubmitting(false);
+      // For now, let's keep the direct navigation for social registration as it was
       navigate("/dashboard");
     }, 1500);
   };
