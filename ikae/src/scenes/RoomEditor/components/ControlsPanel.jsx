@@ -89,12 +89,14 @@ export default function ControlsPanel({
 
   // --- Save/Load helpers ---
   function saveDesign(name, vertexes, furniture) {
+    if (!name) return;
     const data = {
       vertexes,
       furniture: furniture.map(item => ({
         ...item,
         position: item.position,
         rotation: item.rotation,
+        scale: item.scale, // Ensure scale is included
         type: item.type,
         color: item.color,
         dimensions: item.dimensions,
@@ -102,8 +104,16 @@ export default function ControlsPanel({
         image: item.image,
         id: item.id,
       })),
+      timestamp: Date.now(),
     };
-    localStorage.setItem(`roomDesign:${name}`, JSON.stringify(data));
+    
+    try {
+      localStorage.setItem(`roomDesign:${name}`, JSON.stringify(data));
+      return true;
+    } catch (error) {
+      console.error('Error saving design:', error);
+      return false;
+    }
   }
 
   function loadDesign(name) {
@@ -119,9 +129,19 @@ export default function ControlsPanel({
   }
 
   function handleSave() {
-    if (!designName) return;
-    saveDesign(designName, vertexes, furniture);
-    setSavedDesigns(getSavedDesignNames());
+    if (!designName) {
+      alert('Please enter a design name');
+      return;
+    }
+    
+    const saved = saveDesign(designName, vertexes, furniture);
+    if (saved) {
+      setSavedDesigns(getSavedDesignNames());
+      alert('Design saved successfully!');
+      setDesignName(''); // Clear input after successful save
+    } else {
+      alert('Failed to save design. Please try again.');
+    }
   }
 
   function handleLoad(name) {

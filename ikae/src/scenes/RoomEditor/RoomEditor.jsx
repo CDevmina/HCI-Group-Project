@@ -309,15 +309,16 @@ const RoomEditor = () => {
               />
               {/* OrbitControls with original mouse button configuration */}
               <OrbitControls 
+                ref={orbitControlsRef3D}
                 enabled={is3DView}
                 enableRotate={true}
                 enablePan={true}
-                minPolarAngle={0} // 0 radians = 0 degrees (horizontal)
-                maxPolarAngle={Math.PI / 2} // 90 degrees in radians
+                minPolarAngle={0}
+                maxPolarAngle={Math.PI / 2}
                 mouseButtons={{
-                  LEFT: null, // Disable regular left click
-                  MIDDLE: MOUSE.ROTATE,  // Middle mouse for orbit
-                  RIGHT: null  // Right click for pan
+                  LEFT: null,
+                  MIDDLE: MOUSE.ROTATE,
+                  RIGHT: null
                 }}
               />
               {/* Conditionally enable WASD controls only for 3D view */}
