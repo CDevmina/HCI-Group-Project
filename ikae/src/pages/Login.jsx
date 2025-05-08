@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
-import { useAuth } from "../components/Auth/AuthContext"; // Import useAuth
+import { useAuth } from "../components/Auth/useAuth"; // Updated import path
 
 const LoginPage = () => {
   const navigate = useNavigate();

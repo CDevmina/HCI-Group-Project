@@ -1,7 +1,9 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import bcrypt from 'bcryptjs';
 
 const AuthContext = createContext(null);
+
+export { AuthContext };
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -78,7 +80,7 @@ export const AuthProvider = ({ children }) => {
     const user = users.find(u => u.email === email);
 
     if (user && await bcrypt.compare(password, user.hashedPassword)) {
-      const { hashedPassword, ...userWithoutPassword } = user;
+      const { _hashedPassword, ...userWithoutPassword } = user;
       setCurrentUser(userWithoutPassword);
       localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
       return userWithoutPassword;
@@ -100,8 +102,4 @@ export const AuthProvider = ({ children }) => {
   };
 
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
-};
-
-export const useAuth = () => {
-  return useContext(AuthContext);
 };
