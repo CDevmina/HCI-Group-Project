@@ -4,7 +4,6 @@ import { OrbitControls, PerspectiveCamera, useHelper } from '@react-three/drei';
 import Room2D from './components/Room2D';
 import Room3D from './components/Room3D';
 import ControlsPanel from './components/ControlsPanel';
-import ViewToggle from './components/ViewToggle';
 import './styles.css';
 import { MOUSE, TOUCH, Vector3, CameraHelper, Euler } from 'three'; 
 import fetchModels from './utils/fetchModels';
@@ -125,15 +124,21 @@ const WASDNavigationController = ({ cameraRef, orbitControlsRef, enabled }) => {
 // --- END WASD Movement Hook ---
 
 
-const RoomEditor = () => {
-  const [is3DView, setIs3DView] = useState(true);
+const RoomEditor = ({ is3DView: externalIs3DView, setIs3DView: setExternalIs3DView, showDimensions: externalShowDimensions, setShowDimensions: setExternalShowDimensions }) => {
+  // If parent (Studio) provides is3DView and setIs3DView, use them, else fallback to internal state
+  const [internalIs3DView, setInternalIs3DView] = useState(true);
+  const is3DView = typeof externalIs3DView === 'boolean' ? externalIs3DView : internalIs3DView;
+  const setIs3DView = setExternalIs3DView || setInternalIs3DView;
+
   const [roomSize, setRoomSize] = useState({ width: 10, depth: 8, height: 3 });
   const [furniture, setFurniture] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [showDimensions, setShowDimensions] = useState(true);
   const [models, setModels] = useState([]);
   const [isGizmoActive, setIsGizmoActive] = useState(false);
   const [gizmoMode, setGizmoMode] = useState('translate');
+
+  const showDimensions = externalShowDimensions;
+  const setShowDimensions = setExternalShowDimensions;
 
   const orbitControlsRef3D = useRef();
   const cameraRef3D = useRef();                                                                      
@@ -251,8 +256,6 @@ const RoomEditor = () => {
         gizmoMode={gizmoMode} setGizmoMode={setGizmoMode}
         isGizmoActive={isGizmoActive} setIsGizmoActive={setIsGizmoActive}
       />
-
-      <ViewToggle is3DView={is3DView} setIs3DView={handleViewToggle} />
 
       <div className="canvas-container">
         <Canvas
