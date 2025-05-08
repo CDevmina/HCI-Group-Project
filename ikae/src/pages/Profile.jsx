@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   UserCircleIcon,
   KeyIcon,
@@ -27,8 +27,9 @@ import {
   ArrowDownTrayIcon,
   ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
+import { useAuth } from "../components/Auth/useAuth";
+import bcrypt from "bcryptjs";
 
-// Mock data - Would be fetched from API in a real application
 const USER = {
   id: "228526",
   firstName: "Gagana",
@@ -319,25 +320,53 @@ const Badge = ({ children, variant = "gray", size = "md" }) => {
 
 // Main Profile Settings Component
 const UserProfileSettingsPage = () => {
-  // State initialization
+  const { currentUser, logout, loading } = useAuth(); // Use currentUser and logout from context
+  const navigate = useNavigate(); // For redirecting after logout
+
+  // Initialize profileData with currentUser or fallback to USER mock
+  const [profileData, setProfileData] = useState(() => {
+    const initialUser = currentUser || USER; // Prioritize currentUser
+    return {
+      ...USER, // Spread USER to get all default fields like notifications, preferences
+      ...initialUser, // Override with currentUser fields (email, fullName, id)
+      firstName: initialUser?.fullName?.split(" ")[0] || USER.firstName,
+      lastName:
+        initialUser?.fullName?.split(" ").slice(1).join(" ") || USER.lastName,
+      email: initialUser?.email || USER.email,
+      phone: initialUser?.phone || USER.phone,
+      company: initialUser?.company || USER.company,
+      role: initialUser?.role || USER.role,
+      avatar: initialUser?.avatar || USER.avatar,
+      emailVerified:
+        initialUser?.emailVerified === undefined
+          ? USER.emailVerified
+          : initialUser.emailVerified,
+      twoFactorEnabled:
+        initialUser?.twoFactorEnabled === undefined
+          ? USER.twoFactorEnabled
+          : initialUser.twoFactorEnabled,
+      notifications: initialUser?.notifications || USER.notifications,
+      preferences: initialUser?.preferences || USER.preferences,
+    };
+  });
+
   const [activeSection, setActiveSection] = useState("profile");
-  const [profileData, setProfileData] = useState(USER);
   const [isEditing, setIsEditing] = useState({
     personalInfo: false,
     password: false,
     email: false,
   });
   const [formData, setFormData] = useState({
-    firstName: USER.firstName,
-    lastName: USER.lastName,
-    email: USER.email,
-    phone: USER.phone,
-    company: USER.company,
-    role: USER.role,
+    firstName: profileData.firstName,
+    lastName: profileData.lastName,
+    email: profileData.email,
+    phone: profileData.phone,
+    company: profileData.company,
+    role: profileData.role,
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
-    newEmail: USER.email,
+    newEmail: profileData.email,
   });
   const [passwordVisibility, setPasswordVisibility] = useState({
     current: false,
@@ -347,15 +376,64 @@ const UserProfileSettingsPage = () => {
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  const [notifications, setNotifications] = useState(USER.notifications);
-  const [preferences, setPreferences] = useState(USER.preferences);
+  const [notifications, setNotifications] = useState(profileData.notifications);
+  const [preferences, setPreferences] = useState(profileData.preferences);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(
-    USER.twoFactorEnabled
+    profileData.twoFactorEnabled
   );
   const [showTwoFactorSetup, setShowTwoFactorSetup] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
 
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (!loading && !currentUser) {
+      // If not loading and no user, redirect to login
+      // navigate("/login"); // Uncomment this if you want to redirect if not logged in
+    }
+    // Update profileData and formData if currentUser changes
+    if (currentUser) {
+      const updatedProfileData = {
+        ...USER, // Base structure
+        ...currentUser, // Overwrite with actual user data
+        firstName: currentUser.fullName?.split(" ")[0] || USER.firstName,
+        lastName:
+          currentUser.fullName?.split(" ").slice(1).join(" ") || USER.lastName,
+        email: currentUser.email || USER.email,
+        // Keep other fields from USER mock if not in currentUser
+        phone: currentUser.phone || USER.phone,
+        company: currentUser.company || USER.company,
+        role: currentUser.role || USER.role,
+        avatar: currentUser.avatar || USER.avatar,
+        emailVerified:
+          currentUser.emailVerified === undefined
+            ? USER.emailVerified
+            : currentUser.emailVerified,
+        twoFactorEnabled:
+          currentUser.twoFactorEnabled === undefined
+            ? USER.twoFactorEnabled
+            : currentUser.twoFactorEnabled,
+        language: currentUser.language || USER.language,
+        timezone: currentUser.timezone || USER.timezone,
+        notifications: currentUser.notifications || USER.notifications,
+        preferences: currentUser.preferences || USER.preferences,
+      };
+      setProfileData(updatedProfileData);
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        firstName: updatedProfileData.firstName,
+        lastName: updatedProfileData.lastName,
+        email: updatedProfileData.email,
+        newEmail: updatedProfileData.email,
+        phone: updatedProfileData.phone,
+        company: updatedProfileData.company,
+        role: updatedProfileData.role,
+      }));
+      setNotifications(updatedProfileData.notifications);
+      setPreferences(updatedProfileData.preferences);
+      setTwoFactorEnabled(updatedProfileData.twoFactorEnabled);
+    }
+  }, [currentUser, loading, navigate]);
 
   // Data validation methods
   const validatePersonalInfo = () => {
@@ -420,14 +498,42 @@ const UserProfileSettingsPage = () => {
   // Form submission handlers
   const handlePersonalInfoSubmit = () => {
     if (validatePersonalInfo()) {
+      // Here you would typically send data to a backend
+      // For now, just update local state
       setProfileData({
         ...profileData,
         firstName: formData.firstName,
         lastName: formData.lastName,
+        fullName: `${formData.firstName} ${formData.lastName}`, // Update fullName
         phone: formData.phone,
         company: formData.company,
         role: formData.role,
       });
+      // If using localStorage for persistence, update it here
+      if (currentUser) {
+        const users = JSON.parse(localStorage.getItem("users")) || [];
+        const userIndex = users.findIndex((u) => u.id === currentUser.id);
+        if (userIndex > -1) {
+          users[userIndex] = {
+            ...users[userIndex],
+            fullName: `${formData.firstName} ${formData.lastName}`,
+            // phone: formData.phone, // Add if you store these in 'users'
+            // company: formData.company,
+            // role: formData.role,
+          };
+          localStorage.setItem("users", JSON.stringify(users));
+        }
+        localStorage.setItem(
+          "currentUser",
+          JSON.stringify({
+            ...currentUser,
+            fullName: `${formData.firstName} ${formData.lastName}`,
+            // phone: formData.phone,
+            // company: formData.company,
+            // role: formData.role,
+          })
+        );
+      }
 
       setIsEditing({ ...isEditing, personalInfo: false });
       showSuccess("Personal information updated successfully");
@@ -436,37 +542,116 @@ const UserProfileSettingsPage = () => {
 
   const handlePasswordSubmit = () => {
     if (validatePassword()) {
-      setFormData({
-        ...formData,
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
+      if (currentUser) {
+        const users = JSON.parse(localStorage.getItem("users")) || [];
+        const userIndex = users.findIndex((u) => u.id === currentUser.id);
 
-      setIsEditing({ ...isEditing, password: false });
-      showSuccess("Password changed successfully");
+        if (userIndex > -1) {
+          // IMPORTANT: Verify currentPassword against the stored hashed password
+          const storedUser = users[userIndex];
+          if (
+            bcrypt.compareSync(formData.currentPassword, storedUser.password)
+          ) {
+            const salt = bcrypt.genSaltSync(10);
+            const newHashedPassword = bcrypt.hashSync(
+              formData.newPassword,
+              salt
+            );
+            users[userIndex].password = newHashedPassword; // Store new hashed password
+            localStorage.setItem("users", JSON.stringify(users));
+
+            setFormData({
+              ...formData,
+              currentPassword: "",
+              newPassword: "",
+              confirmPassword: "",
+            });
+            setIsEditing({ ...isEditing, password: false });
+            showSuccess("Password changed successfully");
+          } else {
+            setErrors((prevErrors) => ({
+              ...prevErrors,
+              currentPassword: "Current password does not match.",
+            }));
+            return; // Stop if current password is incorrect
+          }
+        } else {
+          // Handle case where user is not found in 'users' array, though this shouldn't happen if currentUser exists
+          console.error("User not found in local storage for password update.");
+          showSuccess("An error occurred. Could not update password."); // Or a more specific error
+        }
+      } else {
+        showSuccess("You must be logged in to change your password."); // Or handle as an error
+      }
     }
   };
 
   const handleEmailSubmit = () => {
     if (validateEmail()) {
-      setProfileData({
-        ...profileData,
-        email: formData.newEmail,
-        emailVerified:
-          formData.newEmail === USER.email ? USER.emailVerified : false,
-      });
+      if (currentUser) {
+        const users = JSON.parse(localStorage.getItem("users")) || [];
+        const userIndex = users.findIndex((u) => u.id === currentUser.id);
 
-      setFormData({
-        ...formData,
-        email: formData.newEmail,
-        currentPassword: "",
-      });
+        if (userIndex > -1) {
+          const storedUser = users[userIndex];
+          // Verify password before allowing email change
+          if (
+            bcrypt.compareSync(formData.currentPassword, storedUser.password)
+          ) {
+            // Check if new email already exists (optional, but good practice)
+            const emailExists = users.some(
+              (u) => u.email === formData.newEmail && u.id !== currentUser.id
+            );
+            if (emailExists) {
+              setErrors((prevErrors) => ({
+                ...prevErrors,
+                newEmail: "This email is already in use.",
+              }));
+              return;
+            }
 
-      setIsEditing({ ...isEditing, email: false });
-      showSuccess(
-        "Email updated successfully. Please verify your new email address."
-      );
+            users[userIndex].email = formData.newEmail;
+            localStorage.setItem("users", JSON.stringify(users));
+
+            const updatedCurrentUser = {
+              ...currentUser,
+              email: formData.newEmail,
+            };
+            localStorage.setItem(
+              "currentUser",
+              JSON.stringify(updatedCurrentUser)
+            );
+            // It's important to also update the currentUser in the AuthContext state
+            // This might require a function in AuthContext to update currentUser details
+            // For now, we'll update profileData directly, but a context update is better.
+
+            setProfileData({
+              ...profileData,
+              email: formData.newEmail,
+              emailVerified: false, // New email needs verification
+            });
+
+            setFormData({
+              ...formData,
+              email: formData.newEmail,
+              currentPassword: "",
+            });
+
+            setIsEditing({ ...isEditing, email: false });
+            showSuccess(
+              "Email updated successfully. Please verify your new email address."
+            );
+          } else {
+            setErrors((prevErrors) => ({
+              ...prevErrors,
+              emailCurrentPassword: "Incorrect password.",
+            }));
+            return;
+          }
+        } else {
+          console.error("User not found for email update.");
+        }
+      }
     }
   };
 
@@ -477,7 +662,6 @@ const UserProfileSettingsPage = () => {
     const file = e.target.files[0];
     if (file) {
       setIsUploading(true);
-
       // Simulate file upload with timeout
       setTimeout(() => {
         const newAvatarUrl = URL.createObjectURL(file);
@@ -485,7 +669,16 @@ const UserProfileSettingsPage = () => {
           ...profileData,
           avatar: newAvatarUrl,
         });
-
+        // If using localStorage for persistence, update it here
+        if (currentUser) {
+          localStorage.setItem(
+            "currentUser",
+            JSON.stringify({
+              ...currentUser,
+              avatar: newAvatarUrl, // Note: This stores a blob URL, might not persist across sessions well
+            })
+          );
+        }
         setIsUploading(false);
         showSuccess("Profile picture updated successfully");
       }, 1500);
@@ -494,21 +687,25 @@ const UserProfileSettingsPage = () => {
 
   // Setting handlers
   const handleNotificationChange = (channel, type, value) => {
-    setNotifications({
+    const newNotifications = {
       ...notifications,
       [channel]: {
         ...notifications[channel],
         [type]: value,
       },
-    });
+    };
+    setNotifications(newNotifications);
+    // Persist to localStorage if needed
     showSuccess("Notification settings updated");
   };
 
   const handlePreferenceChange = (preference, value) => {
-    setPreferences({
+    const newPreferences = {
       ...preferences,
       [preference]: value,
-    });
+    };
+    setPreferences(newPreferences);
+    // Persist to localStorage if needed
     showSuccess("Preferences updated");
   };
 
@@ -517,6 +714,7 @@ const UserProfileSettingsPage = () => {
       setShowTwoFactorSetup(true);
     } else {
       setTwoFactorEnabled(false);
+      // Persist to localStorage if needed
       showSuccess("Two-factor authentication disabled");
     }
   };
@@ -526,6 +724,7 @@ const UserProfileSettingsPage = () => {
       setTwoFactorEnabled(true);
       setShowTwoFactorSetup(false);
       setVerificationCode("");
+      // Persist to localStorage if needed
       showSuccess("Two-factor authentication enabled");
     } else {
       setErrors({
@@ -549,6 +748,9 @@ const UserProfileSettingsPage = () => {
         ...errors,
         [name]: "",
       });
+    }
+    if (name === "newEmail" && errors.emailCurrentPassword) {
+      setErrors({ ...errors, emailCurrentPassword: "" });
     }
   };
 
@@ -610,17 +812,37 @@ const UserProfileSettingsPage = () => {
       [section]: false,
     });
 
+    // Re-fetch from profileData which should be based on currentUser or USER mock
+    const currentSource = currentUser
+      ? {
+          firstName: profileData.firstName, // Already derived from currentUser or USER
+          lastName: profileData.lastName, // Already derived
+          email: profileData.email, // Already derived
+          phone: profileData.phone,
+          company: profileData.company,
+          role: profileData.role,
+        }
+      : {
+          // Fallback to USER if somehow currentUser is null but profileData wasn't updated
+          firstName: USER.firstName,
+          lastName: USER.lastName,
+          email: USER.email,
+          phone: USER.phone,
+          company: USER.company,
+          role: USER.role,
+        };
+
     setFormData({
       ...formData,
-      firstName: profileData.firstName,
-      lastName: profileData.lastName,
-      phone: profileData.phone,
-      company: profileData.company,
-      role: profileData.role,
+      firstName: currentSource.firstName,
+      lastName: currentSource.lastName,
+      phone: currentSource.phone,
+      company: currentSource.company,
+      role: currentSource.role,
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
-      newEmail: profileData.email,
+      newEmail: currentSource.email, // Reset newEmail to current actual email
     });
 
     setErrors({});
@@ -630,6 +852,11 @@ const UserProfileSettingsPage = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [activeSection]);
+
+  const handleSignOut = () => {
+    logout();
+    navigate("/login"); // Redirect to login page after logout
+  };
 
   // UI Section Rendering Functions
   const renderProfileSection = () => (
@@ -856,12 +1083,12 @@ const UserProfileSettingsPage = () => {
 
             <FormInput
               label="Current Password"
-              id="currentPassword"
-              name="currentPassword"
+              id="currentPasswordForEmail" // Unique ID for this instance
+              name="currentPassword" // Still 'currentPassword' for formData state
               type={passwordVisibility.current ? "text" : "password"}
               value={formData.currentPassword}
               onChange={handleInputChange}
-              error={errors.emailCurrentPassword}
+              error={errors.emailCurrentPassword} // Use specific error key
               autoComplete="current-password"
               rightElement={
                 <button
@@ -1939,6 +2166,14 @@ const UserProfileSettingsPage = () => {
     </div>
   );
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <ArrowPathIcon className="h-12 w-12 text-indigo-600 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -1959,13 +2194,24 @@ const UserProfileSettingsPage = () => {
             </div>
 
             <div className="flex items-center space-x-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                icon={<ArrowRightOnRectangleIcon className="h-4 w-4" />}
-              >
-                Sign out
-              </Button>
+              {currentUser ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  icon={<ArrowRightOnRectangleIcon className="h-4 w-4" />}
+                  onClick={handleSignOut}
+                >
+                  Sign out
+                </Button>
+              ) : (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => navigate("/login")}
+                >
+                  Sign In
+                </Button>
+              )}
             </div>
           </div>
         </div>
