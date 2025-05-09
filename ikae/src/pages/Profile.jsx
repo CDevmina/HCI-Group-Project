@@ -27,42 +27,7 @@ import {
   ArrowDownTrayIcon,
   ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
-
-// Mock data - Would be fetched from API in a real application
-const USER = {
-  id: "228526",
-  firstName: "Gagana",
-  lastName: "Methmal",
-  email: "gagana220@gmail.com",
-  phone: "+94 761823473",
-  company: "IKAE Industries Inc.",
-  role: "Interior Designer",
-  avatar:
-    "https://ichef.bbci.co.uk/news/480/cpsprodpb/6e91/live/edc24e80-48a6-11ef-980d-e9f1dcc90e20.jpg.webp",
-  emailVerified: true,
-  twoFactorEnabled: false,
-  language: "English",
-  timezone: "Colombo/Sri Lanka",
-  notifications: {
-    email: {
-      projectUpdates: true,
-      teamActivity: false,
-      newsAndTips: true,
-      marketing: false,
-    },
-    app: {
-      projectUpdates: true,
-      teamActivity: true,
-      newsAndTips: false,
-    },
-  },
-  preferences: {
-    theme: "light",
-    defaultMeasurementUnit: "metric",
-    autosaveInterval: 5,
-    defaultView: "3d",
-  },
-};
+import { useAuth } from "../components/Auth/useAuth";
 
 const RECENT_ACTIVITY = [
   {
@@ -319,25 +284,27 @@ const Badge = ({ children, variant = "gray", size = "md" }) => {
 
 // Main Profile Settings Component
 const UserProfileSettingsPage = () => {
+  const { currentUser, updateUser, logout } = useAuth(); // Get currentUser, updateUser, and logout
+
   // State initialization
   const [activeSection, setActiveSection] = useState("profile");
-  const [profileData, setProfileData] = useState(USER);
+  const [profileData, setProfileData] = useState(null);
   const [isEditing, setIsEditing] = useState({
     personalInfo: false,
     password: false,
     email: false,
   });
   const [formData, setFormData] = useState({
-    firstName: USER.firstName,
-    lastName: USER.lastName,
-    email: USER.email,
-    phone: USER.phone,
-    company: USER.company,
-    role: USER.role,
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    company: "",
+    role: "",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
-    newEmail: USER.email,
+    newEmail: "",
   });
   const [passwordVisibility, setPasswordVisibility] = useState({
     current: false,
@@ -347,191 +314,287 @@ const UserProfileSettingsPage = () => {
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  const [notifications, setNotifications] = useState(USER.notifications);
-  const [preferences, setPreferences] = useState(USER.preferences);
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(
-    USER.twoFactorEnabled
-  );
+  const [notifications, setNotifications] = useState({
+    email: { projectUpdates: false, teamActivity: false, newsAndTips: false, marketing: false },
+    app: { projectUpdates: false, teamActivity: false, newsAndTips: false },
+  });
+  const [preferences, setPreferences] = useState({
+    theme: "light", defaultMeasurementUnit: "metric", autosaveInterval: 5, defaultView: "3d",
+  });
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [showTwoFactorSetup, setShowTwoFactorSetup] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
+  const [avatarLoadError, setAvatarLoadError] = useState(false); // State to track avatar loading errors
 
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (currentUser) {
+      setProfileData(currentUser);
+      setFormData({
+        firstName: currentUser.firstName || "",
+        lastName: currentUser.lastName || "",
+        email: currentUser.email || "",
+        phone: currentUser.phone || "",
+        company: currentUser.company || "",
+        role: currentUser.role || "",
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+        newEmail: currentUser.email || "",
+      });
+      setNotifications(currentUser.notifications || {
+        email: { projectUpdates: true, teamActivity: false, newsAndTips: true, marketing: false },
+        app: { projectUpdates: true, teamActivity: true, newsAndTips: false },
+      });
+      setPreferences(currentUser.preferences || {
+        theme: "light", defaultMeasurementUnit: "metric", autosaveInterval: 5, defaultView: "3d",
+      });
+      setTwoFactorEnabled(currentUser.twoFactorEnabled || false);
+      setAvatarLoadError(false); // Reset avatar error when user data changes
+    }
+  }, [currentUser]);
+
 
   // Data validation methods
   const validatePersonalInfo = () => {
     const newErrors = {};
-
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = "First name is required";
-    }
-
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = "Last name is required";
-    }
-
-    if (formData.phone && !/^\+?[0-9\s\-()]+$/.test(formData.phone)) {
-      newErrors.phone = "Invalid phone number format";
-    }
-
+    if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
+    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
+    // Add other validations as needed (e.g., phone format)
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const validatePassword = () => {
     const newErrors = {};
-
-    if (!formData.currentPassword) {
-      newErrors.currentPassword = "Current password is required";
-    }
-
+    if (!formData.currentPassword) newErrors.currentPassword = "Current password is required";
     if (!formData.newPassword) {
       newErrors.newPassword = "New password is required";
-    } else if (formData.newPassword.length < 8) {
+    } else if (formData.newPassword.length < 8) { // Example: min 8 chars
       newErrors.newPassword = "Password must be at least 8 characters";
     }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your new password";
-    } else if (formData.newPassword !== formData.confirmPassword) {
+    if (formData.newPassword !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match";
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const validateEmail = () => {
     const newErrors = {};
-
-    if (!formData.newEmail) {
+    if (!formData.newEmail.trim()) {
       newErrors.newEmail = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.newEmail)) {
-      newErrors.newEmail = "Invalid email format";
+      newErrors.newEmail = "Email address is invalid";
     }
-
-    if (!formData.currentPassword) {
-      newErrors.emailCurrentPassword = "Password is required to change email";
+    if (!formData.currentPassword) { // Assuming current password is required to change email
+      newErrors.emailCurrentPassword = "Current password is required to change email";
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+
   // Form submission handlers
-  const handlePersonalInfoSubmit = () => {
-    if (validatePersonalInfo()) {
-      setProfileData({
-        ...profileData,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        phone: formData.phone,
-        company: formData.company,
-        role: formData.role,
-      });
-
-      setIsEditing({ ...isEditing, personalInfo: false });
-      showSuccess("Personal information updated successfully");
+  const handlePersonalInfoSubmit = async () => {
+    if (validatePersonalInfo() && currentUser) {
+      try {
+        await updateUser({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone,
+          company: formData.company,
+          role: formData.role,
+        });
+        setIsEditing({ ...isEditing, personalInfo: false });
+        showSuccess("Personal information updated successfully");
+      } catch (error) {
+        console.error("Failed to update personal info:", error);
+        setErrors({ form: "Failed to update personal information." });
+      }
     }
   };
 
-  const handlePasswordSubmit = () => {
-    if (validatePassword()) {
-      setFormData({
-        ...formData,
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
+  const handlePasswordSubmit = async () => {
+    if (validatePassword() && currentUser) {
+      // IMPORTANT: Password hashing should happen on the backend or in a secure client-side manner.
+      // The current AuthContext.updateUser does not re-hash passwords.
+      // This is a simplified example. For actual password changes, you'd typically send
+      // currentPassword and newPassword to an API endpoint that handles verification and hashing.
+      try {
+        // Simulate password change - in a real app, call an API
+        // For now, we'll just clear the fields and show success.
+        // If you were to update the password directly in localStorage (not recommended for plaintext):
+        // const newHashedPassword = await bcrypt.hash(formData.newPassword, 10);
+        // await updateUser({ hashedPassword: newHashedPassword }); // This would require AuthContext to handle it
 
-      setIsEditing({ ...isEditing, password: false });
-      showSuccess("Password changed successfully");
+        console.warn("Password change simulation. Actual hashing and update via API needed.");
+        setFormData({
+          ...formData,
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+        setIsEditing({ ...isEditing, password: false });
+        showSuccess("Password changed successfully (simulated)");
+      } catch (error) {
+        console.error("Failed to change password:", error);
+        setErrors({ form: "Failed to change password." });
+      }
     }
   };
 
-  const handleEmailSubmit = () => {
-    if (validateEmail()) {
-      setProfileData({
-        ...profileData,
-        email: formData.newEmail,
-        emailVerified:
-          formData.newEmail === USER.email ? USER.emailVerified : false,
-      });
-
-      setFormData({
-        ...formData,
-        email: formData.newEmail,
-        currentPassword: "",
-      });
-
-      setIsEditing({ ...isEditing, email: false });
-      showSuccess(
-        "Email updated successfully. Please verify your new email address."
-      );
+  const handleEmailSubmit = async () => {
+    if (validateEmail() && currentUser) {
+      // Similar to password, email change might require backend verification (e.g., send confirmation to new email)
+      try {
+        await updateUser({
+          email: formData.newEmail,
+          // emailVerified: formData.newEmail === currentUser.email ? currentUser.emailVerified : false, // Reset verification status
+        });
+        setFormData({
+          ...formData,
+          currentPassword: "", // Clear password field
+        });
+        setIsEditing({ ...isEditing, email: false });
+        showSuccess(
+          "Email update request submitted. Verification might be required."
+        );
+      } catch (error) {
+        console.error("Failed to update email:", error);
+        setErrors({ form: "Failed to update email." });
+      }
     }
   };
 
   // File upload handlers
   const handleAvatarUpload = () => fileInputRef.current.click();
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
+    if (file && currentUser) {
       setIsUploading(true);
+      setErrors({}); // Clear previous form errors
+      setAvatarLoadError(false); // Reset error before attempting to load new avatar
 
-      // Simulate file upload with timeout
-      setTimeout(() => {
-        const newAvatarUrl = URL.createObjectURL(file);
-        setProfileData({
-          ...profileData,
-          avatar: newAvatarUrl,
-        });
-
+      // Basic file type validation
+      const acceptedImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+      if (!acceptedImageTypes.includes(file.type)) {
+        setErrors({ form: "Invalid file type. Please select a JPG, PNG, or GIF." });
         setIsUploading(false);
-        showSuccess("Profile picture updated successfully");
-      }, 1500);
+        return;
+      }
+
+      // Basic file size validation (e.g., 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        setErrors({ form: "File is too large. Maximum size is 2MB." });
+        setIsUploading(false);
+        return;
+      }
+
+      try {
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          // reader.result contains the data as a URL representing the file's data (base64)
+          try {
+            await updateUser({ avatar: reader.result });
+            // The profileData state will update automatically because it depends on currentUser,
+            // which is updated by the AuthContext after updateUser completes.
+            showSuccess("Avatar updated successfully!");
+          } catch (updateError) {
+            console.error("Failed to update user avatar:", updateError);
+            setErrors({ form: "Failed to update avatar. Please try again." });
+          } finally {
+            setIsUploading(false);
+          }
+        };
+        reader.onerror = () => {
+          console.error("Error reading file for avatar.");
+          setErrors({ form: "Could not process the selected file." });
+          setIsUploading(false);
+        };
+        reader.readAsDataURL(file);
+      } catch (error) {
+        // This catch is unlikely to be hit if FileReader errors are handled by reader.onerror
+        console.error("Avatar upload process failed:", error);
+        setErrors({ form: "Avatar upload failed. Please try again." });
+        setIsUploading(false);
+      }
     }
   };
 
   // Setting handlers
-  const handleNotificationChange = (channel, type, value) => {
-    setNotifications({
-      ...notifications,
-      [channel]: {
-        ...notifications[channel],
-        [type]: value,
-      },
-    });
-    showSuccess("Notification settings updated");
-  };
-
-  const handlePreferenceChange = (preference, value) => {
-    setPreferences({
-      ...preferences,
-      [preference]: value,
-    });
-    showSuccess("Preferences updated");
-  };
-
-  const handleTwoFactorToggle = () => {
-    if (!twoFactorEnabled) {
-      setShowTwoFactorSetup(true);
-    } else {
-      setTwoFactorEnabled(false);
-      showSuccess("Two-factor authentication disabled");
+  const handleNotificationChange = async (channel, type, value) => {
+    if (currentUser) {
+      const newNotifications = {
+        ...notifications,
+        [channel]: {
+          ...notifications[channel],
+          [type]: value,
+        },
+      };
+      try {
+        await updateUser({ notifications: newNotifications });
+        // setNotifications(newNotifications); // Optimistic update, or rely on useEffect
+        showSuccess("Notification settings updated");
+      } catch (error) {
+        console.error("Failed to update notifications:", error);
+      }
     }
   };
 
-  const handleTwoFactorSetup = () => {
-    if (verificationCode.length === 6 && /^\d+$/.test(verificationCode)) {
-      setTwoFactorEnabled(true);
-      setShowTwoFactorSetup(false);
-      setVerificationCode("");
-      showSuccess("Two-factor authentication enabled");
-    } else {
-      setErrors({
-        ...errors,
-        verificationCode: "Please enter a valid 6-digit code",
-      });
+  const handlePreferenceChange = async (preference, value) => {
+    if (currentUser) {
+      const newPreferences = {
+        ...preferences,
+        [preference]: value,
+      };
+      try {
+        await updateUser({ preferences: newPreferences });
+        // setPreferences(newPreferences); // Optimistic update, or rely on useEffect
+        showSuccess("Preference settings updated");
+      } catch (error) {
+        console.error("Failed to update preferences:", error);
+      }
+    }
+  };
+
+  const handleTwoFactorToggle = async () => {
+    if (currentUser) {
+      if (twoFactorEnabled) { // If currently enabled, attempt to disable
+        try {
+          await updateUser({ twoFactorEnabled: false });
+          setTwoFactorEnabled(false);
+          setShowTwoFactorSetup(false);
+          showSuccess("Two-factor authentication disabled.");
+        } catch (error) {
+          console.error("Failed to disable 2FA:", error);
+        }
+      } else { // If currently disabled, show setup
+        setShowTwoFactorSetup(true);
+      }
+    }
+  };
+
+  const handleTwoFactorSetup = async () => {
+    if (currentUser) {
+      // Simulate verification - in real app, verify code against a server
+      if (verificationCode === "123456") { // Mock verification code
+        try {
+          await updateUser({ twoFactorEnabled: true });
+          setTwoFactorEnabled(true);
+          setShowTwoFactorSetup(false);
+          setVerificationCode("");
+          setErrors({});
+          showSuccess("Two-factor authentication enabled successfully.");
+        } catch (error) {
+          console.error("Failed to enable 2FA:", error);
+          setErrors({ verificationCode: "Failed to enable 2FA. Please try again." });
+        }
+      } else {
+        setErrors({ verificationCode: "Invalid verification code." });
+      }
     }
   };
 
@@ -610,19 +673,21 @@ const UserProfileSettingsPage = () => {
       [section]: false,
     });
 
-    setFormData({
-      ...formData,
-      firstName: profileData.firstName,
-      lastName: profileData.lastName,
-      phone: profileData.phone,
-      company: profileData.company,
-      role: profileData.role,
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-      newEmail: profileData.email,
-    });
-
+    // Reset form data to current profile data from state (which should be from currentUser)
+    if (profileData) {
+      setFormData({
+        ...formData, // Keep current password fields as they are not part of profileData
+        firstName: profileData.firstName,
+        lastName: profileData.lastName,
+        phone: profileData.phone,
+        company: profileData.company,
+        role: profileData.role,
+        // currentPassword: "", // Resetting these might be desired on cancel
+        // newPassword: "",
+        // confirmPassword: "",
+        newEmail: profileData.email,
+      });
+    }
     setErrors({});
   };
 
@@ -631,18 +696,32 @@ const UserProfileSettingsPage = () => {
     window.scrollTo(0, 0);
   }, [activeSection]);
 
+  if (!currentUser || !profileData) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-500"></div>
+        <p className="ml-4 text-lg text-gray-700">Loading profile...</p>
+      </div>
+    );
+  }
+
   // UI Section Rendering Functions
   const renderProfileSection = () => (
     <div className="space-y-6">
       <Card title="Profile Picture" description="Update your profile photo">
         <div className="flex flex-col sm:flex-row items-center">
           <div className="relative group">
-            <div className="h-24 w-24 rounded-xl overflow-hidden bg-indigo-100 border border-indigo-200 shadow-sm">
-              <img
-                src={profileData.avatar}
-                alt={`${profileData.firstName} ${profileData.lastName}`}
-                className="h-full w-full object-cover"
-              />
+            <div className="h-24 w-24 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 shadow-sm flex items-center justify-center">
+              {profileData && profileData.avatar && !avatarLoadError ? (
+                <img
+                  src={profileData.avatar}
+                  alt={`${profileData.firstName || ''} ${profileData.lastName || ''}`}
+                  className="h-full w-full object-cover"
+                  onError={() => setAvatarLoadError(true)}
+                />
+              ) : (
+                <UserCircleIcon className="h-20 w-20 text-gray-400" />
+              )}
             </div>
             <input
               type="file"
@@ -734,7 +813,9 @@ const UserProfileSettingsPage = () => {
             id="lastName"
             name="lastName"
             value={
-              isEditing.personalInfo ? formData.lastName : profileData.lastName
+              isEditing.personalInfo
+                ? formData.lastName
+                : profileData.lastName
             }
             onChange={handleInputChange}
             disabled={!isEditing.personalInfo}
@@ -746,6 +827,7 @@ const UserProfileSettingsPage = () => {
             label="Phone number"
             id="phone"
             name="phone"
+            type="tel"
             value={isEditing.personalInfo ? formData.phone : profileData.phone}
             onChange={handleInputChange}
             disabled={!isEditing.personalInfo}
@@ -771,7 +853,7 @@ const UserProfileSettingsPage = () => {
 
           <div className="sm:col-span-2">
             <FormInput
-              label="Job title"
+              label="Role"
               id="role"
               name="role"
               value={isEditing.personalInfo ? formData.role : profileData.role}
@@ -1962,6 +2044,7 @@ const UserProfileSettingsPage = () => {
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={() => logout()} // Use logout from useAuth
                 icon={<ArrowRightOnRectangleIcon className="h-4 w-4" />}
               >
                 Sign out

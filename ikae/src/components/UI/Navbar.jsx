@@ -1,13 +1,18 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { FiSun, FiMoon, FiUser, FiLogOut, FiMenu, FiX } from "react-icons/fi";
+import { Link, useNavigate } from "react-router-dom"; // Added useNavigate
+import { FiSun, FiMoon, FiUser, FiLogOut, FiMenu, FiX, FiChevronDown } from "react-icons/fi"; // Added FiChevronDown
 import PropTypes from "prop-types";
+import { useAuth } from "../Auth/useAuth"; // Import useAuth
 
 /**
  * Responsive navigation bar with dark mode and authentication
  */
-const Navbar = ({ user, onLogout }) => {
+const Navbar = () => { // Removed user and onLogout props
+  const { currentUser, logout } = useAuth(); // Get currentUser and logout from AuthContext
+  const navigate = useNavigate(); // Initialize navigate
+
   const [isOpen, setIsOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false); // State for user dropdown
   const [isDarkMode, setIsDarkMode] = useState(
     localStorage.getItem("darkMode") === "true"
   );
@@ -38,12 +43,18 @@ const Navbar = ({ user, onLogout }) => {
     localStorage.setItem("darkMode", String(newDarkMode));
   };
 
+  const handleLogout = () => {
+    logout();
+    setIsUserMenuOpen(false); // Close user menu on logout
+    navigate('/'); // Redirect to home or login page after logout
+  };
+
   // Navigation links for both desktop and mobile
   const navLinks = [
     { to: "/", label: "Home" },
-    { to: "/room-editor", label: "Room Editor" },
-    { to: "/designs", label: "My Designs" },
-    { to: "/gallery", label: "Gallery" },
+    { to: "/products", label: "Products" }, // Changed from /room-editor to /products
+    { to: "/dashboard", label: "Dashboard" }, // Changed from /designs to /dashboard
+    { to: "/room", label: "Room Editor" }, // Changed from /gallery to /room
   ];
 
   return (
@@ -62,7 +73,7 @@ const Navbar = ({ user, onLogout }) => {
               <div className="h-8 w-8 bg-blue-600 rounded flex items-center justify-center mr-2">
                 <span className="text-white font-bold">I</span>
               </div>
-              <span className="text-xl font-bold text-gray-800">IKAE</span>
+              <span className="text-xl font-bold text-gray-800 ">IKAE</span>
             </Link>
           </div>
 
@@ -72,7 +83,7 @@ const Navbar = ({ user, onLogout }) => {
               <Link
                 key={link.to}
                 to={link.to}
-                className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition duration-150 border-b-2 border-transparent hover:border-blue-600"
+                className="text-gray-700 hover:text-blue-600  px-3 py-2 text-sm font-medium transition duration-150 border-b-2 border-transparent hover:border-blue-600"
               >
                 {link.label}
               </Link>
@@ -84,7 +95,7 @@ const Navbar = ({ user, onLogout }) => {
             {/* Dark/Light Mode Toggle */}
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-full bg-white shadow-sm hover:bg-gray-100 transition-colors"
+              className="p-2 rounded-full bg-white shadow-sm hover:bg-gray-100 "
               aria-label={
                 isDarkMode ? "Switch to light mode" : "Switch to dark mode"
               }
@@ -97,23 +108,45 @@ const Navbar = ({ user, onLogout }) => {
             </button>
 
             {/* User Menu */}
-            {user ? (
-              <div className="flex items-center">
-                <button className="flex items-center bg-white shadow-sm rounded-full pl-3 pr-2 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none">
-                  <span className="mr-2">{user.name}</span>
+            {currentUser ? (
+              <div className="relative">
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center bg-white shadow-sm rounded-full pl-1 pr-2 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+                >
                   <img
-                    className="h-8 w-8 rounded-full object-cover"
-                    src={user.avatar || "https://via.placeholder.com/40"}
+                    className="h-8 w-8 rounded-full object-cover mr-2"
+                    src={currentUser.avatar || "https://via.placeholder.com/40"}
                     alt="User avatar"
                   />
+                  <span>{currentUser.firstName}</span>
+                  <FiChevronDown className="h-4 w-4 ml-1 text-gray-500" />
                 </button>
-                <button
-                  onClick={onLogout}
-                  className="ml-3 p-2 rounded-full bg-white shadow-sm hover:bg-gray-100 transition-colors"
-                  aria-label="Log out"
-                >
-                  <FiLogOut className="h-5 w-5 text-gray-700" />
-                </button>
+                {isUserMenuOpen && (
+                  <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <div className="px-4 py-3 border-b border-gray-200 ">
+                      <p className="text-sm font-medium text-gray-900  truncate">
+                        {currentUser.firstName} {currentUser.lastName}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {currentUser.email}
+                      </p>
+                    </div>
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      Your Profile
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <Link
@@ -170,7 +203,7 @@ const Navbar = ({ user, onLogout }) => {
             <Link
               key={link.to}
               to={link.to}
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition duration-150"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600   transition duration-150"
               onClick={() => setIsOpen(false)}
             >
               {link.label}
@@ -178,30 +211,39 @@ const Navbar = ({ user, onLogout }) => {
           ))}
 
           {/* User section for mobile */}
-          {user ? (
+          {currentUser ? (
             <div className="pt-4 pb-2 border-t border-gray-200">
               <div className="flex items-center px-3">
                 <img
-                  className="h-10 w-10 rounded-full object-cover border border-gray-200"
-                  src={user.avatar || "https://via.placeholder.com/40"}
+                  className="h-10 w-10 rounded-full object-cover border border-gray-200 "
+                  src={currentUser.avatar || "https://via.placeholder.com/40"}
                   alt="User avatar"
                 />
                 <div className="ml-3">
-                  <div className="text-base font-medium text-gray-800">
-                    {user.name}
+                  <div className="text-base font-medium text-gray-800 ">
+                    {currentUser.firstName} {currentUser.lastName}
                   </div>
                   <div className="text-sm font-medium text-gray-500">
-                    {user.email}
+                    {currentUser.email}
                   </div>
                 </div>
               </div>
-              <div className="mt-3 px-2">
+              <div className="mt-3 px-2 space-y-1">
+                 <Link
+                    to="/profile"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 bg-blue-50 hover:bg-blue-100 transition duration-150"
+                    onClick={() => {
+                        setIsOpen(false);
+                    }}
+                    >
+                    Your Profile
+                </Link>
                 <button
                   onClick={() => {
-                    onLogout();
+                    handleLogout(); // Use the new handleLogout
                     setIsOpen(false);
                   }}
-                  className="block w-full px-3 py-2 rounded-md text-base font-medium text-gray-700 bg-blue-50 hover:bg-blue-100 transition duration-150"
+                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 bg-blue-50 hover:bg-blue-100 transition duration-150"
                 >
                   Sign Out
                 </button>
@@ -220,19 +262,6 @@ const Navbar = ({ user, onLogout }) => {
       </div>
     </nav>
   );
-};
-
-Navbar.propTypes = {
-  user: PropTypes.shape({
-    name: PropTypes.string.isRequired,
-    email: PropTypes.string.isRequired,
-    avatar: PropTypes.string,
-  }),
-  onLogout: PropTypes.func.isRequired,
-};
-
-Navbar.defaultProps = {
-  user: null,
 };
 
 export default Navbar;
