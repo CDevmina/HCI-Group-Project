@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FiSun, FiMoon, FiUser, FiLogOut, FiMenu, FiX } from "react-icons/fi";
-import PropTypes from "prop-types";
+import { useAuth } from "../Auth/useAuth"; // Import useAuth hook
 
 /**
  * Responsive navigation bar with dark mode and authentication
  */
-const Navbar = ({ user, onLogout }) => {
+const Navbar = () => {
+  const { currentUser, logout } = useAuth(); // Get auth data from context
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(
     localStorage.getItem("darkMode") === "true"
@@ -38,13 +40,38 @@ const Navbar = ({ user, onLogout }) => {
     localStorage.setItem("darkMode", String(newDarkMode));
   };
 
+  // Handle logout
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   // Navigation links for both desktop and mobile
   const navLinks = [
     { to: "/", label: "Home" },
-    { to: "/room-editor", label: "Room Editor" },
-    { to: "/designs", label: "My Designs" },
+    { to: "/products", label: "Products" },
+    { to: "/dashboard", label: "Designer" },
     { to: "/gallery", label: "Gallery" },
   ];
+
+  // Get display name from user object
+  const getDisplayName = () => {
+    if (!currentUser) return "";
+
+    if (currentUser.firstName) {
+      return `${currentUser.firstName} ${currentUser.lastName || ""}`.trim();
+    }
+
+    if (currentUser.name) {
+      return currentUser.name;
+    }
+
+    if (currentUser.fullName) {
+      return currentUser.fullName;
+    }
+
+    return currentUser.email.split("@")[0];
+  };
 
   return (
     <nav
@@ -97,18 +124,18 @@ const Navbar = ({ user, onLogout }) => {
             </button>
 
             {/* User Menu */}
-            {user ? (
+            {currentUser ? (
               <div className="flex items-center">
                 <button className="flex items-center bg-white shadow-sm rounded-full pl-3 pr-2 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none">
-                  <span className="mr-2">{user.name}</span>
+                  <span className="mr-2">{getDisplayName()}</span>
                   <img
                     className="h-8 w-8 rounded-full object-cover"
-                    src={user.avatar || "https://via.placeholder.com/40"}
+                    src={currentUser.avatar || "https://via.placeholder.com/40"}
                     alt="User avatar"
                   />
                 </button>
                 <button
-                  onClick={onLogout}
+                  onClick={handleLogout}
                   className="ml-3 p-2 rounded-full bg-white shadow-sm hover:bg-gray-100 transition-colors"
                   aria-label="Log out"
                 >
@@ -178,27 +205,27 @@ const Navbar = ({ user, onLogout }) => {
           ))}
 
           {/* User section for mobile */}
-          {user ? (
+          {currentUser ? (
             <div className="pt-4 pb-2 border-t border-gray-200">
               <div className="flex items-center px-3">
                 <img
                   className="h-10 w-10 rounded-full object-cover border border-gray-200"
-                  src={user.avatar || "https://via.placeholder.com/40"}
+                  src={currentUser.avatar || "https://via.placeholder.com/40"}
                   alt="User avatar"
                 />
                 <div className="ml-3">
                   <div className="text-base font-medium text-gray-800">
-                    {user.name}
+                    {getDisplayName()}
                   </div>
                   <div className="text-sm font-medium text-gray-500">
-                    {user.email}
+                    {currentUser.email}
                   </div>
                 </div>
               </div>
               <div className="mt-3 px-2">
                 <button
                   onClick={() => {
-                    onLogout();
+                    handleLogout();
                     setIsOpen(false);
                   }}
                   className="block w-full px-3 py-2 rounded-md text-base font-medium text-gray-700 bg-blue-50 hover:bg-blue-100 transition duration-150"
@@ -220,19 +247,6 @@ const Navbar = ({ user, onLogout }) => {
       </div>
     </nav>
   );
-};
-
-Navbar.propTypes = {
-  user: PropTypes.shape({
-    name: PropTypes.string.isRequired,
-    email: PropTypes.string.isRequired,
-    avatar: PropTypes.string,
-  }),
-  onLogout: PropTypes.func.isRequired,
-};
-
-Navbar.defaultProps = {
-  user: null,
 };
 
 export default Navbar;

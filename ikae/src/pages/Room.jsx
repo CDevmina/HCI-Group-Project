@@ -111,24 +111,6 @@ const COLOR_SCHEMES = [
     description: "Creates an inviting and comfortable atmosphere",
   },
   {
-    id: "cool",
-    name: "Cool & Calm",
-    colors: ["#EFF6FF", "#BFDBFE", "#3B82F6", "#ECFDF5", "#A7F3D0", "#10B981"],
-    description: "Modern and refreshing palette",
-  },
-  {
-    id: "natural",
-    name: "Natural",
-    colors: ["#F8FAF0", "#E6EED6", "#C4C9A6", "#92967D", "#636355", "#474A3E"],
-    description: "Earthy tones inspired by nature",
-  },
-  {
-    id: "bold",
-    name: "Bold & Vibrant",
-    colors: ["#4F46E5", "#7C3AED", "#EC4899", "#F59E0B", "#10B981", "#FFFFFF"],
-    description: "Makes a statement with vibrant colors",
-  },
-  {
     id: "custom",
     name: "Custom",
     colors: ["#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF"],
@@ -768,7 +750,7 @@ const RoomConfigurationPage = () => {
   const handleSubmit = () => {
     if (validateForm()) {
       // Navigate to design studio with the room configuration
-      navigate("/design-studio/new", {
+      navigate("/studio", {
         state: {
           roomConfig: {
             roomName,
@@ -784,7 +766,7 @@ const RoomConfigurationPage = () => {
     } else {
       // If validation fails, go to the step with errors
       if (errors.roomName || errors.width || errors.length || errors.height) {
-        setActiveStep(1);
+        setActiveStep(2); // Changed from 1 to 2 since Basic Settings is now step 2
 
         // Scroll to top when validation fails
         setTimeout(() => {
@@ -860,7 +842,7 @@ const RoomConfigurationPage = () => {
 
   // Render basic settings form
   const renderBasicSettings = () => (
-    <Section title="Basic Settings" rightElement={renderStepIndicator(1)}>
+    <Section title="Basic Settings" rightElement={renderStepIndicator(2)}>
       <div className="space-y-6">
         {/* Room Name */}
         <FormInput
@@ -961,7 +943,7 @@ const RoomConfigurationPage = () => {
 
   // Render room shape selection
   const renderRoomShape = () => (
-    <Section title="Room Shape" rightElement={renderStepIndicator(2)}>
+    <Section title="Room Shape" rightElement={renderStepIndicator(1)}>
       <div className="space-y-4">
         <p className="text-sm text-gray-600 mb-4">
           Select the shape that best matches your room layout. For complex
@@ -1406,8 +1388,8 @@ const RoomConfigurationPage = () => {
   // Render progress steps
   const renderProgressSteps = () => {
     const steps = [
-      { number: 1, name: "Basic Settings" },
-      { number: 2, name: "Room Shape" },
+      { number: 1, name: "Room Shape" },
+      { number: 2, name: "Basic Settings" },
       { number: 3, name: "Color Scheme" },
       { number: 4, name: "Floor Material" },
     ];
@@ -1516,8 +1498,8 @@ const RoomConfigurationPage = () => {
               </h1>
             </div>
             <div className="flex items-center space-x-3">
-              {/* Only show toggle button on step 1 */}
-              {activeStep === 1 && (
+              {/* Only show toggle button on step 2 now (previously step 1) */}
+              {activeStep === 2 && (
                 <button
                   onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
                   className="px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 rounded-md hover:bg-indigo-50 transition-all duration-200"
@@ -1552,13 +1534,13 @@ const RoomConfigurationPage = () => {
 
             {/* Configuration sections - only render the active step */}
             <div>
-              {activeStep === 1 && renderBasicSettings()}
-              {activeStep === 2 && renderRoomShape()}
+              {activeStep === 1 && renderRoomShape()}
+              {activeStep === 2 && renderBasicSettings()}
               {activeStep === 3 && renderColorScheme()}
               {activeStep === 4 && renderFloorMaterial()}
 
-              {/* Advanced options are only visible on step 1 */}
-              {activeStep === 1 &&
+              {/* Advanced options are only visible on step 2 now (previously step 1) */}
+              {activeStep === 2 &&
                 showAdvancedOptions &&
                 renderAdvancedOptions()}
             </div>

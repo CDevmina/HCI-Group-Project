@@ -147,14 +147,17 @@ const DashboardPage = () => {
   // Sidebar content for both desktop and mobile
   const renderSidebarContent = () => (
     <>
-      {/* Logo and branding */}
+      {/* Logo and branding - Updated with Link component */}
       <div className="flex items-center justify-between px-4 h-16 border-b border-blue-700">
-        <div className="flex items-center">
+        <Link
+          to="/"
+          className="flex items-center group transition-opacity hover:opacity-90"
+        >
           <CubeIcon className="h-8 w-8 text-white" />
           {!isSidebarCollapsed && (
             <span className="ml-2 text-xl font-bold text-white">IKAE</span>
           )}
-        </div>
+        </Link>
         {isMobileSidebarOpen && (
           <button
             onClick={toggleMobileSidebar}
@@ -235,6 +238,34 @@ const DashboardPage = () => {
               />
             </svg>
           </button>
+
+          {/* Exit Button - added below collapse button */}
+          <Link
+            to="/"
+            className="flex items-center justify-center w-full p-2 mt-2 text-sm text-white bg-white-500 rounded-lg hover:bg-red-700 transition-colors duration-200"
+            aria-label="Exit application"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-5 h-5 mr-1"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.5 0 002.25-2.25V15"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M18.75 12l-7.5 7.5m0-15l7.5 7.5"
+              />
+            </svg>
+            {!isSidebarCollapsed && <span>Exit</span>}
+          </Link>
         </div>
       )}
     </>
@@ -421,7 +452,7 @@ const DashboardPage = () => {
               </div>
               <div>
                 <Link
-                  to="/new-design"
+                  to="/room"
                   className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
                 >
                   <PlusIcon className="h-5 w-5 mr-2" />
@@ -663,7 +694,7 @@ const DashboardPage = () => {
                     </p>
                     <div className="mt-6">
                       <Link
-                        to="/new-design"
+                        to="/room"
                         className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       >
                         <PlusIcon
