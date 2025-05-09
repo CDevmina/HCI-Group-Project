@@ -541,6 +541,7 @@ const Studio = () => {
   const [toast, setToast] = useState(null);
   const [showHelpTour, setShowHelpTour] = useState(false);
   const [showInstructionsOverlay, setShowInstructionsOverlay] = useState(true);
+  const [rightPanelTab, setRightPanelTab] = useState("room"); // "room" or "furniture"
 
   // Furniture state
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -1186,202 +1187,293 @@ const Studio = () => {
 
           {isPropertiesPanelOpen && (
             <div className="flex flex-col h-full overflow-hidden">
-              <div className="p-4 border-b border-gray-200 bg-gray-50">
-                <h2 className="text-lg font-medium text-gray-900">
+              {/* --- Tab Switch Buttons --- */}
+              <div className="flex border-b border-gray-200 bg-gray-50">
+                <button
+                  className={`flex-1 py-2 text-sm font-medium transition-colors ${
+                    rightPanelTab === "room"
+                      ? "bg-white text-indigo-600 border-b-2 border-indigo-600"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                  onClick={() => setRightPanelTab("room")}
+                >
                   Room Properties
-                </h2>
+                </button>
+                <button
+                  className={`flex-1 py-2 text-sm font-medium transition-colors ${
+                    rightPanelTab === "furniture"
+                      ? "bg-white text-indigo-600 border-b-2 border-indigo-600"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                  onClick={() => setRightPanelTab("furniture")}
+                >
+                  Furniture Properties
+                </button>
               </div>
+              {/* --- End Tab Switch Buttons --- */}
 
               <div className="flex-1 overflow-y-auto">
-                <Panel title="Room Details" className="m-4 mb-2">
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">
-                        Name
-                      </label>
-                      <div className="text-sm font-medium text-gray-900">
-                        {roomConfig.roomName}
-                      </div>
-                    </div>
+                {rightPanelTab === "room" ? (
+                  <>
+                    {/* --- Room Properties Panels --- */}
+                    <Panel title="Room Details" className="m-4 mb-2">
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">
+                            Name
+                          </label>
+                          <div className="text-sm font-medium text-gray-900">
+                            {roomConfig.roomName}
+                          </div>
+                        </div>
 
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">
-                        Dimensions
-                      </label>
-                      <div className="text-sm font-medium text-gray-900">
-                        {roomConfig.dimensions.width} ×{" "}
-                        {roomConfig.dimensions.length} ×{" "}
-                        {roomConfig.dimensions.height} cm
-                      </div>
-                    </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">
+                            Dimensions
+                          </label>
+                          <div className="text-sm font-medium text-gray-900">
+                            {roomConfig.dimensions.width} ×{" "}
+                            {roomConfig.dimensions.length} ×{" "}
+                            {roomConfig.dimensions.height} cm
+                          </div>
+                        </div>
 
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">
-                        Shape
-                      </label>
-                      <div className="text-sm font-medium text-gray-900 capitalize">
-                        {roomConfig.shape}
-                      </div>
-                    </div>
-                  </div>
-                </Panel>
-
-                <Panel title="Colors & Materials" className="m-4 mb-2">
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">
-                        Wall Color
-                      </label>
-                      <div className="flex items-center">
-                        <div
-                          className="h-6 w-6 rounded-md border border-gray-300 mr-2"
-                          style={{ backgroundColor: roomConfig.wallColor }}
-                        ></div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {roomConfig.wallColor}
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">
+                            Shape
+                          </label>
+                          <div className="text-sm font-medium text-gray-900 capitalize">
+                            {roomConfig.shape}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </Panel>
 
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">
-                        Floor Color
-                      </label>
-                      <div className="flex items-center">
-                        <div
-                          className="h-6 w-6 rounded-md border border-gray-300 mr-2"
-                          style={{ backgroundColor: roomConfig.floorColor }}
-                        ></div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {roomConfig.floorColor}
+                    <Panel title="Colors & Materials" className="m-4 mb-2">
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">
+                            Wall Color
+                          </label>
+                          <div className="flex items-center">
+                            <div
+                              className="h-6 w-6 rounded-md border border-gray-300 mr-2"
+                              style={{ backgroundColor: roomConfig.wallColor }}
+                            ></div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {roomConfig.wallColor}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">
+                            Floor Color
+                          </label>
+                          <div className="flex items-center">
+                            <div
+                              className="h-6 w-6 rounded-md border border-gray-300 mr-2"
+                              style={{ backgroundColor: roomConfig.floorColor }}
+                            ></div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {roomConfig.floorColor}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">
+                            Floor Material
+                          </label>
+                          <div className="text-sm font-medium text-gray-900 capitalize">
+                            {roomConfig.floorMaterial}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </Panel>
 
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">
-                        Floor Material
-                      </label>
-                      <div className="text-sm font-medium text-gray-900 capitalize">
-                        {roomConfig.floorMaterial}
+                    <Panel title="View Settings" className="m-4 mb-2">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm text-gray-700">
+                            Show Dimensions
+                          </label>
+                          <div>
+                            <button
+                              className={`relative inline-flex h-6 w-11 items-center rounded-full ${
+                                viewSettings.showDimensions
+                                  ? "bg-indigo-600"
+                                  : "bg-gray-200"
+                              }`}
+                              onClick={() => {
+                                setViewSettings({
+                                  ...viewSettings,
+                                  showDimensions: !viewSettings.showDimensions,
+                                });
+                              }}
+                            >
+                              <span
+                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
+                                  viewSettings.showDimensions
+                                    ? "translate-x-6"
+                                    : "translate-x-1"
+                                }`}
+                              />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm text-gray-700">
+                            Show Shadows
+                          </label>
+                          <div>
+                            <button
+                              className={`relative inline-flex h-6 w-11 items-center rounded-full ${
+                                viewSettings.showShadows
+                                  ? "bg-indigo-600"
+                                  : "bg-gray-200"
+                              }`}
+                              onClick={() => {
+                                setViewSettings({
+                                  ...viewSettings,
+                                  showShadows: !viewSettings.showShadows,
+                                });
+                              }}
+                            >
+                              <span
+                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
+                                  viewSettings.showShadows
+                                    ? "translate-x-6"
+                                    : "translate-x-1"
+                                }`}
+                              />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">
+                            Lighting Preset
+                          </label>
+                          <select
+                            className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-150"
+                            value={viewSettings.lightingPreset}
+                            onChange={(e) => {
+                              setViewSettings({
+                                ...viewSettings,
+                                lightingPreset: e.target.value,
+                              });
+                            }}
+                          >
+                            <option value="neutral">Neutral</option>
+                            <option value="warm">Warm</option>
+                            <option value="cool">Cool</option>
+                            <option value="evening">Evening</option>
+                            <option value="bright">Bright</option>
+                          </select>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </Panel>
+                    </Panel>
 
-                <Panel title="View Settings" className="m-4 mb-2">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm text-gray-700">
-                        Show Dimensions
-                      </label>
-                      <div>
-                        <button
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full ${
-                            viewSettings.showDimensions
-                              ? "bg-indigo-600"
-                              : "bg-gray-200"
-                          }`}
-                          onClick={() => {
-                            setViewSettings({
-                              ...viewSettings,
-                              showDimensions: !viewSettings.showDimensions,
-                            });
-                          }}
-                        >
-                          <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
-                              viewSettings.showDimensions
-                                ? "translate-x-6"
-                                : "translate-x-1"
-                            }`}
-                          />
-                        </button>
+                    <Panel title="Design Statistics" className="m-4 mb-2">
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-500">
+                            Items placed:
+                          </span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {furniture.length}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-500">Total cost:</span>
+                          <span className="text-sm font-medium text-indigo-600">
+                            $
+                            {furniture.reduce(
+                              (sum, item) =>
+                                sum +
+                                (FURNITURE_ITEMS.find((f) => f.name === item.type)
+                                  ?.price || 0),
+                              0
+                            )}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-500">Floor area:</span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {(roomConfig.dimensions.width *
+                              roomConfig.dimensions.length) /
+                              10000}{" "}
+                            m²
+                          </span>
+                        </div>
                       </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm text-gray-700">
-                        Show Shadows
-                      </label>
-                      <div>
-                        <button
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full ${
-                            viewSettings.showShadows
-                              ? "bg-indigo-600"
-                              : "bg-gray-200"
-                          }`}
-                          onClick={() => {
-                            setViewSettings({
-                              ...viewSettings,
-                              showShadows: !viewSettings.showShadows,
-                            });
-                          }}
-                        >
-                          <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
-                              viewSettings.showShadows
-                                ? "translate-x-6"
-                                : "translate-x-1"
-                            }`}
-                          />
-                        </button>
+                    </Panel>
+                  </>
+                ) : (
+                  <>
+                    {/* --- Furniture Properties Panel --- */}
+                    {selectedItem ? (
+                      <Panel title="Furniture Properties" className="m-4 mb-2">
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-xs text-gray-500 mb-1">
+                              Name
+                            </label>
+                            <div className="text-sm font-medium text-gray-900">
+                              {selectedItem.type}
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-xs text-gray-500 mb-1">
+                              Color
+                            </label>
+                            <div className="flex items-center">
+                              <div
+                                className="h-6 w-6 rounded-md border border-gray-300 mr-2"
+                                style={{ backgroundColor: selectedItem.color }}
+                              ></div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {selectedItem.color}
+                              </div>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-xs text-gray-500 mb-1">
+                              Position
+                            </label>
+                            <div className="text-sm font-medium text-gray-900">
+                              X: {selectedItem.position.x.toFixed(2)}, Y: {selectedItem.position.y.toFixed(2)}, Z: {selectedItem.position.z.toFixed(2)}
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-xs text-gray-500 mb-1">
+                              Rotation
+                            </label>
+                            <div className="text-sm font-medium text-gray-900">
+                              {Math.round(selectedItem.rotation * (180 / Math.PI))}°
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-xs text-gray-500 mb-1">
+                              Dimensions
+                            </label>
+                            <div className="text-sm font-medium text-gray-900">
+                              {selectedItem.dimensions.width} × {selectedItem.dimensions.depth} × {selectedItem.dimensions.height} cm
+                            </div>
+                          </div>
+                        </div>
+                      </Panel>
+                    ) : (
+                      <div className="m-4 text-gray-500 text-center">
+                        No furniture selected.
                       </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">
-                        Lighting Preset
-                      </label>
-                      <select
-                        className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-150"
-                        value={viewSettings.lightingPreset}
-                        onChange={(e) => {
-                          setViewSettings({
-                            ...viewSettings,
-                            lightingPreset: e.target.value,
-                          });
-                        }}
-                      >
-                        <option value="neutral">Neutral</option>
-                        <option value="warm">Warm</option>
-                        <option value="cool">Cool</option>
-                        <option value="evening">Evening</option>
-                        <option value="bright">Bright</option>
-                      </select>
-                    </div>
-                  </div>
-                </Panel>
-
-                <Panel title="Design Statistics" className="m-4 mb-2">
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">
-                        Items placed:
-                      </span>
-                      <span className="text-sm font-medium text-gray-900">
-                        0
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">Total cost:</span>
-                      <span className="text-sm font-medium text-indigo-600">
-                        $0
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">Floor area:</span>
-                      <span className="text-sm font-medium text-gray-900">
-                        {(roomConfig.dimensions.width *
-                          roomConfig.dimensions.length) /
-                          10000}{" "}
-                        m²
-                      </span>
-                    </div>
-                  </div>
-                </Panel>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           )}
