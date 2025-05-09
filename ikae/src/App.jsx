@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import Editor from "./pages/Editor";
 import Login from "./pages/Login";
@@ -34,15 +33,35 @@ function App() {
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/details" element={<ProductDetailsPage />} />
           <Route path="/products/:id" element={<ProductDetailsPage />} />{" "}
-
           {/* Protected Routes */}
-          <Route path="/room-editor" element={<PrivateRoute element={<RoomEditor />} />} />
-          <Route path="/dashboard" element={<PrivateRoute element={<DashboardPage />} />} />
-          <Route path="/studio" element={<PrivateRoute element={<DesignStudioPage />} />} />
-          <Route path="/room" element={<PrivateRoute element={<RoomDesigner />} />} />
-          <Route path="/profile" element={<PrivateRoute element={<UserProfileSettingsPage />} />} />
-          <Route path="/checkout" element={<PrivateRoute element={<CheckoutPage />} />} />
-          <Route path="/confirm" element={<PrivateRoute element={<OrderSuccessPage />} />} />
+          <Route
+            path="/room-editor"
+            element={<PrivateRoute element={<RoomEditor />} />}
+          />
+          <Route
+            path="/dashboard"
+            element={<PrivateRoute element={<DashboardPage />} />}
+          />
+          <Route
+            path="/studio"
+            element={<PrivateRoute element={<DesignStudioPage />} />}
+          />
+          <Route
+            path="/room"
+            element={<PrivateRoute element={<RoomDesigner />} />}
+          />
+          <Route
+            path="/profile"
+            element={<PrivateRoute element={<UserProfileSettingsPage />} />}
+          />
+          <Route
+            path="/checkout"
+            element={<PrivateRoute element={<CheckoutPage />} />}
+          />
+          <Route
+            path="/confirm"
+            element={<PrivateRoute element={<OrderSuccessPage />} />}
+          />
           <Route path="/editor" element={<Editor />} />
         </Routes>
       </BrowserRouter>
