@@ -600,7 +600,6 @@ const Studio = () => {
     }]);
     showToast("Design saved to library");
   };
-
   // --- Save design to localStorage using designName as key ---
   function saveDesignToLocalStorage() {
     const data = {
@@ -615,7 +614,13 @@ const Studio = () => {
         glb: item.glb,
         image: item.image,
         id: item.id,
+        // Add price from furnitureItems
+        price: furnitureItems.find(f => f.name === item.type)?.price || 0
       })),
+      totalCost: furniture.reduce(
+        (sum, item) => sum + (furnitureItems.find(f => f.name === item.type)?.price || 0),
+        0
+      )
     };
     localStorage.setItem(`roomDesign:${designName}`.trim(), JSON.stringify(data));
   }
@@ -838,7 +843,26 @@ const Studio = () => {
                 icon={<ShareIcon className="h-4 w-4" />}
                 onClick={() => {
                   handleSaveDesign();
-                  navigate('/checkout');
+                  // Calculate total cost
+                  const totalCost = furniture.reduce(
+                    (sum, item) => sum + (furnitureItems.find(f => f.name === item.type)?.price || 0),
+                    0
+                  );
+                  // Navigate to checkout with design data
+                  navigate('/checkout', {
+                    state: {
+                      designData: {
+                        id: Date.now(),
+                        name: designName,
+                        furniture: furniture.map(item => ({
+                          ...item,
+                          price: furnitureItems.find(f => f.name === item.type)?.price || 0
+                        })),
+                        totalCost,
+                        timestamp: new Date().toISOString()
+                      }
+                    }
+                  });
                 }}
               >
                 Checkout

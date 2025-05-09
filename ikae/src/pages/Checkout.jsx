@@ -17,41 +17,58 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
   const successPageRoute = "/confirm";
 
-  // Product data - in a real app, this would come from a cart context or API
-  const [selectedItems, setSelectedItems] = useState([
-    {
-      id: 1,
-      name: "Modern Ergonomic Chair",
-      description: "Comfortable office chair with lumbar support",
-      image:
-        "https://www.vigfurniture.com/media/catalog/product/cache/6d4faa98f2b48c05dae02148ead85f2f/7/8/78736_1.jpg",
-      price: 54999,
-      quantity: 1,
-      color: "Gray",
-      dimensions: '24"W x 26"D x 40"H',
-    },
-    {
-      id: 2,
-      name: "Solid Oak Dining Table",
-      description: "Handcrafted dining table with natural finish",
-      image:
-        "https://masterplankuk.com/cdn/shop/files/Chunky_Solid_Oak_Dining_Table_and_Bench_set_ebony.png?v=1738927003&width=640",
-      price: 199999,
-      quantity: 1,
-      color: "Natural Oak",
-      dimensions: '72"L x 36"W x 30"H',
-    },
-    {
-      id: 3,
-      name: "Designer Side Table",
-      description: "Minimalist side table with tempered glass top",
-      image: "https://edge.thesofaandchair.co.uk/23/158208/2.jpg",
-      price: 32999,
-      quantity: 2,
-      color: "Black/Glass",
-      dimensions: '18"Dia x 22"H',
-    },
-  ]);
+  // Product data - in a real app, this would come from a cart context or API  const location = useLocation();
+  const designData = location.state?.designData;
+  
+  // Initialize selectedItems from either designData or defaults
+  const [selectedItems, setSelectedItems] = useState(() => {
+    if (designData?.furniture) {
+      return designData.furniture.map(item => ({
+        id: item.id,
+        name: item.type,
+        description: `Custom ${item.type}`,
+        image: item.image,
+        price: item.price,
+        quantity: 1,
+        color: item.color,
+        dimensions: `${item.dimensions.width}"W x ${item.dimensions.depth}"D x ${item.dimensions.height}"H`,
+      }));
+    }
+    return [
+      {
+        id: 1,
+        name: "Modern Ergonomic Chair",
+        description: "Comfortable office chair with lumbar support",
+        image:
+          "https://www.vigfurniture.com/media/catalog/product/cache/6d4faa98f2b48c05dae02148ead85f2f/7/8/78736_1.jpg",
+        price: 54999,
+        quantity: 1,
+        color: "Gray",
+        dimensions: '24"W x 26"D x 40"H',
+      },
+      {
+        id: 2,
+        name: "Solid Oak Dining Table",
+        description: "Handcrafted dining table with natural finish",
+        image:
+          "https://masterplankuk.com/cdn/shop/files/Chunky_Solid_Oak_Dining_Table_and_Bench_set_ebony.png?v=1738927003&width=640",
+        price: 199999,
+        quantity: 1,
+        color: "Natural Oak",
+        dimensions: '72"L x 36"W x 30"H',
+      },
+      {
+        id: 3,
+        name: "Designer Side Table",
+        description: "Minimalist side table with tempered glass top",
+        image: "https://edge.thesofaandchair.co.uk/23/158208/2.jpg",
+        price: 32999,
+        quantity: 2,
+        color: "Black/Glass",
+        dimensions: '18"Dia x 22"H',
+      },
+    ];
+  });
 
   // Form and UI state
   const [paymentMethod, setPaymentMethod] = useState("card");
