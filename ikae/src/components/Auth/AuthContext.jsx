@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
       phone: "", // Initialize as empty or prompt user later
       company: "", // Initialize as empty or prompt user later
       role: "", // Initialize as empty or prompt user later
-      avatar: '/default-avatar.png', // Use a local default avatar path
+      avatar: "/default-avatar.png", // Use a local default avatar path
       emailVerified: false, // Default to not verified
       twoFactorEnabled: false,
       language: "English",
@@ -82,7 +82,7 @@ export const AuthProvider = ({ children }) => {
 
     if (user && (await bcrypt.compare(password, user.hashedPassword))) {
       // Create a new object without the hashedPassword
-      const { hashedPassword, ...userWithoutPassword } = user;
+      const { _hashedPassword, ...userWithoutPassword } = user;
       setCurrentUser(userWithoutPassword);
       localStorage.setItem("currentUser", JSON.stringify(userWithoutPassword));
       return userWithoutPassword;
@@ -98,8 +98,8 @@ export const AuthProvider = ({ children }) => {
 
   const updateUser = async (updatedUserData) => {
     if (currentUser) {
-      const users = JSON.parse(localStorage.getItem('users')) || [];
-      const userIndex = users.findIndex(u => u.id === currentUser.id);
+      const users = JSON.parse(localStorage.getItem("users")) || [];
+      const userIndex = users.findIndex((u) => u.id === currentUser.id);
 
       const updatedUser = { ...currentUser, ...updatedUserData };
 
@@ -109,16 +109,16 @@ export const AuthProvider = ({ children }) => {
         // If direct password change is needed here, ensure it's hashed before saving to 'users' list.
         const fullUserRecord = { ...users[userIndex], ...updatedUserData };
         users[userIndex] = fullUserRecord;
-        localStorage.setItem('users', JSON.stringify(users));
+        localStorage.setItem("users", JSON.stringify(users));
       }
 
       // Update currentUser state and localStorage for currentUser (without hashed password)
       const { _hashedPassword, ...userWithoutPassword } = updatedUser;
       setCurrentUser(userWithoutPassword);
-      localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
+      localStorage.setItem("currentUser", JSON.stringify(userWithoutPassword));
       return userWithoutPassword;
     }
-    throw new Error('No user currently logged in to update.');
+    throw new Error("No user currently logged in to update.");
   };
 
   const value = {

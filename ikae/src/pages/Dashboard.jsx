@@ -82,8 +82,7 @@ const DashboardPage = () => {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isNotificationsOpen, isUserMenuOpen]);
 
   // Close mobile sidebar on window resize
@@ -122,7 +121,7 @@ const DashboardPage = () => {
   const handleLogout = () => {
     logout(); // Perform the logout action from AuthContext
     setIsUserMenuOpen(false); // Close the user menu if it's open
-    navigate('/'); // Redirect to the home page
+    navigate("/"); // Redirect to the home page
   };
 
   // Filter designs based on active tab
@@ -273,7 +272,9 @@ const DashboardPage = () => {
     }
 
     return (
-      <div className="relative user-menu"> {/* Add 'user-menu' class here */}
+      <div className="relative user-menu">
+        {" "}
+        {/* Add 'user-menu' class here */}
         <button
           onClick={toggleUserMenu}
           className="flex items-center p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -285,7 +286,8 @@ const DashboardPage = () => {
               alt="User avatar"
               onError={(e) => {
                 e.target.onerror = null;
-                e.target.src = ""; /* Fallback handled by UserCircleIcon below */
+                e.target.src =
+                  ""; /* Fallback handled by UserCircleIcon below */
               }}
             />
           ) : (
@@ -313,7 +315,7 @@ const DashboardPage = () => {
                 onClick={(e) => {
                   e.preventDefault(); // Crucial: Prevent Link's default navigation
                   setIsUserMenuOpen(false); // Close the menu
-                  navigate('/profile'); // Programmatically navigate
+                  navigate("/profile"); // Programmatically navigate
                 }}
               >
                 <UserCircleIcon className="mr-2 h-5 w-5 text-gray-400" />
@@ -456,7 +458,7 @@ const DashboardPage = () => {
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0 mb-6">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                  Welcome back, Gagana
+                  Welcome back, {currentUser ? currentUser.firstName : "User"}
                 </h1>
                 <p className="text-gray-600 mt-1">
                   Here's an overview of your recent designs and activity
