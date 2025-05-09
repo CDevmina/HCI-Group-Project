@@ -685,7 +685,7 @@ const Studio = () => {
   };
 
   const handleExit = () => {
-    navigate("/room");
+    navigate(-1);
   };
 
   // UI interaction
@@ -741,7 +741,7 @@ const Studio = () => {
                 icon={<ArrowLeftIcon className="h-5 w-5" />}
                 className="mr-3"
                 onClick={handleExit}
-                tooltipText="Return to Dashboard"
+                tooltipText="Go Back"
               />
 
               {isDesignNameEditing ? (
