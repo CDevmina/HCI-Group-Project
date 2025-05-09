@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   UserCircleIcon,
   KeyIcon,
@@ -285,6 +285,7 @@ const Badge = ({ children, variant = "gray", size = "md" }) => {
 // Main Profile Settings Component
 const UserProfileSettingsPage = () => {
   const { currentUser, updateUser, logout } = useAuth(); // Get currentUser, updateUser, and logout
+  const navigate = useNavigate();
 
   // State initialization
   const [activeSection, setActiveSection] = useState("profile");
@@ -355,6 +356,9 @@ const UserProfileSettingsPage = () => {
     }
   }, [currentUser]);
 
+  const handleGoBack = () => {
+    navigate(-1);
+  };
 
   // Data validation methods
   const validatePersonalInfo = () => {
@@ -2018,13 +2022,13 @@ const UserProfileSettingsPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
-              <Link
-                to="/dashboard"
+              <button
+                onClick={handleGoBack}
                 className="text-gray-600 hover:text-gray-900 transition-colors duration-150 ease-in-out"
-                aria-label="Back to dashboard"
+                aria-label="Go back"
               >
                 <ArrowLeftIcon className="h-5 w-5" />
-              </Link>
+              </button>
               <h1 className="text-xl font-semibold text-gray-900">
                 Profile & Settings
               </h1>
