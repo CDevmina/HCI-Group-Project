@@ -12,7 +12,6 @@ import {
 } from './RoomTheme';
 
 export default function Room2D({
-  roomSize,
   furniture,
   selectedItem,
   setSelectedItem,
@@ -23,13 +22,12 @@ export default function Room2D({
   gizmoMode,
   updateFurniture,
 }) {
-  // States and Refs from legacy code for vertex dragging
-  const [isDraggingVertex, setIsDraggingVertex] = useState(false); // Renamed from isDragging for clarity
+  // State and refs for vertex dragging
   const [draggedHandle, setDraggedHandle] = useState(null);
   const dragStartRef = useRef({ vertexes: [], index: null });
   
   const groupRef = useRef();
-  const orbitControlsRef = useRef(); // Use this ref for OrbitControls
+  const orbitControlsRef = useRef();
   const controlsRef = useRef();
   const transformControlsRef = useRef();
   const { camera, gl, scene } = useThree();
@@ -139,7 +137,6 @@ export default function Room2D({
   const CornerHandle = ({ position, index }) => {
     const handlePointerDown = (e) => {
       e.stopPropagation(); // Prevent OrbitControls from activating
-      setIsDraggingVertex(true);
       setDraggedHandle(index);
       // Store a copy of vertexes at the start of the drag
       dragStartRef.current = {
@@ -170,7 +167,6 @@ export default function Room2D({
       };
 
       const handlePointerUp = () => {
-        setIsDraggingVertex(false);
         setDraggedHandle(null);
         window.removeEventListener('pointermove', handlePointerMove);
         window.removeEventListener('pointerup', handlePointerUp);

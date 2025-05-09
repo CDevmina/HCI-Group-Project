@@ -1,11 +1,10 @@
 // components/Room3D.jsx
-import { useRef, useMemo, useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import FurnitureItem from './FurnitureItem';
 import {lights, useFloorMaterialProps, useWallMaterialProps} from './RoomTheme';
-import { TransformControls } from '@react-three/drei'; // Keep this import
+import { TransformControls } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
-
 import { GizmoHelper, GizmoViewport } from '@react-three/drei';
 
 export default function Room3D({ 
@@ -15,8 +14,8 @@ export default function Room3D({
   setSelectedItem, 
   vertexes, 
   skirtingHeight = 0.2,
-  updateFurniture,   // Receive central update function
-  isGizmoActive,     // Receive gizmo active state
+  updateFurniture,
+  isGizmoActive,
   gizmoMode      
 }) {
   const groupRef = useRef();
@@ -91,7 +90,7 @@ export default function Room3D({
   // Helper to generate world-based UVs for any polygon
   function getWorldUVs(vertexes, tiling = 2) {
     // Use X and Z as UVs, scaled by tiling
-    return vertexes.flatMap(([x, y, z]) => [x * tiling, z * tiling]);
+    return vertexes.flatMap(([x, , z]) => [x * tiling, z * tiling]);
   }
 
   // Wall thickness (centered)
@@ -110,10 +109,8 @@ export default function Room3D({
       const v2a = offsetPoint(v2, n, WALL_THICKNESS / 2);
       const v2b = offsetPoint(v2, n, -WALL_THICKNESS / 2);
       // Center of wall
-      const cx = (v1[0] + v2[0]) / 2;
-      const cz = (v1[2] + v2[2]) / 2;
       const length = Math.sqrt((v2[0] - v1[0]) ** 2 + (v2[2] - v1[2]) ** 2);
-      const angle = Math.atan2(v2[2] - v1[2], v2[0] - v1[0]);
+      const angle = Math.atan2(v2[2] - v1[2], v1[0] - v1[0]);
       const wallVertexes = [v1a, v2a, v2b, v1b];
       return (
         <mesh
@@ -125,7 +122,7 @@ export default function Room3D({
             <float32BufferAttribute
               attach="attributes-uv"
               args={[
-                new Float32Array(wallVertexes.flatMap(([x, y, z]) => [x * tiling, y * tiling])),
+                new Float32Array(wallVertexes.flatMap(([x, y]) => [x * tiling, y * tiling])),
                 2,
               ]}
             />
@@ -147,10 +144,8 @@ export default function Room3D({
       // Offset both sides for skirting
       const v1a = offsetPoint(v1, n, WALL_THICKNESS / 2);
       const v2a = offsetPoint(v2, n, WALL_THICKNESS / 2);
-      const cx = (v1[0] + v2[0]) / 2;
-      const cz = (v1[2] + v2[2]) / 2;
       const length = Math.sqrt((v2[0] - v1[0]) ** 2 + (v2[2] - v1[2]) ** 2);
-      const angle = Math.atan2(v2[2] - v1[2], v2[0] - v1[0]);
+      const angle = Math.atan2(v2[2] - v1[2], v1[0] - v1[0]);
       return (
         <mesh
           key={i}

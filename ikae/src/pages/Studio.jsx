@@ -62,6 +62,7 @@ const FURNITURE_ITEMS = [
     image:
       "https://cdn.shopify.com/s/files/1/2270/8601/files/green-chair-folk-interiors2.jpg?v=1716056259",
     popular: true,
+    glb: "", // Added GLB path
   },
   {
     id: "chair-2",
@@ -85,13 +86,14 @@ const FURNITURE_ITEMS = [
   },
   {
     id: "sofa-1",
-    name: "3-Seater Sofa",
+    name: "Sofa",
     category: "chairs",
     price: 899,
     dimensions: { width: 220, depth: 95, height: 85 },
     image:
       "https://www.housingunits.co.uk/media/catalog/product/cache/6988f987dc3394f24496d57c2f3e330c/d/5/d5dd93a23faea479e580adea9e352ddd.jpg",
     popular: true,
+    glb: "/src/scenes/RoomEditor/models/Sofa/Sofa.glb",
   },
   {
     id: "table-1",
@@ -456,7 +458,13 @@ const FurnitureCard = ({
         )}
         {isHovering && (
           <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <button className="bg-indigo-600 text-white text-sm font-medium px-3 py-1.5 rounded-md hover:bg-indigo-700 transform scale-90 group-hover:scale-100 transition-transform duration-200">
+            <button
+              className="bg-indigo-600 text-white text-sm font-medium px-3 py-1.5 rounded-md hover:bg-indigo-700 transform scale-90 group-hover:scale-100 transition-transform duration-200"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAdd(item);
+              }}
+            >
               Add to Room
             </button>
           </div>
@@ -479,7 +487,7 @@ const FurnitureCard = ({
 
 // ========== MAIN COMPONENT ==========
 
-const DesignStudioPage = () => {
+const Studio = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const canvasRef = useRef(null);
@@ -496,6 +504,15 @@ const DesignStudioPage = () => {
       floorColor: "#E5E7EB",
     },
   };
+
+  // Control Panel States
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [gizmoMode, setGizmoMode] = useState('translate');
+  const [isGizmoActive, setIsGizmoActive] = useState(true);
+  const [color, setColor] = useState('#cccccc');
+  const [savedDesigns, setSavedDesigns] = useState([]);
+  const [loadError, setLoadError] = useState('');
+  const [vertexes, setVertexes] = useState([]);
 
   // ========== STATE MANAGEMENT ==========
 
@@ -541,7 +558,7 @@ const DesignStudioPage = () => {
     lightingPreset: "neutral",
   });
 
-  // Add furniture function
+  // Add furniture with history tracking
   const addFurniture = (model) => {
     const newItem = {
       id: `${model.name}-${Math.random().toString(36).substr(2, 9)}`,
@@ -555,9 +572,49 @@ const DesignStudioPage = () => {
       image: model.image,
     };
     setFurniture((prev) => [...prev, newItem]);
+    addToHistory({ type: 'add', item: newItem });
+    showToast(`Added ${model.name} to room`, "success");
   };
 
-  // ========== EFFECTS ==========
+  // History management - add after addFurniture function
+  const addToHistory = (action) => {
+    setUndoStack(prev => [...prev, action]);
+    setRedoStack([]); // Clear redo stack when new action is performed
+  };
+
+  const undo = () => {
+    if (undoStack.length === 0) return;
+    const lastAction = undoStack[undoStack.length - 1];
+    setUndoStack(prev => prev.slice(0, -1));
+    setRedoStack(prev => [...prev, lastAction]);
+    // Reverse the last action
+    if (lastAction.type === 'add') {
+      setFurniture(prev => prev.filter(item => item.id !== lastAction.item.id));
+    }
+    // Add more action types as needed
+  };
+
+  const redo = () => {
+    if (redoStack.length === 0) return;
+    const nextAction = redoStack[redoStack.length - 1];
+    setRedoStack(prev => prev.slice(0, -1));
+    setUndoStack(prev => [...prev, nextAction]);
+    // Reapply the action
+    if (nextAction.type === 'add') {
+      setFurniture(prev => [...prev, nextAction.item]);
+    }
+    // Add more action types as needed
+  };
+
+  // Instructions overlay - add after history management
+  useEffect(() => {
+    if (showInstructionsOverlay) {
+      const timer = setTimeout(() => {
+        setShowInstructionsOverlay(false);
+      }, 5000); // Auto-hide after 5 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [showInstructionsOverlay]);
 
   // Handle canvas resize and fullscreen changes
   useEffect(() => {
@@ -580,6 +637,23 @@ const DesignStudioPage = () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
   }, []);
+
+  // Save designs - add after showToast function
+  const saveDesign = () => {
+    setSavedDesigns(prev => [...prev, {
+      id: Date.now(),
+      name: designName,
+      furniture,
+      timestamp: new Date().toISOString()
+    }]);
+    showToast("Design saved to library");
+  };
+
+  // Error handling - add after saveDesign function
+  const handleError = (error) => {
+    setLoadError(error.message);
+    showToast(error.message, "error");
+  };
 
   // ========== EVENT HANDLERS ==========
 
@@ -615,16 +689,20 @@ const DesignStudioPage = () => {
   };
 
   const handleSaveDesign = () => {
-    setSavingStatus("saving");
-
-    setTimeout(() => {
-      setSavingStatus("saved");
-      showToast("Design saved successfully");
-
+    try {
+      setSavingStatus("saving");
+      saveDesign();
       setTimeout(() => {
-        setSavingStatus("idle");
-      }, 2000);
-    }, 800);
+        setSavingStatus("saved");
+        showToast("Design saved successfully");
+        setTimeout(() => {
+          setSavingStatus("idle");
+        }, 2000);
+      }, 800);
+    } catch (error) {
+      handleError(error);
+      setSavingStatus("error");
+    }
   };
 
   const handleExit = () => {
@@ -635,6 +713,31 @@ const DesignStudioPage = () => {
   const handleGetStarted = () => {
     setShowInstructionsOverlay(false);
   };
+
+  // Instructions overlay component
+  const InstructionsOverlay = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
+      <div className="bg-white rounded-xl shadow-xl p-6 max-w-md">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Welcome to the Design Studio!</h2>
+        <p className="text-gray-600 mb-6">
+          Get started by adding furniture from the catalog on the left. You can move, rotate, and customize each piece.
+        </p>
+        <Button variant="primary" onClick={handleGetStarted}>
+          Get Started
+        </Button>
+      </div>
+    </div>
+  );
+
+  // Show instructions overlay when component mounts
+  useEffect(() => {
+    if (showInstructionsOverlay) {
+      return () => {
+        // Cleanup
+        setShowInstructionsOverlay(false);
+      };
+    }
+  }, [showInstructionsOverlay]);
 
   // ========== RENDER ==========
   return (
@@ -916,7 +1019,7 @@ const DesignStudioPage = () => {
                       <FurnitureCard
                         key={item.id}
                         item={item}
-                        onAdd={() => {}}
+                        onAdd={addFurniture}
                         isHovering={hoveringItem === item.id}
                         onMouseEnter={setHoveringItem}
                         onMouseLeave={() => setHoveringItem(null)}
@@ -943,6 +1046,7 @@ const DesignStudioPage = () => {
                   undoStack.length === 0 ? "opacity-50 cursor-not-allowed" : ""
                 }
                 tooltipText="Undo"
+                onClick={undo}
               />
               <Button
                 variant="ghost"
@@ -953,6 +1057,7 @@ const DesignStudioPage = () => {
                   redoStack.length === 0 ? "opacity-50 cursor-not-allowed" : ""
                 }
                 tooltipText="Redo"
+                onClick={redo}
               />
               <div className="h-6 border-l border-gray-300 mx-1"></div>
               <Button
@@ -1033,6 +1138,21 @@ const DesignStudioPage = () => {
             furniture={furniture}
             setFurniture={setFurniture}
             addFurniture={addFurniture}
+            selectedItem={selectedItem}
+            setSelectedItem={setSelectedItem}
+            gizmoMode={gizmoMode}
+            setGizmoMode={setGizmoMode}
+            isGizmoActive={isGizmoActive}
+            setIsGizmoActive={setIsGizmoActive}
+            vertexes={vertexes}
+            setVertexes={setVertexes}
+            color={color}
+            setColor={setColor}
+            gridSize={gridSize}
+            viewPosition={viewPosition}
+            savedDesigns={savedDesigns}
+            loadError={loadError}
+            snapToGrid={snapToGrid}
           />
         </div>
 
@@ -1304,4 +1424,4 @@ const DesignStudioPage = () => {
   );
 };
 
-export default DesignStudioPage;
+export default Studio;
