@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../components/Auth/useAuth";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -12,6 +13,8 @@ import {
   ClockIcon,
   XMarkIcon,
   Bars3Icon,
+  UserCircleIcon,
+  ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import {
   CheckCircleIcon,
@@ -22,7 +25,8 @@ import {
 } from "@heroicons/react/24/solid";
 
 const DashboardPage = () => {
-  // State management
+  const { currentUser, logout } = useAuth();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -123,10 +127,7 @@ const DashboardPage = () => {
     if (isUserMenuOpen) setIsUserMenuOpen(false);
   };
 
-  const toggleUserMenu = () => {
-    setIsUserMenuOpen(!isUserMenuOpen);
-    if (isNotificationsOpen) setIsNotificationsOpen(false);
-  };
+  const toggleUserMenu = () => setIsUserMenuOpen(!isUserMenuOpen);
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -134,6 +135,12 @@ const DashboardPage = () => {
 
   const toggleMobileSidebar = () => {
     setIsMobileSidebarOpen(!isMobileSidebarOpen);
+  };
+
+  const handleLogout = () => {
+    logout(); // Perform the logout action from AuthContext
+    setIsUserMenuOpen(false); // Close the user menu if it's open
+    navigate('/'); // Redirect to the home page
   };
 
   // Filter designs based on active tab
@@ -268,6 +275,74 @@ const DashboardPage = () => {
     </>
   );
 
+  const renderDashboardHeaderUserMenu = () => {
+    if (!currentUser) {
+      // Optionally, handle the case where currentUser is null, though PrivateRoute should prevent this
+      return null;
+    }
+
+    return (
+      <div className="relative user-menu"> {/* Add 'user-menu' class here */}
+        <button
+          onClick={toggleUserMenu}
+          className="flex items-center p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          {currentUser.avatar ? (
+            <img
+              className="h-8 w-8 rounded-full object-cover"
+              src={currentUser.avatar}
+              alt="User avatar"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = ""; /* Fallback handled by UserCircleIcon below */
+              }}
+            />
+          ) : (
+            <UserCircleIcon className="h-8 w-8 text-gray-500" />
+          )}
+          <span className="ml-2 hidden md:block text-sm font-medium text-gray-700">
+            {currentUser.firstName}
+          </span>
+          <ChevronDownIcon className="ml-1 h-4 w-4 text-gray-400 hidden md:block" />
+        </button>
+        {isUserMenuOpen && (
+          <div className="absolute right-0 mt-2 w-56 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+            <div className="py-1">
+              <div className="px-4 py-3 border-b border-gray-100">
+                <p className="text-sm font-semibold text-gray-900 truncate">
+                  {currentUser.firstName} {currentUser.lastName}
+                </p>
+                <p className="text-xs text-gray-500 truncate">
+                  {currentUser.email}
+                </p>
+              </div>
+              <Link
+                to="/profile" // This 'to' prop is still useful for context (e.g., right-click open in new tab)
+                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                onClick={(e) => {
+                  e.preventDefault(); // Crucial: Prevent Link's default navigation
+                  setIsUserMenuOpen(false); // Close the menu
+                  navigate('/profile'); // Programmatically navigate
+                }}
+              >
+                <UserCircleIcon className="mr-2 h-5 w-5 text-gray-400" />
+                Your Profile
+              </Link>
+              {/* Add other dashboard-specific menu items if needed */}
+              <button
+                onClick={handleLogout}
+                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600"
+              >
+                <ArrowRightOnRectangleIcon className="mr-2 h-5 w-5 text-gray-400 group-hover:text-red-500" />
+                Sign Out
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="flex h-screen bg-slate-50">
       {/* Desktop Sidebar */}
@@ -378,58 +453,7 @@ const DashboardPage = () => {
               </div>
 
               {/* User Menu */}
-              <div className="relative user-menu">
-                <button
-                  onClick={toggleUserMenu}
-                  className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full p-1"
-                  aria-label="User menu"
-                  aria-expanded={isUserMenuOpen}
-                >
-                  <img
-                    className="h-8 w-8 rounded-full object-cover ring-2 ring-white"
-                    src="https://placehold.co/100/3b82f6/ffffff?text=GD"
-                    alt="User"
-                  />
-                  <span className="text-sm font-medium text-gray-700 hidden md:block">
-                    GM Designer
-                  </span>
-                  <ChevronDownIcon className="h-4 w-4 text-gray-500 hidden md:block" />
-                </button>
-
-                {/* User Dropdown */}
-                {isUserMenuOpen && (
-                  <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden">
-                    <div className="py-1">
-                      <div className="px-4 py-3 border-b border-gray-200">
-                        <p className="text-sm font-medium text-gray-800">
-                          GM Designer
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          gagana.designer@gmail.com
-                        </p>
-                      </div>
-                      <Link
-                        to="/profile"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        Your Profile
-                      </Link>
-                      <Link
-                        to="/settings"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        Settings
-                      </Link>
-                      <button
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors border-t border-gray-200"
-                        onClick={() => console.log("Sign out")}
-                      >
-                        Sign out
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+              {renderDashboardHeaderUserMenu()}
             </div>
           </div>
         </header>

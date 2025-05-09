@@ -6,7 +6,7 @@ import { useAuth } from "../components/Auth/useAuth"; // Updated import path
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth(); // Get login function from AuthContext
+  const { login } = useAuth(); // Get login function and currentUser from AuthContext
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -80,8 +80,8 @@ const LoginPage = () => {
         // Use the login function from AuthContext
         await login(formData.email, formData.password);
 
-        // Redirect to dashboard after successful login
-        navigate("/dashboard");
+        // Redirect to home page after successful login
+        navigate("/"); // Changed from "/dashboard"
       } catch (error) {
         console.error("Login error:", error);
         setLoginError(error.message || "Invalid email or password. Please try again.");
@@ -97,10 +97,11 @@ const LoginPage = () => {
     // Simulate loading state
     setIsSubmitting(true);
 
-    // Simulate API delay then redirect
+    // Simulate API delay then set submitting to false, no navigation
     setTimeout(() => {
       setIsSubmitting(false);
-      navigate("/dashboard");
+      // No navigation here, buttons are for display/future implementation
+      alert(`${provider} login is not implemented yet.`);
     }, 1500);
   };
 
