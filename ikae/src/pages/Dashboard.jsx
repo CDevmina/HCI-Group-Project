@@ -138,9 +138,9 @@ const DashboardPage = () => {
   };
 
   const handleLogout = () => {
-    logout();
-    setIsUserMenuOpen(false);
-    navigate("/"); // Or to login page
+    logout(); // Perform the logout action from AuthContext
+    setIsUserMenuOpen(false); // Close the user menu if it's open
+    navigate('/'); // Redirect to the home page
   };
 
   // Filter designs based on active tab
@@ -282,7 +282,7 @@ const DashboardPage = () => {
     }
 
     return (
-      <div className="relative">
+      <div className="relative user-menu"> {/* Add 'user-menu' class here */}
         <button
           onClick={toggleUserMenu}
           className="flex items-center p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -317,9 +317,13 @@ const DashboardPage = () => {
                 </p>
               </div>
               <Link
-                to="/profile"
+                to="/profile" // This 'to' prop is still useful for context (e.g., right-click open in new tab)
                 className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                onClick={() => setIsUserMenuOpen(false)}
+                onClick={(e) => {
+                  e.preventDefault(); // Crucial: Prevent Link's default navigation
+                  setIsUserMenuOpen(false); // Close the menu
+                  navigate('/profile'); // Programmatically navigate
+                }}
               >
                 <UserCircleIcon className="mr-2 h-5 w-5 text-gray-400" />
                 Your Profile

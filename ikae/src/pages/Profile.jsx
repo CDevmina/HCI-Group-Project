@@ -418,17 +418,7 @@ const UserProfileSettingsPage = () => {
 
   const handlePasswordSubmit = async () => {
     if (validatePassword() && currentUser) {
-      // IMPORTANT: Password hashing should happen on the backend or in a secure client-side manner.
-      // The current AuthContext.updateUser does not re-hash passwords.
-      // This is a simplified example. For actual password changes, you'd typically send
-      // currentPassword and newPassword to an API endpoint that handles verification and hashing.
       try {
-        // Simulate password change - in a real app, call an API
-        // For now, we'll just clear the fields and show success.
-        // If you were to update the password directly in localStorage (not recommended for plaintext):
-        // const newHashedPassword = await bcrypt.hash(formData.newPassword, 10);
-        // await updateUser({ hashedPassword: newHashedPassword }); // This would require AuthContext to handle it
-
         console.warn("Password change simulation. Actual hashing and update via API needed.");
         setFormData({
           ...formData,
