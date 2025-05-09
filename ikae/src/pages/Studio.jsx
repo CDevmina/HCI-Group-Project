@@ -445,10 +445,7 @@ const Studio = () => {
   useEffect(() => {
     if (!isDesignNameEditing) {
       showToast("Design name updated");
-      console.log(loadedDesign.vertexes);
     }
-    // Only run when editing ends
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDesignNameEditing]);
 
   // UI state
