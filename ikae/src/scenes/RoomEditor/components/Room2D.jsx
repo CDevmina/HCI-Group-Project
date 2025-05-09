@@ -66,7 +66,7 @@ export default function Room2D({
     if (!selectedObject || !updateFurniture || selectedItem === null) return;
     const newPosition = {
       x: selectedObject.position.x,
-      y: 0, 
+      y: selectedObject.position.y, 
       z: selectedObject.position.z
     };
     const newRotation = selectedObject.rotation.y; 

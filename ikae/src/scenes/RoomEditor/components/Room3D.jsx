@@ -72,7 +72,7 @@ export default function Room3D({
         const newScale = { x: selectedObject.scale.x, y: selectedObject.scale.y, z: selectedObject.scale.z }; //Update scale
         const furnitureItemData = furniture.find(f => f.id === selectedItem);
         if (furnitureItemData?.glb) { newPosition.y = 0; }
-        updateFurniture(selectedItem, { position: newPosition, rotation: newRotation. y, scale: newScale });
+           updateFurniture(selectedItem, { position: newPosition, rotation: newRotation, scale: newScale });
     }
   };
 
@@ -200,8 +200,7 @@ export default function Room3D({
           key={item.id}
           item={{
             ...item,
-            // For GLB models, ensure y=0 so it sits on the floor
-            position: item.glb ? { ...item.position, y: 0 } : item.position
+            position: item.position // <-- Always use the actual position
           }}
           is2D={false}
           isSelected={selectedItem === item.id}
