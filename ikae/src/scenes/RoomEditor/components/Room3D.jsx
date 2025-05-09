@@ -31,6 +31,14 @@ export default function Room3D({
   const [selectedObject, setSelectedObject] = useState(null);
   const transformControlsRef = useRef();
 
+  // --- Dynamic Floor Shape for Arbitrary Polygon ---
+  // Memoize the shape geometry for performance
+  const floorShapeGeometry = useMemo(() => {
+    if (!vertexes || vertexes.length < 3) return null;
+    // Create shape in XY plane using [x, z] as [x, y]
+    const shape = new THREE.Shape(vertexes.map(([x, y, z]) => new THREE.Vector2(x, z)));
+    return new THREE.ShapeGeometry(shape);
+  }, [vertexes]);
 
   useEffect(() => {
     if (floorGeometryRef.current) {
@@ -173,25 +181,10 @@ export default function Room3D({
       {lights(height)}
 
       {/* Floor polygon */}
-      <mesh position={[0, 0, 0]} receiveShadow>
-        <bufferGeometry ref={floorGeometryRef} attach="geometry">
-          <float32BufferAttribute attach="attributes-position" args={[new Float32Array(vertexes.flat()), 3]} />
-          <float32BufferAttribute
-            attach="attributes-uv"
-            args={[
-              new Float32Array(getWorldUVs(vertexes, tiling)),
-              2,
-            ]}
-          />
-          <float32BufferAttribute
-            attach="attributes-uv2"
-            args={[
-              new Float32Array(getWorldUVs(vertexes, tiling)),
-              2,
-            ]}
-          />
-          <bufferAttribute attach="index" count={6} array={new Uint16Array([0, 1, 2, 0, 2, 3])} itemSize={1} />
-        </bufferGeometry>
+      <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, Math.PI]} scale={[-1, 1, 1]} receiveShadow>
+        {floorShapeGeometry && (
+          <primitive object={floorShapeGeometry} attach="geometry" />
+        )}
         <meshStandardMaterial {...floorMaterialProps} />
       </mesh>
 

@@ -97,39 +97,67 @@ export default function Room2D({
     }
   }, [selectedObject]);
 
+  // --- Add Corner Handle Button ---
+  // Helper to get midpoint between two vertexes
+  const getMidpoint = (v1, v2) => [
+    (v1[0] + v2[0]) / 2,
+    (v1[1] + v2[1]) / 2,
+    (v1[2] + v2[2]) / 2,
+  ];
+
+  // Handler to add a new vertex between two corners
+  const handleAddCorner = (index) => {
+    // Insert a new vertex between vertexes[index] and vertexes[index+1]
+    const v1 = vertexes[index];
+    const v2 = vertexes[(index + 1) % vertexes.length];
+    const midpoint = getMidpoint(v1, v2);
+    const newVertexes = [
+      ...vertexes.slice(0, index + 1),
+      midpoint,
+      ...vertexes.slice(index + 1),
+    ];
+    setVertexes(newVertexes);
+  };
 
   // --- DimensionLine Component (from legacy, adapted) ---
   const DimensionLine = ({ start, end, value, isVertical }) => {
+    // Offset the text away from the line by 0.5 units perpendicular to the edge
+    const dx = end[0] - start[0];
+    const dz = end[2] - start[2];
+    const len = Math.sqrt(dx * dx + dz * dz) || 1;
+    // Perpendicular (outward) normal (right-hand rule, so swap and negate)
+    const nx = -dz / len;
+    const nz = dx / len;
+    const offset = 0.5; // Distance from the line
     const textPosition = [
-      (start[0] + end[0]) / 2,
-      0.1, // Position text slightly above the floor
-      (start[2] + end[2]) / 2
+      (start[0] + end[0]) / 2 + nx * offset,
+      0.1, // Slightly above the floor
+      (start[2] + end[2]) / 2 + nz * offset
     ];
     const textRotation = [
-        -Math.PI / 2, // Rotate text to be flat on XZ plane for top-down view
-        0,
-        isVertical ? Math.PI / 2 : 0 // Further rotation for vertical/horizontal lines
+      -Math.PI / 2, // Flat on XZ plane
+      0,
+      isVertical ? Math.PI / 2 : 0
     ];
-
     return (
-        <group>
+      <group>
         <line>
-            <bufferGeometry attach="geometry">
+          <bufferGeometry attach="geometry">
             <float32BufferAttribute attach="attributes-position" args={[new Float32Array([...start, ...end]), 3]} />
-            </bufferGeometry>
-            <lineBasicMaterial attach="material" color="black" />
+          </bufferGeometry>
+          <lineBasicMaterial attach="material" color="black" />
         </line>
         <Text
-            position={textPosition}
-            rotation={textRotation}
-            fontSize={0.3}
-            color="black"
-            anchorX="center"
-            anchorY="middle" // Changed from 'bottom' for better centering
+          position={textPosition}
+          rotation={textRotation}
+          fontSize={0.3}
+          color="black"
+          anchorX="center"
+          anchorY="middle"
         >
-            {`${value}m`}
+          {`${value}m`}
         </Text>
-        </group>
+      </group>
     );
   };
 
@@ -202,34 +230,59 @@ export default function Room2D({
   };
 
   // --- BorderedFloor Component (integrates CornerHandle) ---
-  const BorderedFloor = () => (
-    <group>
-      {/* Border outline */}
-      <lineLoop>
-        <bufferGeometry attach="geometry">
-          <float32BufferAttribute attach="attributes-position" args={[new Float32Array(vertexes.flat()), 3]} />
-        </bufferGeometry>
-        <lineBasicMaterial attach="material" color={borderColor} linewidth={2} />
-      </lineLoop>
-      {/* Main floor polygon */}
-      <mesh receiveShadow>
-        <bufferGeometry attach="geometry">
-          <float32BufferAttribute attach="attributes-position" args={[new Float32Array(vertexes.flat()), 3]} />
-          <bufferAttribute attach="index" count={6} array={new Uint16Array([0, 1, 2, 0, 2, 3])} itemSize={1} />
-        </bufferGeometry>
-        <meshStandardMaterial
-          color={floorColor}
-          roughness={floorRoughness}
-          metalness={floorMetalness}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      {/* Render corner handles */}
-      {vertexes.map((v, i) => (
-        <CornerHandle key={i} position={v} index={i} />
-      ))}
-    </group>
-  );
+  const BorderedFloor = () => {
+    // Convert vertexes to 2D points for THREE.Shape
+    const shapePoints = vertexes.map(([x, y, z]) => new THREE.Vector2(x, z));
+    let shape = null;
+    if (shapePoints.length >= 3) {
+      shape = new THREE.Shape(shapePoints);
+    }
+    return (
+      <group>
+        {/* Border outline */}
+        <lineLoop>
+          <bufferGeometry attach="geometry">
+            <float32BufferAttribute attach="attributes-position" args={[new Float32Array(vertexes.flat()), 3]} />
+          </bufferGeometry>
+          <lineBasicMaterial attach="material" color={borderColor} linewidth={2} />
+        </lineLoop>
+        {/* Main floor polygon (dynamic shape) */}
+        {shape && (
+          <mesh receiveShadow rotation={[-Math.PI / 2, 0, Math.PI]} scale={[-1, 1, 1]}>
+            <shapeGeometry args={[shape]} />
+            <meshStandardMaterial
+              color={floorColor}
+              roughness={floorRoughness}
+              metalness={floorMetalness}
+              side={THREE.DoubleSide}
+            />
+          </mesh>
+        )}
+        {/* Render corner handles */}
+        {vertexes.map((v, i) => (
+          <CornerHandle key={i} position={v} index={i} />
+        ))}
+        {/* Add-corner buttons at edge midpoints */}
+        {vertexes.map((v, i) => {
+          const next = vertexes[(i + 1) % vertexes.length];
+          const midpoint = getMidpoint(v, next);
+          return (
+            <mesh
+              key={`add-corner-${i}`}
+              position={[midpoint[0], 0.2, midpoint[2]]}
+              onClick={e => {
+                e.stopPropagation();
+                handleAddCorner(i);
+              }}
+            >
+              <sphereGeometry args={[0.18, 16, 16]} />
+              <meshBasicMaterial color="#4a9eff" opacity={0.7} transparent />
+            </mesh>
+          );
+        })}
+      </group>
+    );
+  };
 
   return (
     <group ref={groupRef}>
@@ -261,22 +314,22 @@ export default function Room2D({
         />
       )}
 
-      {showDimensions && vertexes.length === 4 && (
-        <>
+      {/* Show dimension lines for every side */}
+      {showDimensions && vertexes.length >= 2 && vertexes.map((v, i) => {
+        const next = vertexes[(i + 1) % vertexes.length];
+        const dx = next[0] - v[0];
+        const dz = next[2] - v[2];
+        const length = Math.sqrt(dx * dx + dz * dz).toFixed(2);
+        return (
           <DimensionLine
-            start={vertexes[1]}
-            end={vertexes[0]}
-            value={Math.abs(vertexes[0][0] - vertexes[1][0]).toFixed(2)}
-            isVertical={false}
+            key={`dim-${i}`}
+            start={v}
+            end={next}
+            value={length}
+            isVertical={Math.abs(dx) < Math.abs(dz)}
           />
-          <DimensionLine
-            start={vertexes[0]}
-            end={vertexes[3]}
-            value={Math.abs(vertexes[0][2] - vertexes[3][2]).toFixed(2)}
-            isVertical={true}
-          />
-        </>
-      )}
+        );
+      })}
 
       <OrbitControls
         ref={controlsRef}

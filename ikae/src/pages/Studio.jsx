@@ -211,11 +211,6 @@ const VIEW_MODES = [
     name: "Floor Plan",
     icon: <Square3Stack3DIcon className="h-5 w-5" />,
   },
-  {
-    id: "first-person",
-    name: "First Person",
-    icon: <EyeSolidIcon className="h-5 w-5" />,
-  },
 ];
 
 // ========== REUSABLE COMPONENTS ==========
@@ -524,6 +519,44 @@ const Studio = () => {
   const [loadError, setLoadError] = useState('');
   const [vertexes, setVertexes] = useState([]);
 
+  // --- Furniture property update helper ---
+  const updateFurniture = (id, updates) => {
+    setFurniture((prev) => prev.map((item) => item.id === id ? { ...item, ...updates } : item));
+    addToHistory({ type: 'update', id, updates });
+  };
+
+  // --- Furniture delete helper ---
+  const deleteFurniture = (id) => {
+    setFurniture((prev) => prev.filter((item) => item.id !== id));
+    addToHistory({ type: 'delete', id });
+    setSelectedItem(null);
+    showToast('Furniture item deleted', 'success');
+  };
+
+  // --- Furniture property panel handlers ---
+  const handleFurnitureColorChange = (e) => {
+    if (!selectedItem) return;
+    updateFurniture(selectedItem, { color: e.target.value });
+  };
+  const handleFurniturePositionChange = (axis, value) => {
+    if (!selectedItem) return;
+    const item = furniture.find((f) => f.id === selectedItem);
+    if (!item) return;
+    const newPosition = { ...item.position, [axis]: Number(value) };
+    updateFurniture(selectedItem, { position: newPosition });
+  };
+  const handleFurnitureRotationChange = (value) => {
+    if (!selectedItem) return;
+    updateFurniture(selectedItem, { rotation: Number(value) * (Math.PI / 180) });
+  };
+  const handleFurnitureScaleChange = (axis, value) => {
+    if (!selectedItem) return;
+    const item = furniture.find((f) => f.id === selectedItem);
+    if (!item) return;
+    const newScale = { ...item.scale, [axis]: Number(value) };
+    updateFurniture(selectedItem, { scale: newScale });
+  };
+
   // ========== STATE MANAGEMENT ==========
 
   // Design metadata
@@ -626,6 +659,13 @@ const Studio = () => {
       return () => clearTimeout(timer);
     }
   }, [showInstructionsOverlay]);
+
+  // Show furniture properties panel when a furniture item is selected
+  useEffect(() => {
+    if (selectedItem) {
+      setRightPanelTab('furniture');
+    }
+  }, [selectedItem]);
 
   // Handle canvas resize and fullscreen changes
   useEffect(() => {
@@ -1417,60 +1457,125 @@ const Studio = () => {
                   <>
                     {/* --- Furniture Properties Panel --- */}
                     {selectedItem ? (
-                      <Panel title="Furniture Properties" className="m-4 mb-2">
-                        <div className="space-y-3">
-                          <div>
-                            <label className="block text-xs text-gray-500 mb-1">
-                              Name
-                            </label>
-                            <div className="text-sm font-medium text-gray-900">
-                              {selectedItem.type}
-                            </div>
-                          </div>
-                          <div>
-                            <label className="block text-xs text-gray-500 mb-1">
-                              Color
-                            </label>
-                            <div className="flex items-center">
-                              <div
-                                className="h-6 w-6 rounded-md border border-gray-300 mr-2"
-                                style={{ backgroundColor: selectedItem.color }}
-                              ></div>
-                              <div className="text-sm font-medium text-gray-900">
-                                {selectedItem.color}
+                      (() => {
+                        const item = furniture.find((f) => f.id === selectedItem);
+                        if (!item) return null;
+                        return (
+                          <div className="m-4 mb-2 p-4 bg-gray-50 rounded-lg shadow-sm">
+                            <h3 className="text-lg font-semibold mb-2">Selected Item: {item.type}</h3>
+                            {/* Gizmo Mode Selector */}
+                            <div className="control-group" style={{ marginBottom: '15px' }}>
+                              <label style={{fontWeight: 'bold', marginBottom: '5px', display: 'block'}}>Gizmo Mode:</label>
+                              <div style={{display: 'flex', gap: '5px'}}>
+                                <Button
+                                  variant={gizmoMode === 'translate' ? 'selected' : 'secondary'}
+                                  onClick={() => { setGizmoMode('translate'); setIsGizmoActive(true); }}
+                                >
+                                  Translate
+                                </Button>
+                                <Button
+                                  variant={gizmoMode === 'rotate' ? 'selected' : 'secondary'}
+                                  onClick={() => { setGizmoMode('rotate'); setIsGizmoActive(true); }}
+                                >
+                                  Rotate
+                                </Button>
+                                <Button
+                                  variant={gizmoMode === 'scale' ? 'selected' : 'secondary'}
+                                  onClick={() => { setGizmoMode('scale'); setIsGizmoActive(true); }}
+                                >
+                                  Scale
+                                </Button>
                               </div>
                             </div>
-                          </div>
-                          <div>
-                            <label className="block text-xs text-gray-500 mb-1">
-                              Position
-                            </label>
-                            <div className="text-sm font-medium text-gray-900">
-                              X: {selectedItem.position.x.toFixed(2)}, Y: {selectedItem.position.y.toFixed(2)}, Z: {selectedItem.position.z.toFixed(2)}
+                            <div className="mb-3">
+                              <label className="block text-sm font-medium mb-1">Color</label>
+                              <input
+                                type="color"
+                                value={item.color || '#cccccc'}
+                                onChange={handleFurnitureColorChange}
+                                className="w-10 h-10 p-0 border-0 bg-transparent cursor-pointer"
+                              />
                             </div>
-                          </div>
-                          <div>
-                            <label className="block text-xs text-gray-500 mb-1">
-                              Rotation
-                            </label>
-                            <div className="text-sm font-medium text-gray-900">
-                              {Math.round(selectedItem.rotation * (180 / Math.PI))}°
+                            <div className="mb-3 flex gap-4">
+                              <div>
+                                <label className="block text-sm font-medium mb-1">X Position</label>
+                                <input
+                                  type="number"
+                                  value={item.position.x.toFixed(2)}
+                                  step={0.1}
+                                  onChange={e => handleFurniturePositionChange('x', e.target.value)}
+                                  className="w-20 px-2 py-1 border rounded"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium mb-1">Z Position</label>
+                                <input
+                                  type="number"
+                                  value={item.position.z.toFixed(2)}
+                                  step={0.1}
+                                  onChange={e => handleFurniturePositionChange('z', e.target.value)}
+                                  className="w-20 px-2 py-1 border rounded"
+                                />
+                              </div>
                             </div>
-                          </div>
-                          <div>
-                            <label className="block text-xs text-gray-500 mb-1">
-                              Dimensions
-                            </label>
-                            <div className="text-sm font-medium text-gray-900">
-                              {selectedItem.dimensions.width} × {selectedItem.dimensions.depth} × {selectedItem.dimensions.height} cm
+                            <div className="mb-3">
+                              <label className="block text-sm font-medium mb-1">Rotation (Y-axis): {Math.round(item.rotation * (180 / Math.PI))}°</label>
+                              <input
+                                type="range"
+                                min="0"
+                                max="360"
+                                value={Math.round(item.rotation * (180/Math.PI))}
+                                onChange={e => handleFurnitureRotationChange(e.target.value)}
+                                step={1}
+                                className="w-full"
+                              />
                             </div>
+                            <div className="mb-3 flex gap-4">
+                              <div>
+                                <label className="block text-sm font-medium mb-1">Scale X</label>
+                                <input
+                                  type="number"
+                                  value={item.scale.x}
+                                  step={0.01}
+                                  min={0.01}
+                                  onChange={e => handleFurnitureScaleChange('x', e.target.value)}
+                                  className="w-20 px-2 py-1 border rounded"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium mb-1">Scale Y</label>
+                                <input
+                                  type="number"
+                                  value={item.scale.y}
+                                  step={0.01}
+                                  min={0.01}
+                                  onChange={e => handleFurnitureScaleChange('y', e.target.value)}
+                                  className="w-20 px-2 py-1 border rounded"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium mb-1">Scale Z</label>
+                                <input
+                                  type="number"
+                                  value={item.scale.z}
+                                  step={0.01}
+                                  min={0.01}
+                                  onChange={e => handleFurnitureScaleChange('z', e.target.value)}
+                                  className="w-20 px-2 py-1 border rounded"
+                                />
+                              </div>
+                            </div>
+                            <button
+                              className="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                              onClick={() => deleteFurniture(item.id)}
+                            >
+                              Delete Item
+                            </button>
                           </div>
-                        </div>
-                      </Panel>
+                        );
+                      })()
                     ) : (
-                      <div className="m-4 text-gray-500 text-center">
-                        No furniture selected.
-                      </div>
+                      <div className="m-4 text-gray-500 text-center">No furniture item selected.</div>
                     )}
                   </>
                 )}

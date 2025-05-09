@@ -127,7 +127,9 @@ const RoomEditor = ({
   showDimensions: externalShowDimensions,
   furniture: externalFurniture,
   setFurniture: setExternalFurniture,
-  gizmoMode: externalGizmoMode
+  gizmoMode: externalGizmoMode,
+  selectedItem,
+  setSelectedItem
 }) => {
   // If parent (Studio) provides states, use them, else fallback to internal state
   const [internalIs3DView] = useState(true);
@@ -140,7 +142,6 @@ const RoomEditor = ({
   const gizmoMode = externalGizmoMode || 'translate';
 
   const [roomSize] = useState({ width: 10, depth: 8, height: 3 });
-  const [selectedItem, setSelectedItem] = useState(null);
   const [isGizmoActive, setIsGizmoActive] = useState(false);
 
   const orbitControlsRef3D = useRef();
@@ -171,14 +172,14 @@ const RoomEditor = ({
       setIsGizmoActive(newSel !== null);
       return newSel;
     });
-  }, []);
+  }, [setSelectedItem, setIsGizmoActive]);
 
   const handleDeselect = useCallback(() => {
     if (selectedItem != null) {
       setSelectedItem(null);
       setIsGizmoActive(false);
     }
-  }, [selectedItem]);
+  }, [selectedItem, setSelectedItem]);
 
   useEffect(() => {
     if (is3DView && savedCam && cameraRef3D.current && orbitControlsRef3D.current) {
