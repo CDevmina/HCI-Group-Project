@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Added useNavigate
 import { FiSun, FiMoon, FiUser, FiLogOut, FiMenu, FiX, FiChevronDown } from "react-icons/fi"; // Added FiChevronDown
+import { UserCircleIcon } from "@heroicons/react/24/outline"; // Import UserCircleIcon
 import { useAuth } from "../Auth/useAuth"; // Import useAuth
 
 /**
@@ -16,6 +17,7 @@ const Navbar = () => { // Removed user and onLogout props
     localStorage.getItem("darkMode") === "true"
   );
   const [isScrolled, setIsScrolled] = useState(false);
+  const [avatarLoadError, setAvatarLoadError] = useState(false);
 
   // Handle scroll effect
   useEffect(() => {
@@ -33,6 +35,13 @@ const Navbar = () => { // Removed user and onLogout props
       document.documentElement.classList.add("dark");
     }
   }, [isDarkMode]);
+
+  // Reset avatar load error when currentUser changes
+  useEffect(() => {
+    if (currentUser) {
+      setAvatarLoadError(false);
+    }
+  }, [currentUser]);
 
   // Toggle dark mode
   const toggleDarkMode = () => {
@@ -113,11 +122,16 @@ const Navbar = () => { // Removed user and onLogout props
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center bg-white shadow-sm rounded-full pl-1 pr-2 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
                 >
-                  <img
-                    className="h-8 w-8 rounded-full object-cover mr-2"
-                    src={currentUser.avatar || "https://via.placeholder.com/40"}
-                    alt="User avatar"
-                  />
+                  {currentUser.avatar && !avatarLoadError ? (
+                    <img
+                      className="h-8 w-8 rounded-full object-cover mr-2"
+                      src={currentUser.avatar}
+                      alt="User avatar"
+                      onError={() => setAvatarLoadError(true)}
+                    />
+                  ) : (
+                    <UserCircleIcon className="h-8 w-8 text-gray-500 mr-2" />
+                  )}
                   <span>{currentUser.firstName}</span>
                   <FiChevronDown className="h-4 w-4 ml-1 text-gray-500" />
                 </button>
@@ -213,11 +227,16 @@ const Navbar = () => { // Removed user and onLogout props
           {currentUser ? (
             <div className="pt-4 pb-2 border-t border-gray-200">
               <div className="flex items-center px-3">
-                <img
-                  className="h-10 w-10 rounded-full object-cover border border-gray-200 "
-                  src={currentUser.avatar || "https://via.placeholder.com/40"}
-                  alt="User avatar"
-                />
+                {currentUser.avatar && !avatarLoadError ? (
+                  <img
+                    className="h-10 w-10 rounded-full object-cover border border-gray-200"
+                    src={currentUser.avatar}
+                    alt="User avatar"
+                    onError={() => setAvatarLoadError(true)}
+                  />
+                ) : (
+                  <UserCircleIcon className="h-10 w-10 text-gray-500 rounded-full border border-gray-200" />
+                )}
                 <div className="ml-3">
                   <div className="text-base font-medium text-gray-800 ">
                     {currentUser.firstName} {currentUser.lastName}
