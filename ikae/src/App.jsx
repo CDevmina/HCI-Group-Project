@@ -14,27 +14,30 @@ import RoomEditor from "./scenes/RoomEditor/RoomEditor";
 import HomePage from "./pages/Home";
 import ProductsPage from "./pages/Products";
 import ProductDetailsPage from "./pages/Details";
+import { AuthProvider } from "./components/Auth/AuthContext";
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/room-editor" element={<RoomEditor />} />
-        <Route path="/shop" element={<Shop />} />
-        <Route path="/editor" element={<Editor />} />
-        <Route path="*" element={<ErrorPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/studio" element={<DesignStudioPage />} />
-        <Route path="/room" element={<RoomDesigner />} />
-        <Route path="/profile" element={<UserProfileSettingsPage />} />
-        <Route path="/help" element={<HelpDocumentationPage />} />
-        <Route path="/" element={<HomePage />} />
-        <Route path="/products" element={<ProductsPage />} />
-        <Route path="/details" element={<ProductDetailsPage />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/room-editor" element={<RoomEditor />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/editor" element={<Editor />} />
+          <Route path="*" element={<ErrorPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/studio" element={<DesignStudioPage />} />
+          <Route path="/room" element={<RoomDesigner />} />
+          <Route path="/profile" element={<UserProfileSettingsPage />} />
+          <Route path="/help" element={<HelpDocumentationPage />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/products" element={<ProductsPage />} />
+          <Route path="/details" element={<ProductDetailsPage />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
