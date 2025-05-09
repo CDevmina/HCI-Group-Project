@@ -60,9 +60,9 @@ const FURNITURE_ITEMS = [
     price: 299,
     dimensions: { width: 70, depth: 75, height: 85 },
     image:
-      "https://cdn.shopify.com/s/files/1/2270/8601/files/green-chair-folk-interiors2.jpg?v=1716056259",
+      "https://img-new.cgtrader.com/items/5303121/a0ae513e66/modern-arm-chair-3d-model-a0ae513e66.jpg",
     popular: true,
-    glb: "", // Added GLB path
+    glb: "src/scenes/RoomEditor/models/Modern Arm Chair/Modern Arm Chair.glb", // Added GLB path
   },
   {
     id: "chair-2",
@@ -71,8 +71,9 @@ const FURNITURE_ITEMS = [
     price: 149,
     dimensions: { width: 45, depth: 50, height: 90 },
     image:
-      "https://media.homecentre.com/i/homecentre/165928791-165928791-HC17122023_01-2100.jpg?fmt=auto&$quality-standard$&sm=c&$prodimg-m-sqr-pdp-2x$",
+      "https://img-new.cgtrader.com/items/4091095/bc56a6b87e/scandinavian-lounge-armchair-3d-model-bc56a6b87e.jpg",
     popular: false,
+    glb: "src/scenes/RoomEditor/models/Dining Chair/Dining Chair.glb",
   },
   {
     id: "chair-3",
@@ -81,8 +82,9 @@ const FURNITURE_ITEMS = [
     price: 249,
     dimensions: { width: 65, depth: 65, height: 110 },
     image:
-      "https://s3-eu-west-1.amazonaws.com/backcslimages/newsite/product-images/1500-1500/BC-100-Angle.jpg",
+      "https://img-new.cgtrader.com/items/2023715/a5a18cb0b1/office-computer-chair-3d-model-a5a18cb0b1.jpg",
     popular: true,
+    glb: "src/scenes/RoomEditor/models/Office Chair/Office Chair.glb",
   },
   {
     id: "sofa-1",
@@ -91,7 +93,7 @@ const FURNITURE_ITEMS = [
     price: 899,
     dimensions: { width: 220, depth: 95, height: 85 },
     image:
-      "https://www.housingunits.co.uk/media/catalog/product/cache/6988f987dc3394f24496d57c2f3e330c/d/5/d5dd93a23faea479e580adea9e352ddd.jpg",
+      "https://img-new.cgtrader.com/items/3181700/4f624d26dd/large/realistic-sofa-with-multiple-colors-game-ready-model-3d-model-4f624d26dd.jpg",
     popular: true,
     glb: "/src/scenes/RoomEditor/models/Sofa/Sofa.glb",
   },
@@ -102,8 +104,9 @@ const FURNITURE_ITEMS = [
     price: 599,
     dimensions: { width: 180, depth: 90, height: 75 },
     image:
-      "https://images-cdn.ubuy.co.in/66802aaaf3a57a0c564a6b5f-79-39-39-modern-dining-table-set-for.jpg",
+      "https://img-new.cgtrader.com/items/5414124/cee948ffcb/simple-dining-table-3d-model-cee948ffcb.jpg",
     popular: true,
+    glb: "/src/scenes/RoomEditor/models/Dining Table/Dining Table.glb",
   },
   {
     id: "table-2",
@@ -111,17 +114,19 @@ const FURNITURE_ITEMS = [
     category: "tables",
     price: 349,
     dimensions: { width: 120, depth: 60, height: 45 },
-    image: "https://m.media-amazon.com/images/I/A11vNaMYXSL.jpg",
+    image: "https://img-new.cgtrader.com/items/2513266/345ad2de17/glass-top-coffee-table-3d-model-obj-fbx-gltf.jpg",
     popular: false,
+    glb: "/src/scenes/RoomEditor/models/Coffee Table/Coffee Table.glb",
   },
   {
     id: "table-3",
-    name: "Side Table",
+    name: "Bedside Table",
     category: "tables",
     price: 149,
     dimensions: { width: 50, depth: 50, height: 55 },
-    image: "https://placehold.co/300x300/e5e7eb/64748b?text=Side+Table",
+    image: "https://img-new.cgtrader.com/items/4741965/de9380598c/wooden-bedside-table-nightstand-3d-model-de9380598c.jpg",
     popular: true,
+    glb: "/src/scenes/RoomEditor/models/Bedside Table/Bedside Table.glb",
   },
   {
     id: "storage-1",
@@ -129,8 +134,9 @@ const FURNITURE_ITEMS = [
     category: "storage",
     price: 299,
     dimensions: { width: 80, depth: 30, height: 180 },
-    image: "https://placehold.co/300x300/e5e7eb/64748b?text=Bookshelf",
+    image: "https://img-new.cgtrader.com/items/5811389/afa98ec136/vays-grey-shelf-for-books-and-toys-3d-model-afa98ec136.jpg",
     popular: false,
+    glb: "/src/scenes/RoomEditor/models/Bookshelf/Bookshelf.glb",
   },
   {
     id: "storage-2",
@@ -138,8 +144,9 @@ const FURNITURE_ITEMS = [
     category: "storage",
     price: 249,
     dimensions: { width: 150, depth: 40, height: 50 },
-    image: "https://placehold.co/300x300/e5e7eb/64748b?text=TV+Stand",
+    image: "https://img-new.cgtrader.com/items/4357198/50441016d9/smart-tv-3d-model-50441016d9.jpg",
     popular: true,
+    glb: "/src/scenes/RoomEditor/models/TV Stand/TV Stand.glb",
   },
   {
     id: "lamp-1",
@@ -147,8 +154,9 @@ const FURNITURE_ITEMS = [
     category: "lighting",
     price: 129,
     dimensions: { width: 35, depth: 35, height: 150 },
-    image: "https://placehold.co/300x300/e5e7eb/64748b?text=Floor+Lamp",
+    image: "https://img-new.cgtrader.com/items/3727623/725ded2529/free-standing-lamp-3d-model-725ded2529.jpg",
     popular: false,
+    glb: "/src/scenes/RoomEditor/models/Floor Lamp/Floor Lamp.glb",
   },
   {
     id: "lamp-2",
@@ -156,8 +164,9 @@ const FURNITURE_ITEMS = [
     category: "lighting",
     price: 79,
     dimensions: { width: 30, depth: 30, height: 45 },
-    image: "https://placehold.co/300x300/e5e7eb/64748b?text=Table+Lamp",
+    image: "https://img-new.cgtrader.com/items/2876584/76650968b9/luxury-bedside-lamp-desk-lamp-3d-model-obj-3ds-fbx-c4d-ma-stl.jpg",
     popular: true,
+    glb: "src/scenes/RoomEditor/models/Table Lamp/Table Lamp.glb",
   },
   {
     id: "decor-1",
@@ -165,8 +174,9 @@ const FURNITURE_ITEMS = [
     category: "decor",
     price: 59,
     dimensions: { width: 20, depth: 20, height: 30 },
-    image: "https://placehold.co/300x300/e5e7eb/64748b?text=Vase",
+    image: "https://img-new.cgtrader.com/items/4102566/6e41d17f9c/blue-vase-3d-model-6e41d17f9c.jpg",
     popular: false,
+    glb: "/src/scenes/RoomEditor/models/Decorative Vase/Decorative Vase.glb",
   },
 ];
 
