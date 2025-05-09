@@ -1,0 +1,122 @@
+[
+  {
+    "id": "chair-1",
+    "name": "Modern Armchair",
+    "category": "chairs",
+    "price": 299,
+    "dimensions": { "width": 70, "depth": 75, "height": 85 },
+    "image": "https://img-new.cgtrader.com/items/5303121/a0ae513e66/modern-arm-chair-3d-model-a0ae513e66.jpg",
+    "popular": true,
+    "glb": "src/scenes/RoomEditor/models/Modern Arm Chair/Modern Arm Chair.glb"
+  },
+  {
+    "id": "chair-2",
+    "name": "Dining Chair",
+    "category": "chairs",
+    "price": 149,
+    "dimensions": { "width": 45, "depth": 50, "height": 90 },
+    "image": "https://img-new.cgtrader.com/items/4091095/bc56a6b87e/scandinavian-lounge-armchair-3d-model-bc56a6b87e.jpg",
+    "popular": false,
+    "glb": "src/scenes/RoomEditor/models/Dining Chair/Dining Chair.glb"
+  },
+  {
+    "id": "chair-3",
+    "name": "Office Chair",
+    "category": "chairs",
+    "price": 249,
+    "dimensions": { "width": 65, "depth": 65, "height": 110 },
+    "image": "https://img-new.cgtrader.com/items/2023715/a5a18cb0b1/office-computer-chair-3d-model-a5a18cb0b1.jpg",
+    "popular": true,
+    "glb": "src/scenes/RoomEditor/models/Office Chair/Office Chair.glb"
+  },
+  {
+    "id": "sofa-1",
+    "name": "Sofa",
+    "category": "chairs",
+    "price": 899,
+    "dimensions": { "width": 220, "depth": 95, "height": 85 },
+    "image": "https://img-new.cgtrader.com/items/3181700/4f624d26dd/large/realistic-sofa-with-multiple-colors-game-ready-model-3d-model-4f624d26dd.jpg",
+    "popular": true,
+    "glb": "/src/scenes/RoomEditor/models/Sofa/Sofa.glb"
+  },
+  {
+    "id": "table-1",
+    "name": "Dining Table",
+    "category": "tables",
+    "price": 599,
+    "dimensions": { "width": 180, "depth": 90, "height": 75 },
+    "image": "https://img-new.cgtrader.com/items/5414124/cee948ffcb/simple-dining-table-3d-model-cee948ffcb.jpg",
+    "popular": true,
+    "glb": "/src/scenes/RoomEditor/models/Dining Table/Dining Table.glb"
+  },
+  {
+    "id": "table-2",
+    "name": "Coffee Table",
+    "category": "tables",
+    "price": 349,
+    "dimensions": { "width": 120, "depth": 60, "height": 45 },
+    "image": "https://img-new.cgtrader.com/items/2513266/345ad2de17/glass-top-coffee-table-3d-model-obj-fbx-gltf.jpg",
+    "popular": false,
+    "glb": "/src/scenes/RoomEditor/models/Coffee Table/Coffee Table.glb"
+  },
+  {
+    "id": "table-3",
+    "name": "Bedside Table",
+    "category": "tables",
+    "price": 149,
+    "dimensions": { "width": 50, "depth": 50, "height": 55 },
+    "image": "https://img-new.cgtrader.com/items/4741965/de9380598c/wooden-bedside-table-nightstand-3d-model-de9380598c.jpg",
+    "popular": true,
+    "glb": "/src/scenes/RoomEditor/models/Bedside Table/Bedside Table.glb"
+  },
+  {
+    "id": "storage-1",
+    "name": "Bookshelf",
+    "category": "storage",
+    "price": 299,
+    "dimensions": { "width": 80, "depth": 30, "height": 180 },
+    "image": "https://img-new.cgtrader.com/items/5811389/afa98ec136/vays-grey-shelf-for-books-and-toys-3d-model-afa98ec136.jpg",
+    "popular": false,
+    "glb": "/src/scenes/RoomEditor/models/Bookshelf/Bookshelf.glb"
+  },
+  {
+    "id": "storage-2",
+    "name": "TV Stand",
+    "category": "storage",
+    "price": 249,
+    "dimensions": { "width": 150, "depth": 40, "height": 50 },
+    "image": "https://img-new.cgtrader.com/items/4357198/50441016d9/smart-tv-3d-model-50441016d9.jpg",
+    "popular": true,
+    "glb": "/src/scenes/RoomEditor/models/TV Stand/TV Stand.glb"
+  },
+  {
+    "id": "lamp-1",
+    "name": "Floor Lamp",
+    "category": "lighting",
+    "price": 129,
+    "dimensions": { "width": 35, "depth": 35, "height": 150 },
+    "image": "https://img-new.cgtrader.com/items/3727623/725ded2529/free-standing-lamp-3d-model-725ded2529.jpg",
+    "popular": false,
+    "glb": "/src/scenes/RoomEditor/models/Floor Lamp/Floor Lamp.glb"
+  },
+  {
+    "id": "lamp-2",
+    "name": "Table Lamp",
+    "category": "lighting",
+    "price": 79,
+    "dimensions": { "width": 30, "depth": 30, "height": 45 },
+    "image": "https://img-new.cgtrader.com/items/2876584/76650968b9/luxury-bedside-lamp-desk-lamp-3d-model-obj-3ds-fbx-c4d-ma-stl.jpg",
+    "popular": true,
+    "glb": "src/scenes/RoomEditor/models/Table Lamp/Table Lamp.glb"
+  },
+  {
+    "id": "decor-1",
+    "name": "Decorative Vase",
+    "category": "decor",
+    "price": 59,
+    "dimensions": { "width": 20, "depth": 20, "height": 30 },
+    "image": "https://img-new.cgtrader.com/items/4102566/6e41d17f9c/blue-vase-3d-model-6e41d17f9c.jpg",
+    "popular": false,
+    "glb": "/src/scenes/RoomEditor/models/Decorative Vase/Decorative Vase.glb"
+  }
+]

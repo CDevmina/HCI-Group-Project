@@ -36,6 +36,8 @@ import {
   CheckCircleIcon,
   EyeIcon as EyeSolidIcon,
 } from "@heroicons/react/24/solid";
+import RoomEditor from "../scenes/RoomEditor/RoomEditor";
+import furnitureData from "../scenes/RoomEditor/data/furniture.json";
 
 // ========== MOCK DATA ==========
 
@@ -48,123 +50,6 @@ const FURNITURE_CATEGORIES = [
   { id: "beds", name: "Beds" },
   { id: "lighting", name: "Lighting" },
   { id: "decor", name: "Décor" },
-];
-
-// Mock data for furniture items
-const FURNITURE_ITEMS = [
-  {
-    id: "chair-1",
-    name: "Modern Armchair",
-    category: "chairs",
-    price: 299,
-    dimensions: { width: 70, depth: 75, height: 85 },
-    image:
-      "https://cdn.shopify.com/s/files/1/2270/8601/files/green-chair-folk-interiors2.jpg?v=1716056259",
-    popular: true,
-  },
-  {
-    id: "chair-2",
-    name: "Dining Chair",
-    category: "chairs",
-    price: 149,
-    dimensions: { width: 45, depth: 50, height: 90 },
-    image:
-      "https://media.homecentre.com/i/homecentre/165928791-165928791-HC17122023_01-2100.jpg?fmt=auto&$quality-standard$&sm=c&$prodimg-m-sqr-pdp-2x$",
-    popular: false,
-  },
-  {
-    id: "chair-3",
-    name: "Office Chair",
-    category: "chairs",
-    price: 249,
-    dimensions: { width: 65, depth: 65, height: 110 },
-    image:
-      "https://s3-eu-west-1.amazonaws.com/backcslimages/newsite/product-images/1500-1500/BC-100-Angle.jpg",
-    popular: true,
-  },
-  {
-    id: "sofa-1",
-    name: "3-Seater Sofa",
-    category: "chairs",
-    price: 899,
-    dimensions: { width: 220, depth: 95, height: 85 },
-    image:
-      "https://www.housingunits.co.uk/media/catalog/product/cache/6988f987dc3394f24496d57c2f3e330c/d/5/d5dd93a23faea479e580adea9e352ddd.jpg",
-    popular: true,
-  },
-  {
-    id: "table-1",
-    name: "Dining Table",
-    category: "tables",
-    price: 599,
-    dimensions: { width: 180, depth: 90, height: 75 },
-    image:
-      "https://images-cdn.ubuy.co.in/66802aaaf3a57a0c564a6b5f-79-39-39-modern-dining-table-set-for.jpg",
-    popular: true,
-  },
-  {
-    id: "table-2",
-    name: "Coffee Table",
-    category: "tables",
-    price: 349,
-    dimensions: { width: 120, depth: 60, height: 45 },
-    image: "https://m.media-amazon.com/images/I/A11vNaMYXSL.jpg",
-    popular: false,
-  },
-  {
-    id: "table-3",
-    name: "Side Table",
-    category: "tables",
-    price: 149,
-    dimensions: { width: 50, depth: 50, height: 55 },
-    image: "https://placehold.co/300x300/e5e7eb/64748b?text=Side+Table",
-    popular: true,
-  },
-  {
-    id: "storage-1",
-    name: "Bookshelf",
-    category: "storage",
-    price: 299,
-    dimensions: { width: 80, depth: 30, height: 180 },
-    image: "https://placehold.co/300x300/e5e7eb/64748b?text=Bookshelf",
-    popular: false,
-  },
-  {
-    id: "storage-2",
-    name: "TV Stand",
-    category: "storage",
-    price: 249,
-    dimensions: { width: 150, depth: 40, height: 50 },
-    image: "https://placehold.co/300x300/e5e7eb/64748b?text=TV+Stand",
-    popular: true,
-  },
-  {
-    id: "lamp-1",
-    name: "Floor Lamp",
-    category: "lighting",
-    price: 129,
-    dimensions: { width: 35, depth: 35, height: 150 },
-    image: "https://placehold.co/300x300/e5e7eb/64748b?text=Floor+Lamp",
-    popular: false,
-  },
-  {
-    id: "lamp-2",
-    name: "Table Lamp",
-    category: "lighting",
-    price: 79,
-    dimensions: { width: 30, depth: 30, height: 45 },
-    image: "https://placehold.co/300x300/e5e7eb/64748b?text=Table+Lamp",
-    popular: true,
-  },
-  {
-    id: "decor-1",
-    name: "Decorative Vase",
-    category: "decor",
-    price: 59,
-    dimensions: { width: 20, depth: 20, height: 30 },
-    image: "https://placehold.co/300x300/e5e7eb/64748b?text=Vase",
-    popular: false,
-  },
 ];
 
 // Material options for furniture
@@ -197,11 +82,6 @@ const VIEW_MODES = [
     id: "2d",
     name: "Floor Plan",
     icon: <Square3Stack3DIcon className="h-5 w-5" />,
-  },
-  {
-    id: "first-person",
-    name: "First Person",
-    icon: <EyeSolidIcon className="h-5 w-5" />,
   },
 ];
 
@@ -455,7 +335,13 @@ const FurnitureCard = ({
         )}
         {isHovering && (
           <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <button className="bg-indigo-600 text-white text-sm font-medium px-3 py-1.5 rounded-md hover:bg-indigo-700 transform scale-90 group-hover:scale-100 transition-transform duration-200">
+            <button
+              className="bg-indigo-600 text-white text-sm font-medium px-3 py-1.5 rounded-md hover:bg-indigo-700 transform scale-90 group-hover:scale-100 transition-transform duration-200"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAdd(item);
+              }}
+            >
               Add to Room
             </button>
           </div>
@@ -476,191 +362,94 @@ const FurnitureCard = ({
   );
 };
 
-// ========== VIEW COMPONENTS ==========
-
-// 3D Scene Component for 3D view
-const ThreeDView = ({ roomConfig, placedFurniture, selectedFurniture }) => {
-  return (
-    <div className="w-full h-full bg-gradient-to-b from-gray-100 to-gray-200 flex items-center justify-center">
-      <div
-        className="transform-gpu shadow-xl rounded-md overflow-hidden relative"
-        style={{
-          width: `${roomConfig.dimensions.width}px`,
-          height: `${roomConfig.dimensions.length}px`,
-          backgroundColor: roomConfig.floorColor,
-          perspective: "1000px",
-        }}
-      >
-        {/* Walls */}
-        <div
-          className="absolute inset-0 border-2 border-gray-300"
-          style={{ backgroundColor: roomConfig.wallColor }}
-        ></div>
-
-        {/* Placed Furniture in 3D */}
-        {placedFurniture.map((item) => {
-          const furnitureItem = FURNITURE_ITEMS.find((f) => f.id === item.id);
-          const color = FURNITURE_COLORS.find((c) => c.id === item.colorId);
-          const isSelected = selectedFurniture === item.instanceId;
-
-          return (
-            <div
-              key={item.instanceId}
-              className={`absolute cursor-move ${
-                isSelected ? "ring-2 ring-indigo-500 z-10" : ""
-              }`}
-              style={{
-                width: `${furnitureItem.dimensions.width * item.scale}px`,
-                height: `${furnitureItem.dimensions.depth * item.scale}px`,
-                left: `${item.position.x}px`,
-                top: `${item.position.y}px`,
-                backgroundColor: item.customColor || color.color,
-                transform: `rotate(${item.rotation}deg) translateZ(${
-                  (furnitureItem.dimensions.height * item.scale) / 2
-                }px)`,
-                transition: "all 0.3s ease",
-                boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-              }}
-            >
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="text-xs font-medium text-center p-1 truncate max-w-full">
-                  {furnitureItem.name}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-
-        {/* Room floor */}
-        <div
-          className="absolute inset-0 transform rotate-x-90deg"
-          style={{
-            backgroundColor: roomConfig.floorColor,
-            transformOrigin: "bottom",
-          }}
-        ></div>
-      </div>
-    </div>
-  );
-};
-
-// 2D Floor Plan View
-const TwoDView = ({
-  roomConfig,
-  placedFurniture,
-  selectedFurniture,
-  showGrid,
-  gridSize,
-}) => {
-  return (
-    <div
-      className="w-full h-full relative bg-white border-2 border-gray-300 rounded-md overflow-hidden"
-      style={{
-        backgroundColor: roomConfig.floorColor,
-      }}
-    >
-      {/* Grid */}
-      {showGrid && (
-        <div className="absolute inset-0">
-          <svg width="100%" height="100%">
-            <defs>
-              <pattern
-                id="grid"
-                width={gridSize}
-                height={gridSize}
-                patternUnits="userSpaceOnUse"
-              >
-                <path
-                  d={`M ${gridSize} 0 L 0 0 0 ${gridSize}`}
-                  fill="none"
-                  stroke="rgba(0, 0, 0, 0.1)"
-                  strokeWidth="0.5"
-                />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </svg>
-        </div>
-      )}
-
-      {/* Placed Furniture in 2D */}
-      {placedFurniture.map((item) => {
-        const furnitureItem = FURNITURE_ITEMS.find((f) => f.id === item.id);
-        const color = FURNITURE_COLORS.find((c) => c.id === item.colorId);
-        const isSelected = selectedFurniture === item.instanceId;
-
-        return (
-          <div
-            key={item.instanceId}
-            className={`absolute cursor-move flex items-center justify-center transform-gpu ${
-              isSelected
-                ? "ring-2 ring-indigo-500 z-10"
-                : "hover:ring-2 hover:ring-gray-400 hover:z-10"
-            }`}
-            style={{
-              width: `${furnitureItem.dimensions.width * item.scale}px`,
-              height: `${furnitureItem.dimensions.depth * item.scale}px`,
-              left: `${item.position.x}px`,
-              top: `${item.position.y}px`,
-              backgroundColor: item.customColor || color.color,
-              transform: `rotate(${item.rotation}deg)`,
-              transition: "transform 0.3s ease, left 0.3s ease, top 0.3s ease",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-            }}
-          >
-            <div className="font-medium text-xs text-center p-1 truncate max-w-full">
-              {furnitureItem.name}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
-// First Person View Component
-const FirstPersonView = () => {
-  return (
-    <div className="w-full h-full bg-gradient-to-b from-blue-100 to-gray-200 flex items-center justify-center">
-      <div className="text-center text-lg text-gray-500">
-        <div className="mx-auto bg-white rounded-full p-3 w-12 h-12 flex items-center justify-center mb-2">
-          <EyeSolidIcon className="h-6 w-6 text-indigo-500" />
-        </div>
-        First Person Mode
-        <p className="text-sm text-gray-400 mt-1">Navigate with arrow keys</p>
-      </div>
-    </div>
-  );
-};
-
 // ========== MAIN COMPONENT ==========
 
-const DesignStudioPage = () => {
+const Studio = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const canvasRef = useRef(null);
 
-  // Get room configuration from previous page or use defaults
-  const { roomConfig } = location.state || {
-    roomConfig: {
-      roomName: "My Living Room",
-      dimensions: { width: 400, length: 500, height: 270 },
-      shape: "rectangular",
-      colorScheme: "neutral",
-      floorMaterial: "hardwood",
-      wallColor: "#F9FAFB",
-      floorColor: "#E5E7EB",
-    },
+  // Support loading a design from Dashboard
+  const loadedDesign = location.state?.loadedDesign;
+
+  // If loadedDesign exists, use its data; otherwise, use default roomConfig
+  const initialRoomConfig = loadedDesign?.roomConfig || {
+    roomName: "My Living Room",
+    dimensions: { width: 400, length: 500, height: 270 },
+    shape: "rectangular",
+    colorScheme: "neutral",
+    floorMaterial: "hardwood",
+    wallColor: "#F9FAFB",
+    floorColor: "#E5E7EB",
+  };
+
+  // Control Panel States
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [gizmoMode, setGizmoMode] = useState('translate');
+  const [isGizmoActive, setIsGizmoActive] = useState(true);
+  const [color, setColor] = useState('#cccccc');
+  const [savedDesigns, setSavedDesigns] = useState([]);
+  const [loadError, setLoadError] = useState('');
+  const [vertexes, setVertexes] = useState(
+    loadedDesign?.vertexes && loadedDesign.vertexes.length > 0 ? loadedDesign.vertexes : []
+  );
+
+  // --- Furniture property update helper ---
+  const updateFurniture = (id, updates) => {
+    setFurniture((prev) => prev.map((item) => item.id === id ? { ...item, ...updates } : item));
+    addToHistory({ type: 'update', id, updates });
+  };
+
+  // --- Furniture delete helper ---
+  const deleteFurniture = (id) => {
+    setFurniture((prev) => prev.filter((item) => item.id !== id));
+    addToHistory({ type: 'delete', id });
+    setSelectedItem(null);
+    showToast('Furniture item deleted', 'success');
+  };
+
+  // --- Furniture property panel handlers ---
+  const handleFurnitureColorChange = (e) => {
+    if (!selectedItem) return;
+    updateFurniture(selectedItem, { color: e.target.value });
+  };
+  const handleFurniturePositionChange = (axis, value) => {
+    if (!selectedItem) return;
+    const item = furniture.find((f) => f.id === selectedItem);
+    if (!item) return;
+    const newPosition = { ...item.position, [axis]: Number(value) };
+    updateFurniture(selectedItem, { position: newPosition });
+  };
+  const handleFurnitureRotationChange = (value) => {
+    if (!selectedItem) return;
+    updateFurniture(selectedItem, { rotation: Number(value) * (Math.PI / 180) });
+  };
+  const handleFurnitureScaleChange = (axis, value) => {
+    if (!selectedItem) return;
+    const item = furniture.find((f) => f.id === selectedItem);
+    if (!item) return;
+    const newScale = { ...item.scale, [axis]: Number(value) };
+    updateFurniture(selectedItem, { scale: newScale });
   };
 
   // ========== STATE MANAGEMENT ==========
 
   // Design metadata
   const [designName, setDesignName] = useState(
-    roomConfig.roomName || "New Design"
+    loadedDesign?.name || loadedDesign?.designName || initialRoomConfig.designName || "New Design"
   );
   const [isDesignNameEditing, setIsDesignNameEditing] = useState(false);
   const [savingStatus, setSavingStatus] = useState("idle"); // idle, saving, saved, error
+
+  // Show toast when design name is updated and editing ends
+  useEffect(() => {
+    if (!isDesignNameEditing) {
+      showToast("Design name updated");
+      console.log(loadedDesign.vertexes);
+    }
+    // Only run when editing ends
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDesignNameEditing]);
 
   // UI state
   const [selectedViewMode, setSelectedViewMode] = useState("2d"); // Changed to "2d" as default
@@ -670,12 +459,20 @@ const DesignStudioPage = () => {
   const [toast, setToast] = useState(null);
   const [showHelpTour, setShowHelpTour] = useState(false);
   const [showInstructionsOverlay, setShowInstructionsOverlay] = useState(true);
+  const [rightPanelTab, setRightPanelTab] = useState("room"); // "room" or "furniture"
 
   // Furniture state
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedFurniture, setSelectedFurniture] = useState(null);
-  const [placedFurniture, setPlacedFurniture] = useState([]);
   const [hoveringItem, setHoveringItem] = useState(null);
+  const [furnitureItems, setFurnitureItems] = useState([]);
+  const [furniture, setFurniture] = useState(
+    loadedDesign?.furniture || []
+  );
+
+  // Load furniture items from JSON on mount
+  useEffect(() => {
+    setFurnitureItems(furnitureData);
+  }, []);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -691,10 +488,6 @@ const DesignStudioPage = () => {
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
 
-  // Action state
-  const [_isDragging, setIsDragging] = useState(false);
-  const [_currentAction, setCurrentAction] = useState(null); // null, 'moving', 'rotating', 'scaling'
-
   // View settings
   const [viewSettings, setViewSettings] = useState({
     showDimensions: true,
@@ -702,19 +495,70 @@ const DesignStudioPage = () => {
     lightingPreset: "neutral",
   });
 
-  // ========== COMPUTED VALUES ==========
+  // Add furniture with history tracking
+  const addFurniture = (model) => {
+    const newItem = {
+      id: `${model.name}-${Math.random().toString(36).substr(2, 9)}`,
+      type: model.name,
+      position: { x: 0, y: 0, z: 0 },
+      dimensions: model.dimensions || { width: 1, depth: 1, height: 1 },
+      color: '#cccccc',
+      rotation: 0,
+      scale: { x: 1, y: 1, z: 1 },
+      glb: model.glb,
+      image: model.image,
+    };
+    setFurniture((prev) => [...prev, newItem]);
+    addToHistory({ type: 'add', item: newItem });
+    showToast(`Added ${model.name} to room`, "success");
+  };
 
-  // Filtered furniture items based on search and category
-  const filteredFurnitureItems = FURNITURE_ITEMS.filter((item) => {
-    const matchesCategory =
-      selectedCategory === "all" || item.category === selectedCategory;
-    const matchesSearch = item.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  // History management - add after addFurniture function
+  const addToHistory = (action) => {
+    setUndoStack(prev => [...prev, action]);
+    setRedoStack([]); // Clear redo stack when new action is performed
+  };
 
-  // ========== EFFECTS ==========
+  const undo = () => {
+    if (undoStack.length === 0) return;
+    const lastAction = undoStack[undoStack.length - 1];
+    setUndoStack(prev => prev.slice(0, -1));
+    setRedoStack(prev => [...prev, lastAction]);
+    // Reverse the last action
+    if (lastAction.type === 'add') {
+      setFurniture(prev => prev.filter(item => item.id !== lastAction.item.id));
+    }
+    // Add more action types as needed
+  };
+
+  const redo = () => {
+    if (redoStack.length === 0) return;
+    const nextAction = redoStack[redoStack.length - 1];
+    setRedoStack(prev => prev.slice(0, -1));
+    setUndoStack(prev => [...prev, nextAction]);
+    // Reapply the action
+    if (nextAction.type === 'add') {
+      setFurniture(prev => [...prev, nextAction.item]);
+    }
+    // Add more action types as needed
+  };
+
+  // Instructions overlay - add after history management
+  useEffect(() => {
+    if (showInstructionsOverlay) {
+      const timer = setTimeout(() => {
+        setShowInstructionsOverlay(false);
+      }, 5000); // Auto-hide after 5 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [showInstructionsOverlay]);
+
+  // Show furniture properties panel when a furniture item is selected
+  useEffect(() => {
+    if (selectedItem) {
+      setRightPanelTab('furniture');
+    }
+  }, [selectedItem]);
 
   // Handle canvas resize and fullscreen changes
   useEffect(() => {
@@ -738,162 +582,69 @@ const DesignStudioPage = () => {
     };
   }, []);
 
+  useEffect(() => {
+    // Only initialize if both loadedDesign.vertexes and vertexes are empty or undefined
+    if (loadedDesign?.vertexes && loadedDesign.vertexes.length > 0) {
+      setVertexes(loadedDesign.vertexes);
+    } else if (initialRoomConfig?.dimensions) {
+      const { width, length } = initialRoomConfig.dimensions;
+      setVertexes([
+        [8 / 2, 0, 8 / 2],
+        [-8 / 2, 0, 8 / 2],
+        [-8 / 2, 0, -8 / 2],
+        [8 / 2, 0, -8 / 2],
+      ]);
+    }
+    // eslint-disable-next-line
+  }, []);
+
+  // Save designs - add after showToast function
+  const saveDesign = () => {
+    setSavedDesigns(prev => [...prev, {
+      id: Date.now(),
+      name: designName,
+      furniture,
+      timestamp: new Date().toISOString()
+    }]);
+    showToast("Design saved to library");
+  };
+  // --- Save design to localStorage using designName as key ---
+  function saveDesignToLocalStorage() {
+    const data = {
+      vertexes,
+      furniture: furniture.map(item => ({
+        ...item,
+        position: item.position,
+        rotation: item.rotation,
+        type: item.type,
+        color: item.color,
+        dimensions: item.dimensions,
+        glb: item.glb,
+        image: item.image,
+        id: item.id,
+        // Add price from furnitureItems
+        price: furnitureItems.find(f => f.name === item.type)?.price || 0
+      })),
+      totalCost: furniture.reduce(
+        (sum, item) => sum + (furnitureItems.find(f => f.name === item.type)?.price || 0),
+        0
+      )
+    };
+    localStorage.setItem(`roomDesign:${designName}`.trim(), JSON.stringify(data));
+  }
+
+  // Error handling - add after saveDesign function
+  const handleError = (error) => {
+    setLoadError(error.message);
+    showToast(error.message, "error");
+  };
+
   // ========== EVENT HANDLERS ==========
 
   // Toast management
   const showToast = (message, type = "success") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
-  };
-
-  // Furniture management
-  const handleAddFurniture = (item) => {
-    const newItem = {
-      ...item,
-      instanceId: `${item.id}-${Date.now()}`,
-      position: { x: viewPosition.x, y: viewPosition.y, z: 0 },
-      rotation: 0,
-      scale: 1,
-      materialId: FURNITURE_MATERIALS[0].id,
-      colorId: FURNITURE_COLORS[0].id,
-      customColor: null,
-    };
-
-    // Save current state to undo stack
-    setUndoStack([...undoStack, { type: "add", items: [...placedFurniture] }]);
-    setRedoStack([]);
-
-    setPlacedFurniture([...placedFurniture, newItem]);
-    setSelectedFurniture(newItem.instanceId);
-    setIsPropertiesPanelOpen(true);
-    showToast(`Added ${item.name} to room`);
-
-    if (showInstructionsOverlay) {
-      setShowInstructionsOverlay(false);
-    }
-  };
-
-  const handleSelectFurniture = (instanceId) => {
-    setSelectedFurniture(instanceId);
-    setIsPropertiesPanelOpen(true);
-  };
-
-  const handleRemoveFurniture = (instanceId) => {
-    const itemToRemove = placedFurniture.find(
-      (item) => item.instanceId === instanceId
-    );
-
-    if (!itemToRemove) return;
-
-    const furnitureDetails = FURNITURE_ITEMS.find(
-      (item) => item.id === itemToRemove.id
-    );
-
-    // Save current state to undo stack
-    setUndoStack([
-      ...undoStack,
-      { type: "remove", items: [...placedFurniture] },
-    ]);
-    setRedoStack([]);
-
-    setPlacedFurniture(
-      placedFurniture.filter((item) => item.instanceId !== instanceId)
-    );
-
-    if (selectedFurniture === instanceId) {
-      setSelectedFurniture(null);
-    }
-
-    showToast(`Removed ${furnitureDetails.name}`, "info");
-  };
-
-  const handleDuplicateFurniture = (instanceId) => {
-    const itemToDuplicate = placedFurniture.find(
-      (item) => item.instanceId === instanceId
-    );
-
-    if (itemToDuplicate) {
-      const duplicatedItem = {
-        ...itemToDuplicate,
-        instanceId: `${itemToDuplicate.id}-${Date.now()}`,
-        position: {
-          x: itemToDuplicate.position.x + 20,
-          y: itemToDuplicate.position.y + 20,
-          z: itemToDuplicate.position.z,
-        },
-      };
-
-      // Save current state to undo stack
-      setUndoStack([
-        ...undoStack,
-        { type: "duplicate", items: [...placedFurniture] },
-      ]);
-      setRedoStack([]);
-
-      setPlacedFurniture([...placedFurniture, duplicatedItem]);
-      setSelectedFurniture(duplicatedItem.instanceId);
-
-      const furnitureDetails = FURNITURE_ITEMS.find(
-        (item) => item.id === itemToDuplicate.id
-      );
-      showToast(`Duplicated ${furnitureDetails.name}`);
-    }
-  };
-
-  const handleUpdateFurniture = (instanceId, updates) => {
-    // Save current state to undo stack before making changes
-    if (
-      !undoStack.length ||
-      undoStack[undoStack.length - 1].items !== placedFurniture
-    ) {
-      setUndoStack([
-        ...undoStack,
-        { type: "update", items: [...placedFurniture] },
-      ]);
-      setRedoStack([]);
-    }
-
-    const updatedFurniture = placedFurniture.map((item) =>
-      item.instanceId === instanceId ? { ...item, ...updates } : item
-    );
-
-    setPlacedFurniture(updatedFurniture);
-
-    // Simulate auto-save
-    setSavingStatus("saving");
-    setTimeout(() => {
-      setSavingStatus("saved");
-      setTimeout(() => {
-        setSavingStatus("idle");
-      }, 2000);
-    }, 800);
-  };
-
-  // History management
-  const handleUndo = () => {
-    if (undoStack.length > 0) {
-      const lastAction = undoStack[undoStack.length - 1];
-      setRedoStack([
-        ...redoStack,
-        { type: lastAction.type, items: [...placedFurniture] },
-      ]);
-      setPlacedFurniture(lastAction.items);
-      setUndoStack(undoStack.slice(0, -1));
-      showToast("Undone last action", "info");
-    }
-  };
-
-  const handleRedo = () => {
-    if (redoStack.length > 0) {
-      const nextAction = redoStack[redoStack.length - 1];
-      setUndoStack([
-        ...undoStack,
-        { type: nextAction.type, items: [...placedFurniture] },
-      ]);
-      setPlacedFurniture(nextAction.items);
-      setRedoStack(redoStack.slice(0, -1));
-      showToast("Redone action", "info");
-    }
   };
 
   // View management
@@ -922,108 +673,22 @@ const DesignStudioPage = () => {
   };
 
   const handleSaveDesign = () => {
-    setSavingStatus("saving");
-
-    setTimeout(() => {
-      setSavingStatus("saved");
-      showToast("Design saved successfully");
-
+    try {
+      setSavingStatus("saving");
+      saveDesignToLocalStorage();
       setTimeout(() => {
-        setSavingStatus("idle");
-      }, 2000);
-    }, 800);
+        setSavingStatus("saved");
+        setTimeout(() => setSavingStatus("idle"), 1200);
+      }, 800);
+      showToast("Design saved to library");
+    } catch (error) {
+      setSavingStatus("error");
+      showToast("Error saving design", "error");
+    }
   };
 
   const handleExit = () => {
     navigate("/room");
-  };
-
-  // Dragging functionality
-  const startDragging = (e, instanceId, action = "moving") => {
-    e.stopPropagation();
-    e.preventDefault();
-    setIsDragging(true);
-    setCurrentAction(action);
-    handleSelectFurniture(instanceId);
-
-    const furniture = placedFurniture.find(
-      (item) => item.instanceId === instanceId
-    );
-
-    if (!furniture) return;
-
-    // Initial position for calculations
-    const initialX = e.clientX;
-    const initialY = e.clientY;
-    const initialScale = furniture.scale;
-
-    // Setup event listeners for drag
-    const handleMouseMove = (moveEvent) => {
-      if (action === "moving") {
-        let newX = furniture.position.x + (moveEvent.clientX - initialX);
-        let newY = furniture.position.y + (moveEvent.clientY - initialY);
-
-        // Apply snap to grid if enabled
-        if (snapToGrid) {
-          newX = Math.round(newX / gridSize) * gridSize;
-          newY = Math.round(newY / gridSize) * gridSize;
-        }
-
-        handleUpdateFurniture(instanceId, {
-          position: {
-            x: newX,
-            y: newY,
-            z: furniture.position.z,
-          },
-        });
-      } else if (action === "rotating") {
-        const rect = canvasRef.current.getBoundingClientRect();
-        const centerX =
-          furniture.position.x +
-          rect.left +
-          (furniture.dimensions?.width || 0) / 2;
-        const centerY =
-          furniture.position.y +
-          rect.top +
-          (furniture.dimensions?.height || 0) / 2;
-
-        // Calculate angle between center and mouse position
-        const angle =
-          Math.atan2(moveEvent.clientY - centerY, moveEvent.clientX - centerX) *
-          (180 / Math.PI);
-
-        // Snap rotation to 15-degree increments if snap to grid is enabled
-        let rotation = angle + 90; // Adjust to make 0 degrees point up
-
-        if (snapToGrid) {
-          rotation = Math.round(rotation / 15) * 15;
-        }
-
-        // Keep rotation between 0-360
-        rotation = (rotation + 360) % 360;
-
-        handleUpdateFurniture(instanceId, { rotation });
-      } else if (action === "scaling") {
-        // Calculate distance moved for scaling
-        const distanceMoved = moveEvent.clientX - initialX;
-        const scaleFactor = distanceMoved * 0.01;
-
-        // Apply new scale with bounds
-        const newScale = Math.max(0.5, Math.min(2, initialScale + scaleFactor));
-
-        handleUpdateFurniture(instanceId, { scale: newScale });
-      }
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-      setCurrentAction(null);
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    };
-
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
   };
 
   // UI interaction
@@ -1031,19 +696,30 @@ const DesignStudioPage = () => {
     setShowInstructionsOverlay(false);
   };
 
-  // Helper functions
-  const getSelectedFurnitureItem = () => {
-    return placedFurniture.find(
-      (item) => item.instanceId === selectedFurniture
-    );
-  };
+  // Instructions overlay component
+  const InstructionsOverlay = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm">
+      <div className="bg-white rounded-xl shadow-xl p-6 max-w-md">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Welcome to the Design Studio!</h2>
+        <p className="text-gray-600 mb-6">
+          Get started by adding furniture from the catalog on the left. You can move, rotate, and customize each piece.
+        </p>
+        <Button variant="primary" onClick={handleGetStarted}>
+          Get Started
+        </Button>
+      </div>
+    </div>
+  );
 
-  const getFurnitureMaterial = (materialId) => {
-    return (
-      FURNITURE_MATERIALS.find((material) => material.id === materialId) ||
-      FURNITURE_MATERIALS[0]
-    );
-  };
+  // Show instructions overlay when component mounts
+  useEffect(() => {
+    if (showInstructionsOverlay) {
+      return () => {
+        // Cleanup
+        setShowInstructionsOverlay(false);
+      };
+    }
+  }, [showInstructionsOverlay]);
 
   // ========== RENDER ==========
   return (
@@ -1083,7 +759,6 @@ const DesignStudioPage = () => {
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         setIsDesignNameEditing(false);
-                        showToast("Design name updated");
                       }
                     }}
                   />
@@ -1091,7 +766,6 @@ const DesignStudioPage = () => {
                     className="p-1 ml-1 text-indigo-600 hover:text-indigo-700 rounded-full hover:bg-indigo-50"
                     onClick={() => {
                       setIsDesignNameEditing(false);
-                      showToast("Design name updated");
                     }}
                   >
                     <CheckIcon className="h-4 w-4" />
@@ -1154,7 +828,7 @@ const DesignStudioPage = () => {
               </div>
 
               {/* Edit and View toggle */}
-              <div className="flex bg-gray-100 rounded-lg overflow-hidden mr-2">
+              {/* <div className="flex bg-gray-100 rounded-lg overflow-hidden mr-2">
                 <button className="flex items-center px-3 py-1.5 text-sm font-medium bg-white text-indigo-600 shadow-sm">
                   <PencilIcon className="h-4 w-4 mr-1.5" />
                   Edit
@@ -1163,22 +837,43 @@ const DesignStudioPage = () => {
                   <EyeIcon className="h-4 w-4 mr-1.5" />
                   Preview
                 </button>
-              </div>
+              </div> */}
 
               {/* Action Buttons */}
               <Button
-                variant="primary"
+                variant="secondary"
                 icon={<DocumentTextIcon className="h-4 w-4" />}
                 onClick={handleSaveDesign}
               >
                 Save
-              </Button>
-
-              <Button
-                variant="secondary"
+              </Button>              <Button
+                variant="primary"
                 icon={<ShareIcon className="h-4 w-4" />}
+                onClick={() => {
+                  handleSaveDesign();
+                  // Calculate total cost
+                  const totalCost = furniture.reduce(
+                    (sum, item) => sum + (furnitureItems.find(f => f.name === item.type)?.price || 0),
+                    0
+                  );
+                  // Navigate to checkout with design data
+                  navigate('/checkout', {
+                    state: {
+                      designData: {
+                        id: Date.now(),
+                        name: designName,
+                        furniture: furniture.map(item => ({
+                          ...item,
+                          price: furnitureItems.find(f => f.name === item.type)?.price || 0
+                        })),
+                        totalCost,
+                        timestamp: new Date().toISOString()
+                      }
+                    }
+                  });
+                }}
               >
-                Share
+                Checkout
               </Button>
 
               <Button
@@ -1291,7 +986,15 @@ const DesignStudioPage = () => {
 
               {/* Furniture items grid */}
               <div className="flex-1 overflow-y-auto p-4">
-                {filteredFurnitureItems.length === 0 ? (
+                {furnitureItems.filter((item) => {
+                  const matchesCategory =
+                    selectedCategory === "all" ||
+                    item.category === selectedCategory;
+                  const matchesSearch = item.name
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase());
+                  return matchesCategory && matchesSearch;
+                }).length === 0 ? (
                   <div className="text-center py-12">
                     <div className="mx-auto h-12 w-12 text-gray-400 flex items-center justify-center bg-gray-100 rounded-lg">
                       <CubeIcon className="h-6 w-6" />
@@ -1305,11 +1008,19 @@ const DesignStudioPage = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-4">
-                    {filteredFurnitureItems.map((item) => (
+                    {furnitureItems.filter((item) => {
+                      const matchesCategory =
+                        selectedCategory === "all" ||
+                        item.category === selectedCategory;
+                      const matchesSearch = item.name
+                        .toLowerCase()
+                        .includes(searchQuery.toLowerCase());
+                      return matchesCategory && matchesSearch;
+                    }).map((item) => (
                       <FurnitureCard
                         key={item.id}
                         item={item}
-                        onAdd={handleAddFurniture}
+                        onAdd={addFurniture}
                         isHovering={hoveringItem === item.id}
                         onMouseEnter={setHoveringItem}
                         onMouseLeave={() => setHoveringItem(null)}
@@ -1322,7 +1033,7 @@ const DesignStudioPage = () => {
           )}
         </div>
 
-        {/* Main Canvas Area */}
+        {/* Main Room Editor */}
         <div className="flex-1 flex flex-col relative bg-gray-100 overflow-hidden">
           {/* Toolbar */}
           <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-gray-200 shadow-sm">
@@ -1331,23 +1042,23 @@ const DesignStudioPage = () => {
                 variant="ghost"
                 size="icon"
                 icon={<ArrowUturnLeftIcon className="h-5 w-5" />}
-                onClick={handleUndo}
                 disabled={undoStack.length === 0}
                 className={
                   undoStack.length === 0 ? "opacity-50 cursor-not-allowed" : ""
                 }
                 tooltipText="Undo"
+                onClick={undo}
               />
               <Button
                 variant="ghost"
                 size="icon"
                 icon={<ArrowUturnRightIcon className="h-5 w-5" />}
-                onClick={handleRedo}
                 disabled={redoStack.length === 0}
                 className={
                   redoStack.length === 0 ? "opacity-50 cursor-not-allowed" : ""
                 }
                 tooltipText="Redo"
+                onClick={redo}
               />
               <div className="h-6 border-l border-gray-300 mx-1"></div>
               <Button
@@ -1418,163 +1129,32 @@ const DesignStudioPage = () => {
             </div>
           </div>
 
-          {/* Main Canvas */}
-          <div
-            ref={canvasRef}
-            className="flex-1 relative overflow-hidden bg-gray-50"
-            style={{
-              cursor: selectedFurniture ? "move" : "default",
-            }}
-          >
-            {/* View Container with zoom and position applied */}
-            <div
-              className="absolute inset-0 flex items-center justify-center transform-gpu"
-              style={{
-                transform: `scale(${zoomLevel / 100}) translate(${
-                  viewPosition.x
-                }px, ${viewPosition.y}px)`,
-                transformOrigin: "center center",
-              }}
-            >
-              {/* Render different views based on selected view mode */}
-              {selectedViewMode === "3d" && (
-                <ThreeDView
-                  roomConfig={roomConfig}
-                  placedFurniture={placedFurniture}
-                  selectedFurniture={selectedFurniture}
-                />
-              )}
-
-              {selectedViewMode === "2d" && (
-                <TwoDView
-                  roomConfig={roomConfig}
-                  placedFurniture={placedFurniture}
-                  selectedFurniture={selectedFurniture}
-                  showGrid={showGrid}
-                  gridSize={gridSize}
-                />
-              )}
-
-              {selectedViewMode === "first-person" && <FirstPersonView />}
-
-              {/* Placed Furniture - shared controls across views */}
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  width: `${roomConfig.dimensions.width}px`,
-                  height: `${roomConfig.dimensions.length}px`,
-                }}
-              >
-                {placedFurniture.map((item) => {
-                  const isSelected = selectedFurniture === item.instanceId;
-
-                  return isSelected ? (
-                    <div
-                      key={`controls-${item.instanceId}`}
-                      className="absolute pointer-events-auto"
-                      style={{
-                        left: `${item.position.x}px`,
-                        top: `${item.position.y}px`,
-                        width: `${
-                          FURNITURE_ITEMS.find((f) => f.id === item.id)
-                            .dimensions.width * item.scale
-                        }px`,
-                        height: `${
-                          FURNITURE_ITEMS.find((f) => f.id === item.id)
-                            .dimensions.depth * item.scale
-                        }px`,
-                        transform: `rotate(${item.rotation}deg)`,
-                      }}
-                    >
-                      {/* Rotation handle */}
-                      <div
-                        className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-indigo-500 rounded-full cursor-move flex items-center justify-center text-white shadow-md hover:bg-indigo-600 transition-colors duration-150 z-20"
-                        title="Rotate"
-                        onMouseDown={(e) =>
-                          startDragging(e, item.instanceId, "rotating")
-                        }
-                      >
-                        <ArrowPathIcon className="h-3.5 w-3.5" />
-                      </div>
-
-                      {/* Delete handle */}
-                      <div
-                        className="absolute -top-6 -right-6 w-6 h-6 bg-red-500 rounded-full cursor-pointer flex items-center justify-center text-white shadow-md hover:bg-red-600 transition-colors duration-150 z-20"
-                        title="Remove"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveFurniture(item.instanceId);
-                        }}
-                      >
-                        <XMarkIcon className="h-3.5 w-3.5" />
-                      </div>
-
-                      {/* Duplicate handle */}
-                      <div
-                        className="absolute -top-6 -left-6 w-6 h-6 bg-emerald-500 rounded-full cursor-pointer flex items-center justify-center text-white shadow-md hover:bg-emerald-600 transition-colors duration-150 z-20"
-                        title="Duplicate"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDuplicateFurniture(item.instanceId);
-                        }}
-                      >
-                        <DocumentDuplicateIcon className="h-3.5 w-3.5" />
-                      </div>
-
-                      {/* Scale handle */}
-                      <div
-                        className="absolute -bottom-6 -right-6 w-6 h-6 bg-amber-500 rounded-full cursor-se-resize flex items-center justify-center text-white shadow-md hover:bg-amber-600 transition-colors duration-150 z-20"
-                        title="Resize"
-                        onMouseDown={(e) =>
-                          startDragging(e, item.instanceId, "scaling")
-                        }
-                      >
-                        <ArrowsPointingOutIcon className="h-3.5 w-3.5" />
-                      </div>
-                    </div>
-                  ) : null;
-                })}
-              </div>
-            </div>
-
-            {/* Room dimensions */}
-            {viewSettings.showDimensions && (
-              <div className="absolute bottom-4 right-4 bg-white bg-opacity-90 px-3 py-2 rounded-lg shadow-sm border border-gray-200">
-                <div className="text-sm font-medium text-gray-900">
-                  {roomConfig.dimensions.width} × {roomConfig.dimensions.length}{" "}
-                  cm
-                </div>
-              </div>
-            )}
-
-            {/* Instructions overlay when no furniture */}
-            {placedFurniture.length === 0 && showInstructionsOverlay && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="bg-white bg-opacity-90 p-6 rounded-xl shadow-lg max-w-md text-center pointer-events-auto">
-                  <div className="h-16 w-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CubeIcon className="h-8 w-8 text-indigo-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    Start designing your room
-                  </h3>
-                  <p className="text-gray-600">
-                    Select furniture from the catalog on the left and click to
-                    add it to your room. You can drag, rotate, and customize
-                    each piece to create your perfect space.
-                  </p>
-                  <div className="mt-4 flex justify-center">
-                    <Button
-                      variant="primary"
-                      size="md"
-                      onClick={handleGetStarted}
-                    >
-                      Get Started
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+          <RoomEditor
+            is3DView={selectedViewMode === "3d"}
+            setIs3DView={(v) => setSelectedViewMode(v ? "3d" : "2d")}
+            showDimensions={viewSettings.showDimensions}
+            setShowDimensions={(val) =>
+              setViewSettings((v) => ({ ...v, showDimensions: val }))
+            }
+            furniture={furniture}
+            setFurniture={setFurniture}
+            addFurniture={addFurniture}
+            selectedItem={selectedItem}
+            setSelectedItem={setSelectedItem}
+            gizmoMode={gizmoMode}
+            setGizmoMode={setGizmoMode}
+            isGizmoActive={isGizmoActive}
+            setIsGizmoActive={setIsGizmoActive}
+            vertexes={vertexes}
+            setVertexes={setVertexes}
+            color={color}
+            setColor={setColor}
+            gridSize={gridSize}
+            viewPosition={viewPosition}
+            savedDesigns={savedDesigns}
+            loadError={loadError}
+            snapToGrid={snapToGrid}
+          />
         </div>
 
         {/* Right Sidebar - Properties Panel */}
@@ -1597,288 +1177,35 @@ const DesignStudioPage = () => {
 
           {isPropertiesPanelOpen && (
             <div className="flex flex-col h-full overflow-hidden">
-              {selectedFurniture ? (
-                // Furniture Properties
-                <div className="flex flex-col h-full">
-                  <div className="p-4 border-b border-gray-200 bg-gray-50">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-lg font-medium text-gray-900">
-                        Properties
-                      </h2>
-                      <button
-                        className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"
-                        onClick={() => setSelectedFurniture(null)}
-                      >
-                        <XMarkIcon className="h-5 w-5" />
-                      </button>
-                    </div>
-                  </div>
+              {/* --- Tab Switch Buttons --- */}
+              <div className="flex border-b border-gray-200 bg-gray-50">
+                <button
+                  className={`flex-1 py-2 text-sm font-medium transition-colors ${
+                    rightPanelTab === "room"
+                      ? "bg-white text-indigo-600 border-b-2 border-indigo-600"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                  onClick={() => setRightPanelTab("room")}
+                >
+                  Room Properties
+                </button>
+                <button
+                  className={`flex-1 py-2 text-sm font-medium transition-colors ${
+                    rightPanelTab === "furniture"
+                      ? "bg-white text-indigo-600 border-b-2 border-indigo-600"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                  onClick={() => setRightPanelTab("furniture")}
+                >
+                  Furniture Properties
+                </button>
+              </div>
+              {/* --- End Tab Switch Buttons --- */}
 
-                  {(() => {
-                    const selectedItem = getSelectedFurnitureItem();
-                    if (!selectedItem) return null;
-
-                    const furnitureDetails = FURNITURE_ITEMS.find(
-                      (item) => item.id === selectedItem.id
-                    );
-
-                    if (!furnitureDetails) return null;
-
-                    return (
-                      <div className="flex-1 overflow-y-auto">
-                        <Panel className="m-4 mb-2">
-                          <div className="flex items-start">
-                            <img
-                              src={furnitureDetails.image}
-                              alt={furnitureDetails.name}
-                              className="w-24 h-24 object-cover rounded-lg border border-gray-200 mr-3"
-                            />
-                            <div>
-                              <h3 className="text-sm font-medium text-gray-900">
-                                {furnitureDetails.name}
-                              </h3>
-                              <p className="text-sm text-indigo-600 font-semibold mt-1">
-                                ${furnitureDetails.price}
-                              </p>
-                              <div className="flex mt-2 space-x-2">
-                                <Button
-                                  variant="secondary"
-                                  size="sm"
-                                  icon={
-                                    <DocumentDuplicateIcon className="h-3.5 w-3.5" />
-                                  }
-                                  onClick={() =>
-                                    handleDuplicateFurniture(
-                                      selectedItem.instanceId
-                                    )
-                                  }
-                                >
-                                  Duplicate
-                                </Button>
-                                <Button
-                                  variant="danger"
-                                  size="sm"
-                                  icon={<TrashIcon className="h-3.5 w-3.5" />}
-                                  onClick={() =>
-                                    handleRemoveFurniture(
-                                      selectedItem.instanceId
-                                    )
-                                  }
-                                >
-                                  Remove
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        </Panel>
-
-                        {/* Position and Rotation */}
-                        <Panel title="Position & Rotation" className="m-4 mb-2">
-                          <div className="grid grid-cols-2 gap-3 mb-3">
-                            <div>
-                              <label className="block text-xs text-gray-500 mb-1">
-                                X Position
-                              </label>
-                              <input
-                                type="number"
-                                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-150"
-                                value={Math.round(selectedItem.position.x)}
-                                onChange={(e) => {
-                                  const newX = parseFloat(e.target.value) || 0;
-                                  handleUpdateFurniture(
-                                    selectedItem.instanceId,
-                                    {
-                                      position: {
-                                        ...selectedItem.position,
-                                        x: newX,
-                                      },
-                                    }
-                                  );
-                                }}
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-xs text-gray-500 mb-1">
-                                Y Position
-                              </label>
-                              <input
-                                type="number"
-                                className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-150"
-                                value={Math.round(selectedItem.position.y)}
-                                onChange={(e) => {
-                                  const newY = parseFloat(e.target.value) || 0;
-                                  handleUpdateFurniture(
-                                    selectedItem.instanceId,
-                                    {
-                                      position: {
-                                        ...selectedItem.position,
-                                        y: newY,
-                                      },
-                                    }
-                                  );
-                                }}
-                              />
-                            </div>
-                          </div>
-
-                          <Slider
-                            label="Rotation (degrees)"
-                            min={0}
-                            max={360}
-                            value={Math.round(selectedItem.rotation)}
-                            onChange={(e) => {
-                              const rotation = parseInt(e.target.value);
-                              handleUpdateFurniture(selectedItem.instanceId, {
-                                rotation,
-                              });
-                            }}
-                            unit="°"
-                          />
-                        </Panel>
-
-                        {/* Size and Scale */}
-                        <Panel title="Size & Scale" className="m-4 mb-2">
-                          <Slider
-                            label="Scale"
-                            min={0.5}
-                            max={2}
-                            step={0.1}
-                            value={selectedItem.scale}
-                            onChange={(e) => {
-                              const scale = parseFloat(e.target.value);
-                              handleUpdateFurniture(selectedItem.instanceId, {
-                                scale,
-                              });
-                            }}
-                            unit="x"
-                          />
-
-                          <div className="grid grid-cols-3 gap-3 mt-4 bg-gray-50 p-3 rounded-lg">
-                            <div>
-                              <label className="block text-xs text-gray-500 mb-1">
-                                Width
-                              </label>
-                              <div className="flex items-center text-sm font-medium text-gray-700">
-                                {Math.round(
-                                  furnitureDetails.dimensions.width *
-                                    selectedItem.scale
-                                )}{" "}
-                                cm
-                              </div>
-                            </div>
-                            <div>
-                              <label className="block text-xs text-gray-500 mb-1">
-                                Depth
-                              </label>
-                              <div className="flex items-center text-sm font-medium text-gray-700">
-                                {Math.round(
-                                  furnitureDetails.dimensions.depth *
-                                    selectedItem.scale
-                                )}{" "}
-                                cm
-                              </div>
-                            </div>
-                            <div>
-                              <label className="block text-xs text-gray-500 mb-1">
-                                Height
-                              </label>
-                              <div className="flex items-center text-sm font-medium text-gray-700">
-                                {Math.round(
-                                  furnitureDetails.dimensions.height *
-                                    selectedItem.scale
-                                )}{" "}
-                                cm
-                              </div>
-                            </div>
-                          </div>
-                        </Panel>
-
-                        {/* Material and Color */}
-                        <Panel title="Material & Color" className="m-4 mb-2">
-                          <ColorMaterialSelector
-                            options={FURNITURE_MATERIALS}
-                            selected={selectedItem.materialId}
-                            onChange={(materialId) => {
-                              handleUpdateFurniture(selectedItem.instanceId, {
-                                materialId,
-                              });
-                            }}
-                            label={`Material (${
-                              getFurnitureMaterial(selectedItem.materialId).name
-                            })`}
-                          />
-
-                          <div className="mt-4">
-                            <ColorMaterialSelector
-                              options={FURNITURE_COLORS}
-                              selected={selectedItem.colorId}
-                              onChange={(colorId) => {
-                                handleUpdateFurniture(selectedItem.instanceId, {
-                                  colorId,
-                                  customColor: null,
-                                });
-                              }}
-                              label="Color"
-                            />
-                          </div>
-
-                          {selectedItem.colorId === "custom" && (
-                            <div className="mt-3">
-                              <label className="block text-xs text-gray-500 mb-1">
-                                Custom Color
-                              </label>
-                              <div className="flex items-center">
-                                <input
-                                  type="color"
-                                  className="h-10 w-14 border-0 p-0 mr-2 rounded cursor-pointer"
-                                  value={selectedItem.customColor || "#FF5733"}
-                                  onChange={(e) => {
-                                    handleUpdateFurniture(
-                                      selectedItem.instanceId,
-                                      {
-                                        customColor: e.target.value,
-                                      }
-                                    );
-                                  }}
-                                />
-                                <input
-                                  type="text"
-                                  className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-150"
-                                  value={selectedItem.customColor || "#FF5733"}
-                                  onChange={(e) => {
-                                    // Basic hex color validation
-                                    if (
-                                      /^#([0-9A-F]{3}){1,2}$/i.test(
-                                        e.target.value
-                                      )
-                                    ) {
-                                      handleUpdateFurniture(
-                                        selectedItem.instanceId,
-                                        {
-                                          customColor: e.target.value,
-                                        }
-                                      );
-                                    }
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          )}
-                        </Panel>
-                      </div>
-                    );
-                  })()}
-                </div>
-              ) : (
-                // Room Properties (when no furniture is selected)
-                <div className="flex flex-col h-full">
-                  <div className="p-4 border-b border-gray-200 bg-gray-50">
-                    <h2 className="text-lg font-medium text-gray-900">
-                      Room Properties
-                    </h2>
-                  </div>
-
-                  <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto">
+                {rightPanelTab === "room" ? (
+                  <>
+                    {/* --- Room Properties Panels --- */}
                     <Panel title="Room Details" className="m-4 mb-2">
                       <div className="space-y-3">
                         <div>
@@ -1886,7 +1213,7 @@ const DesignStudioPage = () => {
                             Name
                           </label>
                           <div className="text-sm font-medium text-gray-900">
-                            {roomConfig.roomName}
+                            {initialRoomConfig.roomName}
                           </div>
                         </div>
 
@@ -1895,9 +1222,9 @@ const DesignStudioPage = () => {
                             Dimensions
                           </label>
                           <div className="text-sm font-medium text-gray-900">
-                            {roomConfig.dimensions.width} ×{" "}
-                            {roomConfig.dimensions.length} ×{" "}
-                            {roomConfig.dimensions.height} cm
+                            {initialRoomConfig.dimensions.width} ×{" "}
+                            {initialRoomConfig.dimensions.length} ×{" "}
+                            {initialRoomConfig.dimensions.height} cm
                           </div>
                         </div>
 
@@ -1906,7 +1233,7 @@ const DesignStudioPage = () => {
                             Shape
                           </label>
                           <div className="text-sm font-medium text-gray-900 capitalize">
-                            {roomConfig.shape}
+                            {initialRoomConfig.shape}
                           </div>
                         </div>
                       </div>
@@ -1921,10 +1248,10 @@ const DesignStudioPage = () => {
                           <div className="flex items-center">
                             <div
                               className="h-6 w-6 rounded-md border border-gray-300 mr-2"
-                              style={{ backgroundColor: roomConfig.wallColor }}
+                              style={{ backgroundColor: initialRoomConfig.wallColor }}
                             ></div>
                             <div className="text-sm font-medium text-gray-900">
-                              {roomConfig.wallColor}
+                              {initialRoomConfig.wallColor}
                             </div>
                           </div>
                         </div>
@@ -1936,10 +1263,10 @@ const DesignStudioPage = () => {
                           <div className="flex items-center">
                             <div
                               className="h-6 w-6 rounded-md border border-gray-300 mr-2"
-                              style={{ backgroundColor: roomConfig.floorColor }}
+                              style={{ backgroundColor: initialRoomConfig.floorColor }}
                             ></div>
                             <div className="text-sm font-medium text-gray-900">
-                              {roomConfig.floorColor}
+                              {initialRoomConfig.floorColor}
                             </div>
                           </div>
                         </div>
@@ -1949,7 +1276,7 @@ const DesignStudioPage = () => {
                             Floor Material
                           </label>
                           <div className="text-sm font-medium text-gray-900 capitalize">
-                            {roomConfig.floorMaterial}
+                            {initialRoomConfig.floorMaterial}
                           </div>
                         </div>
                       </div>
@@ -2046,41 +1373,163 @@ const DesignStudioPage = () => {
                             Items placed:
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {placedFurniture.length}
+                            {furniture.length}
                           </span>
                         </div>
 
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-500">
-                            Total cost:
-                          </span>
+                          <span className="text-sm text-gray-500">Total cost:</span>
                           <span className="text-sm font-medium text-indigo-600">
                             $
-                            {placedFurniture.reduce((total, item) => {
-                              const furnitureItem = FURNITURE_ITEMS.find(
-                                (f) => f.id === item.id
-                              );
-                              return total + (furnitureItem?.price || 0);
-                            }, 0)}
+                            {furniture.reduce(
+                              (sum, item) =>
+                                sum +
+                                (furnitureItems.find((f) => f.name === item.type)
+                                  ?.price || 0),
+                              0
+                            )}
                           </span>
                         </div>
 
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-500">
-                            Floor area:
-                          </span>
+                          <span className="text-sm text-gray-500">Floor area:</span>
                           <span className="text-sm font-medium text-gray-900">
-                            {(roomConfig.dimensions.width *
-                              roomConfig.dimensions.length) /
+                            {(initialRoomConfig.dimensions.width *
+                              initialRoomConfig.dimensions.length) /
                               10000}{" "}
                             m²
                           </span>
                         </div>
                       </div>
                     </Panel>
-                  </div>
-                </div>
-              )}
+                  </>
+                ) : (
+                  <>
+                    {/* --- Furniture Properties Panel --- */}
+                    {selectedItem ? (
+                      (() => {
+                        const item = furniture.find((f) => f.id === selectedItem);
+                        if (!item) return null;
+                        return (
+                          <div className="m-4 mb-2 p-4 bg-gray-50 rounded-lg shadow-sm">
+                            <h3 className="text-lg font-semibold mb-2">Selected Item: {item.type}</h3>
+                            {/* Gizmo Mode Selector */}
+                            <div className="control-group" style={{ marginBottom: '15px' }}>
+                              <label style={{fontWeight: 'bold', marginBottom: '5px', display: 'block'}}>Gizmo Mode:</label>
+                              <div style={{display: 'flex', gap: '5px'}}>
+                                <Button
+                                  variant={gizmoMode === 'translate' ? 'selected' : 'secondary'}
+                                  onClick={() => { setGizmoMode('translate'); setIsGizmoActive(true); }}
+                                >
+                                  Translate
+                                </Button>
+                                <Button
+                                  variant={gizmoMode === 'rotate' ? 'selected' : 'secondary'}
+                                  onClick={() => { setGizmoMode('rotate'); setIsGizmoActive(true); }}
+                                >
+                                  Rotate
+                                </Button>
+                                <Button
+                                  variant={gizmoMode === 'scale' ? 'selected' : 'secondary'}
+                                  onClick={() => { setGizmoMode('scale'); setIsGizmoActive(true); }}
+                                >
+                                  Scale
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="mb-3">
+                              <label className="block text-sm font-medium mb-1">Color</label>
+                              <input
+                                type="color"
+                                value={item.color || '#cccccc'}
+                                onChange={handleFurnitureColorChange}
+                                className="w-10 h-10 p-0 border-0 bg-transparent cursor-pointer"
+                              />
+                            </div>
+                            <div className="mb-3 flex gap-4">
+                              <div>
+                                <label className="block text-sm font-medium mb-1">X Position</label>
+                                <input
+                                  type="number"
+                                  value={item.position.x.toFixed(2)}
+                                  step={0.1}
+                                  onChange={e => handleFurniturePositionChange('x', e.target.value)}
+                                  className="w-20 px-2 py-1 border rounded"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium mb-1">Z Position</label>
+                                <input
+                                  type="number"
+                                  value={item.position.z.toFixed(2)}
+                                  step={0.1}
+                                  onChange={e => handleFurniturePositionChange('z', e.target.value)}
+                                  className="w-20 px-2 py-1 border rounded"
+                                />
+                              </div>
+                            </div>
+                            <div className="mb-3">
+                              <label className="block text-sm font-medium mb-1">Rotation (Y-axis): {Math.round(item.rotation * (180 / Math.PI))}°</label>
+                              <input
+                                type="range"
+                                min="0"
+                                max="360"
+                                value={Math.round(item.rotation * (180/Math.PI))}
+                                onChange={e => handleFurnitureRotationChange(e.target.value)}
+                                step={1}
+                                className="w-full"
+                              />
+                            </div>
+                            <div className="mb-3 flex gap-4">
+                              <div>
+                                <label className="block text-sm font-medium mb-1">Scale X</label>
+                                <input
+                                  type="number"
+                                  value={item.scale.x}
+                                  step={0.01}
+                                  min={0.01}
+                                  onChange={e => handleFurnitureScaleChange('x', e.target.value)}
+                                  className="w-20 px-2 py-1 border rounded"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium mb-1">Scale Y</label>
+                                <input
+                                  type="number"
+                                  value={item.scale.y}
+                                  step={0.01}
+                                  min={0.01}
+                                  onChange={e => handleFurnitureScaleChange('y', e.target.value)}
+                                  className="w-20 px-2 py-1 border rounded"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium mb-1">Scale Z</label>
+                                <input
+                                  type="number"
+                                  value={item.scale.z}
+                                  step={0.01}
+                                  min={0.01}
+                                  onChange={e => handleFurnitureScaleChange('z', e.target.value)}
+                                  className="w-20 px-2 py-1 border rounded"
+                                />
+                              </div>
+                            </div>
+                            <button
+                              className="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                              onClick={() => deleteFurniture(item.id)}
+                            >
+                              Delete Item
+                            </button>
+                          </div>
+                        );
+                      })()
+                    ) : (
+                      <div className="m-4 text-gray-500 text-center">No furniture item selected.</div>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -2128,36 +1577,8 @@ const DesignStudioPage = () => {
           </div>
         </div>
       )}
-
-      {/* Custom CSS styles */}
-      <style jsx>{`
-        /* Hide scrollbar for Chrome, Safari and Opera */
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-
-        /* Hide scrollbar for IE, Edge and Firefox */
-        .hide-scrollbar {
-          -ms-overflow-style: none; /* IE and Edge */
-          scrollbar-width: none; /* Firefox */
-        }
-
-        /* Fade in animation */
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
-        .animate-fade-in {
-          animation: fadeIn 0.3s ease-in-out;
-        }
-      `}</style>
     </div>
   );
 };
 
-export default DesignStudioPage;
+export default Studio;

@@ -172,17 +172,7 @@ export default function ControlsPanel({
       </div>
 
       <h2>Room Controls</h2>
-       <div className="control-group">
-         <label className="flex items-center gap-2">
-           <span className="select-none">Show Dimensions</span>
-           <input
-             type="checkbox"
-             checked={showDimensions}
-             onChange={(e) => setShowDimensions(e.target.checked)}
-             className="form-checkbox h-4 w-4 text-blue-600" // Basic styling example
-           />
-         </label>
-       </div>
+      {/* Removed Show Dimensions toggle, now controlled by Studio */}
 
       <h2>Furniture</h2>
       <div className="button-group">

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Added useNavigate
 import { FiSun, FiMoon, FiUser, FiLogOut, FiMenu, FiX, FiChevronDown } from "react-icons/fi"; // Added FiChevronDown
-import PropTypes from "prop-types";
 import { useAuth } from "../Auth/useAuth"; // Import useAuth
 
 /**

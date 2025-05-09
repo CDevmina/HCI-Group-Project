@@ -1,5 +1,5 @@
-import React, { createContext, useState, useEffect } from 'react';
-import bcrypt from 'bcryptjs';
+import React, { createContext, useState, useEffect } from "react";
+import bcrypt from "bcryptjs";
 
 const AuthContext = createContext(null);
 
@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const user = localStorage.getItem('currentUser');
+    const user = localStorage.getItem("currentUser");
     if (user) {
       setCurrentUser(JSON.parse(user));
     }
@@ -19,16 +19,15 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     const { fullName, email, password } = userData;
-    const users = JSON.parse(localStorage.getItem('users')) || [];
-
-    if (users.find(user => user.email === email)) {
-      throw new Error('User already exists');
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    if (users.find((user) => user.email === email)) {
+      throw new Error("User already exists");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const nameParts = fullName.split(' ');
+    const nameParts = fullName.split(" ");
     const firstName = nameParts[0];
-    const lastName = nameParts.slice(1).join(' ') || ''; // Handle cases with no last name
+    const lastName = nameParts.slice(1).join(" ") || ""; // Handle cases with no last name
 
     // Base new user on the structure from Profile.jsx's USER mock
     const newUser = {
@@ -69,28 +68,32 @@ export const AuthProvider = ({ children }) => {
     };
 
     users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
+    localStorage.setItem("users", JSON.stringify(users));
+
     // Optionally log in the user directly after registration
-    // login(email, password); 
+    // login(email, password);
+
     return newUser;
   };
 
   const login = async (email, password) => {
-    const users = JSON.parse(localStorage.getItem('users')) || [];
-    const user = users.find(u => u.email === email);
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const user = users.find((u) => u.email === email);
 
-    if (user && await bcrypt.compare(password, user.hashedPassword)) {
-      const { _hashedPassword, ...userWithoutPassword } = user;
+    if (user && (await bcrypt.compare(password, user.hashedPassword))) {
+      // Create a new object without the hashedPassword
+      const { hashedPassword, ...userWithoutPassword } = user;
       setCurrentUser(userWithoutPassword);
-      localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
+      localStorage.setItem("currentUser", JSON.stringify(userWithoutPassword));
       return userWithoutPassword;
     }
-    throw new Error('Invalid email or password');
+
+    throw new Error("Invalid email or password");
   };
 
   const logout = () => {
     setCurrentUser(null);
-    localStorage.removeItem('currentUser');
+    localStorage.removeItem("currentUser");
   };
 
   const updateUser = async (updatedUserData) => {
@@ -127,5 +130,9 @@ export const AuthProvider = ({ children }) => {
     loading,
   };
 
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 };

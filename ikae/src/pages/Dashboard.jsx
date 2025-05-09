@@ -13,6 +13,7 @@ import {
   ClockIcon,
   XMarkIcon,
   Bars3Icon,
+  PencilIcon,
   UserCircleIcon,
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
@@ -33,6 +34,40 @@ const DashboardPage = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
+  const [designs, setDesigns] = useState([]);
+  const navigate = useNavigate();
+
+  // Load designs from localStorage
+  useEffect(() => {
+    const loadDesigns = () => {
+      const keys = Object.keys(localStorage).filter((k) =>
+        k.startsWith("roomDesign:")
+      );
+      const loaded = keys
+        .map((key) => {
+          try {
+            const data = JSON.parse(localStorage.getItem(key));
+            return {
+              id: key.replace("roomDesign:", ""),
+              name: key.replace("roomDesign:", ""),
+              thumbnail:
+                data.thumbnail ||
+                "https://placehold.co/400x225?text=No+Preview", // fallback
+              lastModified: data.timestamp
+                ? new Date(data.timestamp).toLocaleString()
+                : "-",
+              isComplete: false, // You can update this logic if you have a flag
+              ...data,
+            };
+          } catch {
+            return null;
+          }
+        })
+        .filter(Boolean);
+      setDesigns(loaded);
+    };
+    loadDesigns();
+  }, []);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -48,7 +83,8 @@ const DashboardPage = () => {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
   }, [isNotificationsOpen, isUserMenuOpen]);
 
   // Close mobile sidebar on window resize
@@ -63,61 +99,8 @@ const DashboardPage = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Mock data for recent designs
-  const recentDesigns = [
-    {
-      id: 1,
-      name: "Modern Living Room",
-      thumbnail: "https://st.hzcdn.com/simgs/97910d6b0407c3d1_14-0485/_.jpg",
-      lastModified: "2 hours ago",
-      isComplete: true,
-    },
-    {
-      id: 2,
-      name: "Minimalist Bedroom",
-      thumbnail:
-        "https://dminteriors.lk/wp-content/uploads/2019/10/Sri-Lanka-Bedroom-Design-Ideas.jpg",
-      lastModified: "Yesterday",
-      isComplete: true,
-    },
-    {
-      id: 3,
-      name: "Office Space Layout",
-      thumbnail:
-        "https://www.executivecentre.com/_next/image/?url=https%3A%2F%2Fassets.executivecentre.com%2Fassets%2FBanner-Product-PrivateOffice.jpg&w=3840&q=75",
-      lastModified: "3 days ago",
-      isComplete: false,
-    },
-    {
-      id: 4,
-      name: "Kitchen Redesign",
-      thumbnail:
-        "https://iconcustombuilders.com/wp-content/uploads/2024/05/DS77374-Final-web-copy-scaled-1.webp",
-      lastModified: "Last week",
-      isComplete: false,
-    },
-  ];
-
-  // Suggested designs based on user behavior
-  const suggestedDesigns = [
-    {
-      id: 5,
-      name: "Scandinavian Dining",
-      thumbnail:
-        "https://cdn.decorilla.com/online-decorating/wp-content/uploads/2023/06/Scandinavian-dining-room-with-light-wood-tones.jpg?width=900",
-      style: "Scandinavian",
-    },
-    {
-      id: 6,
-      name: "Industrial Office",
-      thumbnail:
-        "https://e7x3x7m2.delivery.rocketcdn.me/wp-content/uploads/2016/10/industrial-office-design.png",
-      style: "Industrial",
-    },
-  ];
-
   // Filter designs based on search query
-  const filteredDesigns = recentDesigns.filter((design) =>
+  const filteredDesigns = designs.filter((design) =>
     design.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -151,17 +134,26 @@ const DashboardPage = () => {
     return filteredDesigns.filter((d) => !d.isComplete); // drafts
   };
 
+  // Delete design handler
+  const handleDeleteDesign = (id) => {
+    localStorage.removeItem(`roomDesign:${id}`);
+    setDesigns((prev) => prev.filter((d) => d.id !== id));
+  };
+
   // Sidebar content for both desktop and mobile
   const renderSidebarContent = () => (
     <>
-      {/* Logo and branding */}
+      {/* Logo and branding - Updated with Link component */}
       <div className="flex items-center justify-between px-4 h-16 border-b border-blue-700">
-        <div className="flex items-center">
+        <Link
+          to="/"
+          className="flex items-center group transition-opacity hover:opacity-90"
+        >
           <CubeIcon className="h-8 w-8 text-white" />
           {!isSidebarCollapsed && (
             <span className="ml-2 text-xl font-bold text-white">IKAE</span>
           )}
-        </div>
+        </Link>
         {isMobileSidebarOpen && (
           <button
             onClick={toggleMobileSidebar}
@@ -260,7 +252,7 @@ const DashboardPage = () => {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15"
+                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.5 0 002.25-2.25V15"
               />
               <path
                 strokeLinecap="round"
@@ -608,7 +600,7 @@ const DashboardPage = () => {
                         key={design.id}
                         className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1"
                       >
-                        <Link to={`/designs/${design.id}`}>
+                        <div>
                           <div className="aspect-w-16 aspect-h-9 bg-gray-200 group-hover:opacity-90 transition-opacity duration-200">
                             <img
                               src={design.thumbnail}
@@ -633,57 +625,29 @@ const DashboardPage = () => {
                               <span>Modified {design.lastModified}</span>
                             </div>
                           </div>
-                        </Link>
-
+                        </div>
                         {/* Hover Actions */}
                         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200">
                           <div className="flex space-x-2">
-                            <Link
-                              to={`/designs/${design.id}/edit`}
+                            <button
                               className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors duration-200"
                               title="Edit design"
                               aria-label={`Edit ${design.name}`}
+                              onClick={() =>
+                                navigate("/studio", {
+                                  state: { loadedDesign: design },
+                                })
+                              }
                             >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5 text-gray-600"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                />
-                              </svg>
-                            </Link>
+                              <PencilIcon className="h-5 w-5 text-gray-600" />
+                            </button>
                             <button
                               className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors duration-200"
-                              title="Preview design"
-                              aria-label={`Preview ${design.name}`}
+                              title="Delete design"
+                              aria-label={`Delete ${design.name}`}
+                              onClick={() => handleDeleteDesign(design.id)}
                             >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5 text-gray-600"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                />
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                />
-                              </svg>
+                              <XMarkIcon className="h-5 w-5 text-red-600" />
                             </button>
                           </div>
                         </div>
@@ -727,56 +691,6 @@ const DashboardPage = () => {
                     </div>
                   </div>
                 )}
-              </div>
-            </div>
-
-            {/* Suggested Templates Section */}
-            <div className="bg-white shadow-sm rounded-xl overflow-hidden mb-8 transition-all duration-200 hover:shadow-md">
-              <div className="px-6 py-5 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">
-                  Suggested Templates
-                </h2>
-                <p className="mt-1 text-sm text-gray-500">
-                  Based on your recent activity
-                </p>
-              </div>
-              <div className="p-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                  {suggestedDesigns.map((design) => (
-                    <div
-                      key={design.id}
-                      className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1"
-                    >
-                      <Link to={`/templates/${design.id}`}>
-                        <div className="aspect-w-16 aspect-h-9 bg-gray-200 group-hover:opacity-90 transition-opacity duration-200">
-                          <img
-                            src={design.thumbnail}
-                            alt={design.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="p-4">
-                          <div className="flex justify-between items-center mb-1">
-                            <h3 className="text-sm font-medium text-gray-900">
-                              {design.name}
-                            </h3>
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              {design.style}
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs text-gray-500">
-                              Popular template
-                            </span>
-                            <button className="text-blue-600 hover:text-blue-700 text-xs font-medium transition-colors">
-                              Use Template
-                            </button>
-                          </div>
-                        </div>
-                      </Link>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
 
