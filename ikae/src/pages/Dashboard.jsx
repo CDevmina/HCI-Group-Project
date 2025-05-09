@@ -35,7 +35,6 @@ const DashboardPage = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [designs, setDesigns] = useState([]);
-  const navigate = useNavigate();
 
   // Load designs from localStorage
   useEffect(() => {
