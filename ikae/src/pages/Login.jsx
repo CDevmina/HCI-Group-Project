@@ -1,9 +1,12 @@
-import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { useAuth } from "../components/Auth/useAuth"; // Updated import path
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth(); // Get login function from AuthContext
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -13,6 +16,17 @@ const LoginPage = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginError, setLoginError] = useState("");
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+
+  useEffect(() => {
+    // Check for registration success message
+    const queryParams = new URLSearchParams(location.search);
+    if (queryParams.get("registered") === "true") {
+      setRegistrationSuccess(true);
+      // Optional: remove the query parameter from URL after displaying message
+      // navigate("/login", { replace: true });
+    }
+  }, [location.search, navigate]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -60,16 +74,17 @@ const LoginPage = () => {
     if (validateForm()) {
       setIsSubmitting(true);
       setLoginError("");
+      setRegistrationSuccess(false); // Clear registration message on new attempt
 
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Use the login function from AuthContext
+        await login(formData.email, formData.password);
 
         // Redirect to dashboard after successful login
         navigate("/dashboard");
       } catch (error) {
         console.error("Login error:", error);
-        setLoginError("Invalid email or password. Please try again.");
+        setLoginError(error.message || "Invalid email or password. Please try again.");
       } finally {
         setIsSubmitting(false);
       }
@@ -156,6 +171,27 @@ const LoginPage = () => {
               Sign in to access your design workspace
             </p>
           </div>
+
+          {/* Registration Success Message */}
+          {registrationSuccess && (
+            <div className="mb-6 p-4 rounded-lg bg-green-50 border border-green-100 text-green-700 text-sm animate-fadeIn">
+              <div className="flex">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="w-5 h-5 mr-2 flex-shrink-0 text-green-500"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Registration successful! Please log in.
+              </div>
+            </div>
+          )}
 
           {/* Error message display */}
           {loginError && (
