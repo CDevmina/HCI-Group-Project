@@ -41,8 +41,8 @@ const Navbar = ({ user, onLogout }) => {
   // Navigation links for both desktop and mobile
   const navLinks = [
     { to: "/", label: "Home" },
-    { to: "/room-editor", label: "Room Editor" },
-    { to: "/designs", label: "My Designs" },
+    { to: "/products", label: "Products" },
+    { to: "/dashboard", label: "Designer" },
     { to: "/gallery", label: "Gallery" },
   ];
 

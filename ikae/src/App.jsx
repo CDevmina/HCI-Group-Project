@@ -36,8 +36,8 @@ function App() {
           <Route path="/help" element={<HelpDocumentationPage />} />
           <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<ProductsPage />} />
-          <Route path="/details" element={<ProductDetailsPage />} />
-          <Route path="/products/:id" element={<ProductDetailPage />} />{" "}
+          <Route path="/details" element={<ProductDetailPage />} />
+          <Route path="/products/:id" element={<ProductDetailPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/confirm" element={<OrderSuccessPage />} />
         </Routes>
