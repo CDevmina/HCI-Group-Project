@@ -13,7 +13,9 @@ import RegisterPage from "./pages/Register";
 import RoomEditor from "./scenes/RoomEditor/RoomEditor";
 import HomePage from "./pages/Home";
 import ProductsPage from "./pages/Products";
-import ProductDetailsPage from "./pages/Details";
+import ProductDetailPage from "./pages/Details";
+import CheckoutPage from "./pages/Checkout";
+import OrderSuccessPage from "./pages/Confirmation";
 import { AuthProvider } from "./components/Auth/AuthContext";
 
 function App() {
@@ -35,6 +37,9 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/details" element={<ProductDetailsPage />} />
+          <Route path="/products/:id" element={<ProductDetailPage />} />{" "}
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/confirm" element={<OrderSuccessPage />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
