@@ -828,19 +828,21 @@ const Studio = () => {
 
               {/* Action Buttons */}
               <Button
-                variant="primary"
+                variant="secondary"
                 icon={<DocumentTextIcon className="h-4 w-4" />}
                 onClick={handleSaveDesign}
               >
                 Save
-              </Button>
-
-              {/* <Button
-                variant="secondary"
+              </Button>              <Button
+                variant="primary"
                 icon={<ShareIcon className="h-4 w-4" />}
+                onClick={() => {
+                  handleSaveDesign();
+                  navigate('/checkout');
+                }}
               >
-                Share
-              </Button> */}
+                Checkout
+              </Button>
 
               <Button
                 variant="ghost"
