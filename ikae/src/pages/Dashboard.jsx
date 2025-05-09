@@ -147,14 +147,17 @@ const DashboardPage = () => {
   // Sidebar content for both desktop and mobile
   const renderSidebarContent = () => (
     <>
-      {/* Logo and branding */}
+      {/* Logo and branding - Updated with Link component */}
       <div className="flex items-center justify-between px-4 h-16 border-b border-blue-700">
-        <div className="flex items-center">
+        <Link
+          to="/"
+          className="flex items-center group transition-opacity hover:opacity-90"
+        >
           <CubeIcon className="h-8 w-8 text-white" />
           {!isSidebarCollapsed && (
             <span className="ml-2 text-xl font-bold text-white">IKAE</span>
           )}
-        </div>
+        </Link>
         {isMobileSidebarOpen && (
           <button
             onClick={toggleMobileSidebar}
@@ -253,7 +256,7 @@ const DashboardPage = () => {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15"
+                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.5 0 002.25-2.25V15"
               />
               <path
                 strokeLinecap="round"
