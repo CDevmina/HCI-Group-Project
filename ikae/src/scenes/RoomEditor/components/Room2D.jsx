@@ -117,6 +117,7 @@ export default function Room2D({
       ...vertexes.slice(index + 1),
     ];
     setVertexes(newVertexes);
+    console.log('[Room2D] Vertex added. New vertexes:', newVertexes);
   };
 
   // --- DimensionLine Component (from legacy, adapted) ---
@@ -191,6 +192,7 @@ export default function Room2D({
                 i === dragStartRef.current.index ? [intersection.x, 0, intersection.z] : v
             );
             setVertexes(newVertexes); // Update state
+            console.log('[Room2D] Vertex moved. New vertexes:', newVertexes);
         }
       };
 

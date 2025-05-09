@@ -581,10 +581,10 @@ const Studio = () => {
     if (vertexes.length === 0 && roomConfig?.dimensions) {
       const { width, length } = roomConfig.dimensions;
       setVertexes([
-        [width / 2, 0, length / 2],
-        [-width / 2, 0, length / 2],
-        [-width / 2, 0, -length / 2],
-        [width / 2, 0, -length / 2],
+        [8 / 2, 0, 8 / 2],
+        [-8 / 2, 0, 8 / 2],
+        [-8 / 2, 0, -8 / 2],
+        [8 / 2, 0, -8 / 2],
       ]);
     }
     // eslint-disable-next-line

@@ -129,7 +129,9 @@ const RoomEditor = ({
   setFurniture: setExternalFurniture,
   gizmoMode: externalGizmoMode,
   selectedItem,
-  setSelectedItem
+  setSelectedItem,
+  vertexes,
+  setVertexes
 }) => {
   // If parent (Studio) provides states, use them, else fallback to internal state
   const [internalIs3DView] = useState(true);
@@ -156,11 +158,9 @@ const RoomEditor = ({
     [currentRoomSize.width / 2, 0, -currentRoomSize.depth / 2],
   ];
 
-  const [vertexes, setVertexes] = useState(getInitialVertexes(roomSize));
-
   useEffect(() => {
     setVertexes(getInitialVertexes(roomSize));
-  }, [roomSize]);
+  }, [roomSize, setVertexes]);
 
   const updateFurniture = useCallback((id, updates) => {
     setFurniture(curr => curr.map(item => item.id === id ? { ...item, ...updates } : item));
