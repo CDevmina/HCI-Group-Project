@@ -438,6 +438,15 @@ const Studio = () => {
   const [isDesignNameEditing, setIsDesignNameEditing] = useState(false);
   const [savingStatus, setSavingStatus] = useState("idle"); // idle, saving, saved, error
 
+  // Show toast when design name is updated and editing ends
+  useEffect(() => {
+    if (!isDesignNameEditing) {
+      showToast("Design name updated");
+    }
+    // Only run when editing ends
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDesignNameEditing]);
+
   // UI state
   const [selectedViewMode, setSelectedViewMode] = useState("2d"); // Changed to "2d" as default
   const [isCatalogOpen, setIsCatalogOpen] = useState(true);
@@ -567,6 +576,20 @@ const Studio = () => {
     };
   }, []);
 
+  useEffect(() => {
+    // Only initialize if vertexes are empty (first load)
+    if (vertexes.length === 0 && roomConfig?.dimensions) {
+      const { width, length } = roomConfig.dimensions;
+      setVertexes([
+        [width / 2, 0, length / 2],
+        [-width / 2, 0, length / 2],
+        [-width / 2, 0, -length / 2],
+        [width / 2, 0, -length / 2],
+      ]);
+    }
+    // eslint-disable-next-line
+  }, []);
+
   // Save designs - add after showToast function
   const saveDesign = () => {
     setSavedDesigns(prev => [...prev, {
@@ -577,6 +600,25 @@ const Studio = () => {
     }]);
     showToast("Design saved to library");
   };
+
+  // --- Save design to localStorage using designName as key ---
+  function saveDesignToLocalStorage() {
+    const data = {
+      vertexes,
+      furniture: furniture.map(item => ({
+        ...item,
+        position: item.position,
+        rotation: item.rotation,
+        type: item.type,
+        color: item.color,
+        dimensions: item.dimensions,
+        glb: item.glb,
+        image: item.image,
+        id: item.id,
+      })),
+    };
+    localStorage.setItem(`roomDesign:${designName}`.trim(), JSON.stringify(data));
+  }
 
   // Error handling - add after saveDesign function
   const handleError = (error) => {
@@ -620,17 +662,15 @@ const Studio = () => {
   const handleSaveDesign = () => {
     try {
       setSavingStatus("saving");
-      saveDesign();
+      saveDesignToLocalStorage();
       setTimeout(() => {
         setSavingStatus("saved");
-        showToast("Design saved successfully");
-        setTimeout(() => {
-          setSavingStatus("idle");
-        }, 2000);
+        setTimeout(() => setSavingStatus("idle"), 1200);
       }, 800);
+      showToast("Design saved to library");
     } catch (error) {
-      handleError(error);
       setSavingStatus("error");
+      showToast("Error saving design", "error");
     }
   };
 
@@ -706,7 +746,6 @@ const Studio = () => {
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         setIsDesignNameEditing(false);
-                        showToast("Design name updated");
                       }
                     }}
                   />
@@ -714,7 +753,6 @@ const Studio = () => {
                     className="p-1 ml-1 text-indigo-600 hover:text-indigo-700 rounded-full hover:bg-indigo-50"
                     onClick={() => {
                       setIsDesignNameEditing(false);
-                      showToast("Design name updated");
                     }}
                   >
                     <CheckIcon className="h-4 w-4" />
@@ -777,7 +815,7 @@ const Studio = () => {
               </div>
 
               {/* Edit and View toggle */}
-              <div className="flex bg-gray-100 rounded-lg overflow-hidden mr-2">
+              {/* <div className="flex bg-gray-100 rounded-lg overflow-hidden mr-2">
                 <button className="flex items-center px-3 py-1.5 text-sm font-medium bg-white text-indigo-600 shadow-sm">
                   <PencilIcon className="h-4 w-4 mr-1.5" />
                   Edit
@@ -786,7 +824,7 @@ const Studio = () => {
                   <EyeIcon className="h-4 w-4 mr-1.5" />
                   Preview
                 </button>
-              </div>
+              </div> */}
 
               {/* Action Buttons */}
               <Button
@@ -797,12 +835,12 @@ const Studio = () => {
                 Save
               </Button>
 
-              <Button
+              {/* <Button
                 variant="secondary"
                 icon={<ShareIcon className="h-4 w-4" />}
               >
                 Share
-              </Button>
+              </Button> */}
 
               <Button
                 variant="ghost"
