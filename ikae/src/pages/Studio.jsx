@@ -369,17 +369,18 @@ const Studio = () => {
   const navigate = useNavigate();
   const canvasRef = useRef(null);
 
-  // Get room configuration from previous page or use defaults
-  const { roomConfig } = location.state || {
-    roomConfig: {
-      roomName: "My Living Room",
-      dimensions: { width: 400, length: 500, height: 270 },
-      shape: "rectangular",
-      colorScheme: "neutral",
-      floorMaterial: "hardwood",
-      wallColor: "#F9FAFB",
-      floorColor: "#E5E7EB",
-    },
+  // Support loading a design from Dashboard
+  const loadedDesign = location.state?.loadedDesign;
+
+  // If loadedDesign exists, use its data; otherwise, use default roomConfig
+  const initialRoomConfig = loadedDesign?.roomConfig || {
+    roomName: "My Living Room",
+    dimensions: { width: 400, length: 500, height: 270 },
+    shape: "rectangular",
+    colorScheme: "neutral",
+    floorMaterial: "hardwood",
+    wallColor: "#F9FAFB",
+    floorColor: "#E5E7EB",
   };
 
   // Control Panel States
@@ -389,7 +390,9 @@ const Studio = () => {
   const [color, setColor] = useState('#cccccc');
   const [savedDesigns, setSavedDesigns] = useState([]);
   const [loadError, setLoadError] = useState('');
-  const [vertexes, setVertexes] = useState([]);
+  const [vertexes, setVertexes] = useState(
+    loadedDesign?.vertexes && loadedDesign.vertexes.length > 0 ? loadedDesign.vertexes : []
+  );
 
   // --- Furniture property update helper ---
   const updateFurniture = (id, updates) => {
@@ -433,7 +436,7 @@ const Studio = () => {
 
   // Design metadata
   const [designName, setDesignName] = useState(
-    roomConfig.roomName || "New Design"
+    loadedDesign?.name || loadedDesign?.designName || initialRoomConfig.designName || "New Design"
   );
   const [isDesignNameEditing, setIsDesignNameEditing] = useState(false);
   const [savingStatus, setSavingStatus] = useState("idle"); // idle, saving, saved, error
@@ -442,6 +445,7 @@ const Studio = () => {
   useEffect(() => {
     if (!isDesignNameEditing) {
       showToast("Design name updated");
+      console.log(loadedDesign.vertexes);
     }
     // Only run when editing ends
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -461,7 +465,9 @@ const Studio = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [hoveringItem, setHoveringItem] = useState(null);
   const [furnitureItems, setFurnitureItems] = useState([]);
-  const [furniture, setFurniture] = useState([]);
+  const [furniture, setFurniture] = useState(
+    loadedDesign?.furniture || []
+  );
 
   // Load furniture items from JSON on mount
   useEffect(() => {
@@ -577,9 +583,11 @@ const Studio = () => {
   }, []);
 
   useEffect(() => {
-    // Only initialize if vertexes are empty (first load)
-    if (vertexes.length === 0 && roomConfig?.dimensions) {
-      const { width, length } = roomConfig.dimensions;
+    // Only initialize if both loadedDesign.vertexes and vertexes are empty or undefined
+    if (loadedDesign?.vertexes && loadedDesign.vertexes.length > 0) {
+      setVertexes(loadedDesign.vertexes);
+    } else if (initialRoomConfig?.dimensions) {
+      const { width, length } = initialRoomConfig.dimensions;
       setVertexes([
         [8 / 2, 0, 8 / 2],
         [-8 / 2, 0, 8 / 2],
@@ -1205,7 +1213,7 @@ const Studio = () => {
                             Name
                           </label>
                           <div className="text-sm font-medium text-gray-900">
-                            {roomConfig.roomName}
+                            {initialRoomConfig.roomName}
                           </div>
                         </div>
 
@@ -1214,9 +1222,9 @@ const Studio = () => {
                             Dimensions
                           </label>
                           <div className="text-sm font-medium text-gray-900">
-                            {roomConfig.dimensions.width} ×{" "}
-                            {roomConfig.dimensions.length} ×{" "}
-                            {roomConfig.dimensions.height} cm
+                            {initialRoomConfig.dimensions.width} ×{" "}
+                            {initialRoomConfig.dimensions.length} ×{" "}
+                            {initialRoomConfig.dimensions.height} cm
                           </div>
                         </div>
 
@@ -1225,7 +1233,7 @@ const Studio = () => {
                             Shape
                           </label>
                           <div className="text-sm font-medium text-gray-900 capitalize">
-                            {roomConfig.shape}
+                            {initialRoomConfig.shape}
                           </div>
                         </div>
                       </div>
@@ -1240,10 +1248,10 @@ const Studio = () => {
                           <div className="flex items-center">
                             <div
                               className="h-6 w-6 rounded-md border border-gray-300 mr-2"
-                              style={{ backgroundColor: roomConfig.wallColor }}
+                              style={{ backgroundColor: initialRoomConfig.wallColor }}
                             ></div>
                             <div className="text-sm font-medium text-gray-900">
-                              {roomConfig.wallColor}
+                              {initialRoomConfig.wallColor}
                             </div>
                           </div>
                         </div>
@@ -1255,10 +1263,10 @@ const Studio = () => {
                           <div className="flex items-center">
                             <div
                               className="h-6 w-6 rounded-md border border-gray-300 mr-2"
-                              style={{ backgroundColor: roomConfig.floorColor }}
+                              style={{ backgroundColor: initialRoomConfig.floorColor }}
                             ></div>
                             <div className="text-sm font-medium text-gray-900">
-                              {roomConfig.floorColor}
+                              {initialRoomConfig.floorColor}
                             </div>
                           </div>
                         </div>
@@ -1268,7 +1276,7 @@ const Studio = () => {
                             Floor Material
                           </label>
                           <div className="text-sm font-medium text-gray-900 capitalize">
-                            {roomConfig.floorMaterial}
+                            {initialRoomConfig.floorMaterial}
                           </div>
                         </div>
                       </div>
@@ -1386,8 +1394,8 @@ const Studio = () => {
                         <div className="flex justify-between">
                           <span className="text-sm text-gray-500">Floor area:</span>
                           <span className="text-sm font-medium text-gray-900">
-                            {(roomConfig.dimensions.width *
-                              roomConfig.dimensions.length) /
+                            {(initialRoomConfig.dimensions.width *
+                              initialRoomConfig.dimensions.length) /
                               10000}{" "}
                             m²
                           </span>
