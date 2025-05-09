@@ -13,33 +13,37 @@ import RegisterPage from "./pages/Register";
 import RoomEditor from "./scenes/RoomEditor/RoomEditor";
 import HomePage from "./pages/Home";
 import ProductsPage from "./pages/Products";
-import ProductDetailPage from "./pages/Details";
+import ProductDetailsPage from "./pages/Details";
 import CheckoutPage from "./pages/Checkout";
 import OrderSuccessPage from "./pages/Confirmation";
 import { AuthProvider } from "./components/Auth/AuthContext";
+import PrivateRoute from "./components/Auth/PrivateRoute"; // Import PrivateRoute
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/room-editor" element={<RoomEditor />} />
+          {/* Public Routes */}
           <Route path="/shop" element={<Shop />} />
-          <Route path="/editor" element={<Editor />} />
           <Route path="*" element={<ErrorPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/studio" element={<DesignStudioPage />} />
-          <Route path="/room" element={<RoomDesigner />} />
-          <Route path="/profile" element={<UserProfileSettingsPage />} />
           <Route path="/help" element={<HelpDocumentationPage />} />
           <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<ProductsPage />} />
-          <Route path="/details" element={<ProductDetailPage />} />
-          <Route path="/products/:id" element={<ProductDetailPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/confirm" element={<OrderSuccessPage />} />
+          <Route path="/details" element={<ProductDetailsPage />} />
+          <Route path="/products/:id" element={<ProductDetailsPage />} />{" "}
+
+          {/* Protected Routes */}
+          <Route path="/room-editor" element={<PrivateRoute element={<RoomEditor />} />} />
+          <Route path="/dashboard" element={<PrivateRoute element={<DashboardPage />} />} />
+          <Route path="/studio" element={<PrivateRoute element={<DesignStudioPage />} />} />
+          <Route path="/room" element={<PrivateRoute element={<RoomDesigner />} />} />
+          <Route path="/profile" element={<PrivateRoute element={<UserProfileSettingsPage />} />} />
+          <Route path="/checkout" element={<PrivateRoute element={<CheckoutPage />} />} />
+          <Route path="/confirm" element={<PrivateRoute element={<OrderSuccessPage />} />} />
+          <Route path="/editor" element={<Editor />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

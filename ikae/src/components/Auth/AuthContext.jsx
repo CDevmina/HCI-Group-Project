@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
       phone: "", // Initialize as empty or prompt user later
       company: "", // Initialize as empty or prompt user later
       role: "", // Initialize as empty or prompt user later
-      avatar: `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=random`, // Placeholder avatar
+      avatar: '/default-avatar.png', // Use a local default avatar path
       emailVerified: false, // Default to not verified
       twoFactorEnabled: false,
       language: "English",
@@ -96,11 +96,37 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("currentUser");
   };
 
+  const updateUser = async (updatedUserData) => {
+    if (currentUser) {
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      const userIndex = users.findIndex(u => u.id === currentUser.id);
+
+      const updatedUser = { ...currentUser, ...updatedUserData };
+
+      if (userIndex !== -1) {
+        // If password is being updated, it should be hashed if it's a new plain text password
+        // For simplicity, this example assumes password updates are handled elsewhere or come pre-hashed if changed.
+        // If direct password change is needed here, ensure it's hashed before saving to 'users' list.
+        const fullUserRecord = { ...users[userIndex], ...updatedUserData };
+        users[userIndex] = fullUserRecord;
+        localStorage.setItem('users', JSON.stringify(users));
+      }
+
+      // Update currentUser state and localStorage for currentUser (without hashed password)
+      const { _hashedPassword, ...userWithoutPassword } = updatedUser;
+      setCurrentUser(userWithoutPassword);
+      localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
+      return userWithoutPassword;
+    }
+    throw new Error('No user currently logged in to update.');
+  };
+
   const value = {
     currentUser,
     login,
     register,
     logout,
+    updateUser, // Add updateUser to context
     loading,
   };
 
