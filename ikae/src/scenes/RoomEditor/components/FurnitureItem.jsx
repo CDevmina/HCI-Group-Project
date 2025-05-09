@@ -53,8 +53,8 @@ export default function FurnitureItem({ item, isSelected, onClick }) {
 
   useEffect(() => {
     if (groupRef.current) {
-      const yPos = item.glb ? 0 : (dimensions.height / 2) * scale.y;
-      groupRef.current.position.set(position.x, yPos, position.z);
+      // Always use the provided position.y
+      groupRef.current.position.set(position.x, position.y, position.z);
       groupRef.current.rotation.y = rotation;
       groupRef.current.scale.set(scale.x, scale.y, scale.z);
     }

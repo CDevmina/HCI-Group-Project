@@ -70,16 +70,6 @@
     "glb": "/src/scenes/RoomEditor/models/Bedside Table/Bedside Table.glb"
   },
   {
-    "id": "storage-1",
-    "name": "Bookshelf",
-    "category": "storage",
-    "price": 299,
-    "dimensions": { "width": 80, "depth": 30, "height": 180 },
-    "image": "https://img-new.cgtrader.com/items/5811389/afa98ec136/vays-grey-shelf-for-books-and-toys-3d-model-afa98ec136.jpg",
-    "popular": false,
-    "glb": "/src/scenes/RoomEditor/models/Bookshelf/Bookshelf.glb"
-  },
-  {
     "id": "storage-2",
     "name": "TV Stand",
     "category": "storage",
@@ -118,5 +108,25 @@
     "image": "https://img-new.cgtrader.com/items/4102566/6e41d17f9c/blue-vase-3d-model-6e41d17f9c.jpg",
     "popular": false,
     "glb": "/src/scenes/RoomEditor/models/Decorative Vase/Decorative Vase.glb"
+  },
+  {
+    "id": "carpet-1",
+    "name": "Brown Carpet",
+    "category": "decor",
+    "price": 20,
+    "dimensions": { "width": 20, "depth": 20, "height": 30 },
+    "image": "https://img-new.cgtrader.com/items/2315974/1982f759fd/large/contemporary-carpet-rug-13-3d-model-low-poly-max-obj-3ds-fbx.jpg",
+    "popular": true,
+    "glb": "/src/scenes/RoomEditor/models/Brown Carpet/Brown Carpet.glb"
+  },
+  {
+    "id": "carpet-2",
+    "name": "Maroon Carpet",
+    "category": "decor",
+    "price": 20,
+    "dimensions": { "width": 20, "depth": 20, "height": 30 },
+    "image": "https://img-new.cgtrader.com/items/2315972/72656cf722/contemporary-carpet-rug-12-3d-model-low-poly-max-obj-3ds-fbx.jpg",
+    "popular": true,
+    "glb": "/src/scenes/RoomEditor/models/Maroon Carpet/Maroon Carpet.glb"
   }
 ]
