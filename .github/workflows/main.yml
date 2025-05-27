@@ -2,7 +2,7 @@ name: CI Pipelinee
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ development ]
   pull_request:
     branches: [ main ]
 
